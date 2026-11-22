@@ -15,27 +15,42 @@ namespace FutbolNova.Core
 
         public void Tick(float deltaTime)
         {
-            if (!IsPaused && !IsFinished && deltaTime > 0f)
-                ElapsedSeconds += deltaTime;
+            if (IsPaused || IsFinished || deltaTime <= 0f ||
+                float.IsNaN(deltaTime) || float.IsInfinity(deltaTime))
+                return;
+
+            ElapsedSeconds += deltaTime;
         }
 
-        public void SetPaused(bool paused) => IsPaused = paused;
+        public void SetPaused(bool paused)
+        {
+            if (!IsFinished)
+                IsPaused = paused;
+        }
 
         public void AddGoal(TeamSide side)
         {
-            if (IsFinished) return;
-            if (side == TeamSide.Home) HomeGoals++;
-            else AwayGoals++;
+            if (IsFinished)
+                return;
+
+            if (side == TeamSide.Home)
+                HomeGoals++;
+            else if (side == TeamSide.Away)
+                AwayGoals++;
         }
 
-        public void Finish() => IsFinished = true;
+        public void Finish()
+        {
+            IsFinished = true;
+            IsPaused = false;
+        }
 
         public string ClockText
         {
             get
             {
-                int total = (int)ElapsedSeconds;
-                return $"{total / 60:00}:{total % 60:00}";
+                int total = (int)Math.Min(ElapsedSeconds, int.MaxValue);
+                return string.Format("{0:00}:{1:00}", total / 60, total % 60);
             }
         }
     }
