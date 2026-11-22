@@ -88,9 +88,9 @@ public final class MatchSimulation {
                 float fatigue=0.78f+0.22f*(player.stamina/100f);
                 float step=Math.min(distance,player.speed*fatigue*delta);
                 player.x+=dx/distance*step; player.z+=dz/distance*step;
-                player.forwardX=dx/distance; player.forwardZ=dz/distance;
+                player.forwardX=dx/distance; player.forwardZ=dz/distance; player.speed=step/delta;
                 player.stamina=Math.max(0f,player.stamina-delta*0.10f);
-            } else player.stamina=Math.min(100f,player.stamina+delta*0.16f);
+            } else { player.speed=0f; player.stamina=Math.min(100f,player.stamina+delta*0.16f); }
             applySeparation(i,delta);
             player.x=clamp(player.x,-FIELD_HALF_WIDTH+0.6f,FIELD_HALF_WIDTH-0.6f);
             player.z=clamp(player.z,-FIELD_HALF_LENGTH+0.6f,FIELD_HALF_LENGTH-0.6f);
