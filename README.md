@@ -21,11 +21,9 @@ Esta rama contiene una primera base jugable de prueba, no un juego terminado ni 
 
 ## Cómo probar
 1. Abrir esta carpeta desde Unity Hub con Unity 6000.3.24f1 o Unity 6 compatible.
-2. Crear una escena vacía y guardarla como `Assets/Scenes/Main.unity`.
-3. Añadir un GameObject vacío llamado `FutbolNovaBootstrap`.
-4. Añadir el componente `FutbolNovaBootstrap` desde `Assets/Scripts/Bootstrap`.
-5. Pulsar Play; el bootstrap construye el campo y el partido.
-6. Para Android, cambiar a Android en Build Profiles, seleccionar ARM64 y probar en dispositivo. La configuración final y el rendimiento aún no están validados.
+2. En Unity, ejecutar el menú `Futbol Nova > Generate Bootstrap Scene`; crea `Assets/Scenes/Main.unity` y registra la escena en Build Settings.
+3. Pulsar Play; el bootstrap construye el campo y el partido.
+4. Para Android, usar el flujo de CI descrito abajo o cambiar a Android en Build Profiles y seleccionar ARM64.
 
 ## Controles
 - WASD / flechas: mover.
@@ -34,6 +32,14 @@ Esta rama contiene una primera base jugable de prueba, no un juego terminado ni 
 - K: tiro.
 - En pantalla: pad direccional, sprint, pase y tiro.
 
+## Pruebas y compilación automatizadas
+- `Assets/Tests/EditMode/MatchStateTests.cs` contiene pruebas EditMode del reloj, pausa, finalización y marcador.
+- `Assets/Scripts/FutbolNova.Runtime.asmdef` y `Assets/Tests/EditMode/FutbolNova.EditModeTests.asmdef` separan el código ejecutable y las pruebas.
+- El flujo manual `.github/workflows/unity-ci.yml` ejecuta las pruebas y, si se solicita, genera un APK Android.
+- Para ejecutar el flujo, configura el secreto de repositorio `UNITY_LICENSE` con una licencia válida de Unity y usa Actions > Unity validation and Android build. Marca `build_android` para solicitar el APK.
+- El script `Assets/Editor/FutbolNovaBuild.cs` genera la escena de arranque y configura arquitectura Android ARM64.
+- La CI está configurada, pero todavía no se ha ejecutado; no hay resultados de pruebas ni APK verificado.
+
 ## Arquitectura inicial
 - `Core`: estado y reglas básicas de partido.
 - `Gameplay`: jugadores, balón, goles e IA inicial.
@@ -41,7 +47,7 @@ Esta rama contiene una primera base jugable de prueba, no un juego terminado ni 
 - `Bootstrap`: generación del mundo de prueba.
 
 ## Pendiente
-Animaciones y modelos reales, estadio, audio, cámara broadcast avanzada, física refinada, porteros, faltas, fuera de juego, árbitro, sustituciones, IA táctica, menús, plantillas autorizadas, modos Manager/Leyenda/Entrenador, guardado, torneos, cantera, economía, módulos, Nova Nexus, pruebas automatizadas, CI y pruebas en teléfonos Android.
+Animaciones y modelos reales, estadio, audio, cámara broadcast avanzada, física refinada, porteros, faltas, fuera de juego, árbitro, sustituciones, IA táctica, menús, plantillas autorizadas, modos Manager/Leyenda/Entrenador, guardado, torneos, cantera, economía, módulos, Nova Nexus, animaciones y modelos reales, estadio, audio, cámara broadcast avanzada, física refinada, porteros, faltas, fuera de juego, árbitro, sustituciones, IA táctica, menús, plantillas autorizadas, modos Manager/Leyenda/Entrenador, guardado, torneos, cantera, economía, módulos, Nova Nexus y pruebas en teléfonos Android.
 
 ## Procedencia y licencias
 Este primer código de Fútbol Nova se ha escrito como implementación nueva. No incorpora código ni assets de los repositorios investigados. Sus descripciones públicas se usaron como referencia para definir capacidades y arquitectura. Antes de importar cualquier componente externo se comprobarán licencia, dependencias, avisos y compatibilidad.
