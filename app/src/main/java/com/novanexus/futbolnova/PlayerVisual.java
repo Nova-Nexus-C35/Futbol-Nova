@@ -8,13 +8,13 @@ import com.badlogic.gdx.math.Vector3;
 
 /** Low-poly articulated humanoid built from shared meshes for mobile rendering. */
 public final class PlayerVisual {
-    private final ModelInstance torso,head,hair,leftArm,rightArm,leftLeg,rightLeg,leftBoot,rightBoot;
+    private final ModelInstance torso,shorts,head,hair,leftArm,rightArm,leftLeg,rightLeg,leftBoot,rightBoot;
     private final float phaseOffset;
     private static final Vector3 UP=new Vector3(0,1,0);
 
-    public PlayerVisual(Model torsoModel,Model headModel,Model hairModel,Model armModel,
+    public PlayerVisual(Model torsoModel,Model shortsModel,Model headModel,Model hairModel,Model armModel,
             Model legModel,Model bootModel,int shirtNumber) {
-        torso=new ModelInstance(torsoModel); head=new ModelInstance(headModel); hair=new ModelInstance(hairModel);
+        torso=new ModelInstance(torsoModel); shorts=new ModelInstance(shortsModel); head=new ModelInstance(headModel); hair=new ModelInstance(hairModel);
         leftArm=new ModelInstance(armModel); rightArm=new ModelInstance(armModel);
         leftLeg=new ModelInstance(legModel); rightLeg=new ModelInstance(legModel);
         leftBoot=new ModelInstance(bootModel); rightBoot=new ModelInstance(bootModel);
@@ -23,7 +23,8 @@ public final class PlayerVisual {
 
     public void update(float x,float z,float yaw,float time,float speed) {
         float swing=(float)Math.sin(time*9f+phaseOffset)*Math.min(0.48f,speed*0.075f);
-        place(torso,x,1.12f,z,yaw,0f);
+        place(torso,x,1.15f,z,yaw,0f);
+        place(shorts,x,0.77f,z,yaw,0f);
         place(head,x,1.64f,z,yaw,0f);
         place(hair,x,1.77f,z,yaw,0f);
         place(leftArm,x-0.39f,1.15f,z,yaw,-swing*0.85f);
@@ -41,7 +42,7 @@ public final class PlayerVisual {
     }
 
     public void render(ModelBatch batch,Environment environment) {
-        batch.render(torso,environment);batch.render(head,environment);batch.render(hair,environment);
+        batch.render(torso,environment);batch.render(shorts,environment);batch.render(head,environment);batch.render(hair,environment);
         batch.render(leftArm,environment);batch.render(rightArm,environment);
         batch.render(leftLeg,environment);batch.render(rightLeg,environment);
         batch.render(leftBoot,environment);batch.render(rightBoot,environment);
