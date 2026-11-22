@@ -23,7 +23,7 @@ namespace FutbolNova.Gameplay
             Ball = CreateBall();
             BuildTeam(TeamSide.Home, home, new Color(0.05f, 0.25f, 0.9f));
             BuildTeam(TeamSide.Away, away, new Color(0.9f, 0.12f, 0.08f));
-            UserPlayer = home[0];
+            UserPlayer = home[6];
             foreach (var p in home) p.Ball = Ball.transform;
             foreach (var p in away) p.Ball = Ball.transform;
             AssignChasers();
@@ -179,12 +179,12 @@ namespace FutbolNova.Gameplay
         void ResetKickoff()
         {
             Ball.ResetBall(new Vector3(0f,0.5f,0f));
-            ResetTeam(home, -1f);
-            ResetTeam(away, 1f);
+            ResetTeam(home);
+            ResetTeam(away);
             AssignChasers();
         }
 
-        void ResetTeam(List<PlayerAgent> team, float direction)
+        void ResetTeam(List<PlayerAgent> team)
         {
             for (int i=0;i<team.Count;i++)
             {
