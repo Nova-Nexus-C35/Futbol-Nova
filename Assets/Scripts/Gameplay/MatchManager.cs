@@ -44,14 +44,6 @@ namespace FutbolNova.Gameplay
             UpdateCamera();
         }
 
-
-
-
-
-
-
-
-
         void AssignChasers()
         {
             AssignNearest(home);
@@ -124,8 +116,6 @@ namespace FutbolNova.Gameplay
             }
         }
 
-
-
         void UpdateCamera()
         {
             if (matchCamera == null || UserPlayer == null) return;
@@ -133,10 +123,6 @@ namespace FutbolNova.Gameplay
             matchCamera.transform.position = Vector3.Lerp(matchCamera.transform.position,target,4f*Time.deltaTime);
             matchCamera.transform.LookAt(UserPlayer.transform.position + Vector3.forward*8f);
         }
-
-
-
-
 
         void OnGUI()
         {
