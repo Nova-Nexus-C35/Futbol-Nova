@@ -235,6 +235,38 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         else if(result!=null&&result.foul){possessionOwnerIndex=MatchGameplay.NO_OWNER;ballVelocity.set(0f,2f,3f);lastTouchHome=true;}
     }
 
+    private void updateBall(float delta) {
+        BallFlightModel.Step flight=BallFlightModel.integrateStep(ballPosition,ballVelocity,ballSpin,delta);
+        ballPosition.set(flight.position);ballVelocity.set(flight.velocity);ballSpin.set(flight.spin);
+        if(ballPosition.y<BALL_RADIUS){
+            ballPosition.y=BALL_RADIUS;
+            if(ballVelocity.y<0f)ballVelocity.y*=-0.38f;
+            ballVelocity.x*=0.91f;ballVelocity.z*=0.91f;
+        }
+        if(Math.abs(ballPosition.x)-BALL_RADIUS>FIELD_HALF_WIDTH
+                ||Math.abs(ballPosition.z)-BALL_RADIUS>FIELD_HALF_LENGTH){
+            MatchRules.ExitDecision exit=MatchRules.classifyBallExit(
+                    ballPosition.x,ballPosition.y,ballPosition.z,lastTouchHome,BALL_RADIUS);
+            possessionOwnerIndex=MatchGameplay.NO_OWNER;
+            ballVelocity.setZero();ballSpin.setZero();
+            if(exit.restart==MatchRules.Restart.GOAL){
+                matchState.addGoal(exit.awardedHome);
+                ballPosition.set(0f,BALL_RADIUS,0f);
+                restartAwardedHome=!exit.awardedHome;
+                kickoffRestart=true;
+                pendingRestart=MatchRules.Restart.IN_PLAY;
+                restartClock=1.4f;
+            }else{
+                ballPosition.set(exit.x,exit.restart==MatchRules.Restart.THROW_IN?1.75f:BALL_RADIUS,exit.z);
+                pendingRestart=exit.restart;
+                restartAwardedHome=exit.awardedHome;
+                kickoffRestart=false;
+                restartClock=1.2f;
+            }
+        }
+        if(ballVelocity.len2()<0.08f&&ballPosition.y<=BALL_RADIUS+0.02f)ballVelocity.setZero();
+    }
+
     private void updateGameplay(float delta){
         tackleCooldown=Math.max(0f,tackleCooldown-delta);
         for(int i=0;i<aiTackleCooldowns.length;i++)aiTackleCooldowns[i]=Math.max(0f,aiTackleCooldowns[i]-delta);
