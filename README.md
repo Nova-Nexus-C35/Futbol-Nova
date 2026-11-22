@@ -53,3 +53,6 @@ Animaciones y modelos reales, estadio, audio, cámara broadcast avanzada, físic
 Este primer código de Fútbol Nova se ha escrito como implementación nueva. No incorpora código ni assets de los repositorios investigados. Sus descripciones públicas se usaron como referencia para definir capacidades y arquitectura. Antes de importar cualquier componente externo se comprobarán licencia, dependencias, avisos y compatibilidad.
 
 La licencia MIT provisional cubre únicamente los archivos originales de este repositorio. No concede derechos sobre marcas, nombres, escudos, uniformes, retratos ni otros derechos de terceros.
+
+## Configurar CI y licencia Unity
+Consulta [`Docs/UNITY_CI_SETUP.md`](Docs/UNITY_CI_SETUP.md) para activar la licencia de Unity, ejecutar las seis pruebas EditMode y solicitar el APK Android ARM64. El workflow de solicitud puede generar un `.alf` desde GitHub Actions, pero Unity puede no aceptar activación manual Personal; no se garantiza una licencia hasta obtener el `.ulf` válido.
