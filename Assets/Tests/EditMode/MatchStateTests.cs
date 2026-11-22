@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using FutbolNova.Core;
+using FutbolNova.Gameplay;
 
 namespace FutbolNova.Tests
 {
@@ -68,5 +69,12 @@ namespace FutbolNova.Tests
             Assert.That(state.IsFinished, Is.True);
             Assert.That(state.IsPaused, Is.False);
         }
+        [Test]
+        public void GoalEnd_AssignsGoalsToTheTeamAttackingThatEnd()
+        {
+            Assert.That(MatchSceneFactory.GetScoringSideForGoalEnd(-1), Is.EqualTo(TeamSide.Home));
+            Assert.That(MatchSceneFactory.GetScoringSideForGoalEnd(1), Is.EqualTo(TeamSide.Away));
+        }
+
     }
 }
