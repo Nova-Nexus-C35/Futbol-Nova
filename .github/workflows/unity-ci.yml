@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     needs: editmode-tests
-    if: ${{ inputs.build_android }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_android }}
     steps:
       - name: Validate Unity license secret
         env:
