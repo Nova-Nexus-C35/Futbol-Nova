@@ -55,6 +55,15 @@ La decisión es provisional hasta que el primer workflow termine con éxito y el
 - Compatibilidad declarada: Android 8+.
 - Uso: alternativa a evaluar si libGDX presenta limitaciones. No incorporado a la build inicial para evitar añadir dependencias antes de necesitarlas.
 
+### 6. GLARE — alternativa sin bibliotecas externas
+- URL: https://github.com/david-palm/GLARE
+- Tecnología declarada: Java + OpenGL ES 3; el README dice expresamente que no usa bibliotecas externas.
+- Licencia raíz verificada: MIT.
+- Estructura revisada: renderer, shaders, buffers/meshes, cámara, escena, materiales, luces, eventos, capas y matemáticas 3D.
+- Limitaciones: demo de alcance reducido centrada en un cubo/textura; README indica que aún no tiene renderizado de texto. Últimos commits visibles: enero de 2023. build.gradle usa Android Gradle Plugin 7.2.1, por lo que no es una base moderna lista para compilar sin actualización.
+- Valor: referencia de cómo separar un renderer Android OpenGL ES propio sin depender de un framework externo.
+- Decisión: no se integra ahora como motor completo. Si libGDX no cumple el criterio del usuario, evaluar una implementación propia sobre Android OpenGL ES, usando ideas generales de renderer/mesh/cámara y sin copiar código sin necesidad.
+
 ### 6. NationSoccer — referencia histórica
 - URL: https://github.com/delight-im/NationSoccer
 - Proyecto Android 1v1 antiguo, marcado como no mantenido.
