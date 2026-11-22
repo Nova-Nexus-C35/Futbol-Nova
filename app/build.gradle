@@ -25,6 +25,6 @@ android {
 dependencies {
     implementation "com.badlogicgames.gdx:gdx:${gdxVersion}"
     implementation "com.badlogicgames.gdx:gdx-backend-android:${gdxVersion}"
-    implementation "com.badlogicgames.gdx:gdx-platform:${gdxVersion:natives-arm64-v8a"
+    implementation "com.badlogicgames.gdx:gdx-platform:${gdxVersion}:natives-arm64-v8a"
     testImplementation 'junit:junit:4.13.2'
 }
