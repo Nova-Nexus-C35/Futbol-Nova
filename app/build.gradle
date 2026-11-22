@@ -36,7 +36,7 @@ dependencies {
 
 tasks.register('copyGdxNatives', Copy) {
     from { zipTree(configurations.gdxNatives.singleFile) }
-    include 'jni/arm64-v8a/*.so'
+    include '*.so'
     eachFile { details -> details.path = details.name }
     includeEmptyDirs = false
     into file("$projectDir/src/main/jniLibs/arm64-v8a")
