@@ -14,7 +14,7 @@ namespace FutbolNova.Gameplay
         public MatchSceneFactory(MatchManager owner, Transform parent)
         {
             this.owner = owner;
-            this.parent = parent;
+            this.transform = parent;
         }
 
         public void BuildPitch()
@@ -40,8 +40,8 @@ namespace FutbolNova.Gameplay
             CreatePrimitive("Goal post", PrimitiveType.Cube, new Vector3(3.66f,1.22f,z), new Vector3(0.15f,2.44f,0.15f),white,parent);
             CreatePrimitive("Goal crossbar", PrimitiveType.Cube, new Vector3(0f,2.44f,z), new Vector3(7.32f,0.15f,0.15f),white,parent);
             GameObject trigger = new GameObject("Goal trigger");
-            trigger.parent.SetParent(parent);
-            trigger.parent.position = new Vector3(0f,1.2f,z + sign * 1.2f);
+            trigger.transform.SetParent(parent);
+            trigger.transform.position = new Vector3(0f,1.2f,z + sign * 1.2f);
             BoxCollider box = trigger.AddComponent<BoxCollider>();
             box.isTrigger = true;
             box.size = new Vector3(7.1f,2.4f,2.4f);
@@ -66,9 +66,9 @@ namespace FutbolNova.Gameplay
                 pos.z *= direction;
                 GameObject player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 player.name = (side == TeamSide.Home ? "Home " : "Away ") + (i+1);
-                player.parent.SetParent(parent);
-                player.parent.position = pos;
-                player.parent.localScale = new Vector3(0.85f,0.95f,0.85f);
+                player.transform.SetParent(parent);
+                player.transform.position = pos;
+                player.transform.localScale = new Vector3(0.85f,0.95f,0.85f);
                 player.GetComponent<Renderer>().material.color = color;
                 Collider old = player.GetComponent<Collider>();
                 UnityEngine.Object.Destroy(old);
@@ -77,21 +77,21 @@ namespace FutbolNova.Gameplay
                 PlayerAgent agent = player.AddComponent<PlayerAgent>();
                 agent.Initialize(side,i+1,side == TeamSide.Home && i == 6);
                 GameObject anchor = new GameObject("Formation anchor");
-                anchor.parent.SetParent(parent);
-                anchor.parent.position = pos;
-                agent.FormationAnchor = anchor.parent;
+                anchor.transform.SetParent(parent);
+                anchor.transform.position = pos;
+                agent.FormationAnchor = anchor.transform;
                 list.Add(agent);
             }
-                    return list;
+            return list;
         }
 
         public BallController CreateBall()
         {
             GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             ball.name = "Match ball";
-            ball.parent.SetParent(parent);
-            ball.parent.localScale = Vector3.one * 0.42f;
-            ball.parent.position = new Vector3(0f,0.35f,0f);
+            ball.transform.SetParent(parent);
+            ball.transform.localScale = Vector3.one * 0.42f;
+            ball.transform.position = new Vector3(0f,0.35f,0f);
             ball.GetComponent<Renderer>().material.color = Color.white;
             Rigidbody rb = ball.AddComponent<Rigidbody>();
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
@@ -121,7 +121,7 @@ namespace FutbolNova.Gameplay
             obj.name = name; obj.transform.SetParent(parent); obj.transform.position = position; obj.transform.localScale = scale;
             obj.GetComponent<Renderer>().material.color = color;
             Collider collider = obj.GetComponent<Collider>();
-            if (name != "Pitch" && collider != null) Destroy(collider);
+            if (name != "Pitch" && collider != null) UnityEngine.Object.Destroy(collider);
             return obj;
         }
     }
