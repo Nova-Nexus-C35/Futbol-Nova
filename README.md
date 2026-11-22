@@ -47,8 +47,7 @@ Esta rama contiene una primera base jugable de prueba, no un juego terminado ni 
 - `Bootstrap`: generación del mundo de prueba.
 
 ## Pendiente
-Animaciones y modelos reales, estadio, audio, cámara broadcast avanzada, física refinada, porteros, faltas, fuera de juego, árbitro, sustituciones, IA táctica, menús, plantillas autorizadas, modos Manager/Leyenda/Entrenador, guardado, torneos, cantera, economía, módulos, Nova Nexus, animaciones y modelos reales, estadio, audio, cámara broadcast avanzada, física refinada, porteros, faltas, fuera de juego, árbitro, sustituciones, IA táctica, menús, plantillas autorizadas, modos Manager/Leyenda/Entrenador, guardado, torneos, cantera, economía, módulos, Nova Nexus y pruebas en teléfonos Android.
-
+Animaciones y modelos reales, estadio, audio, cámara broadcast avanzada, física refinada, porteros, faltas, fuera de juego, árbitro, sustituciones, IA táctica, menús, plantillas autorizadas, modos Manager/Leyenda/Entrenador, guardado, torneos, cantera, economía, módulos, Nova Nexus y pruebas en teléfonos Android.
 ## Procedencia y licencias
 Este primer código de Fútbol Nova se ha escrito como implementación nueva. No incorpora código ni assets de los repositorios investigados. Sus descripciones públicas se usaron como referencia para definir capacidades y arquitectura. Antes de importar cualquier componente externo se comprobarán licencia, dependencias, avisos y compatibilidad.
 
