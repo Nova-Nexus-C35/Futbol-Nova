@@ -7,7 +7,8 @@ Native Android football game project. The current development line uses Java 17,
 - Android application, landscape orientation, offline-first, ARM64 target.
 - Procedural 3D pitch, 22 player placeholders, ball, perspective camera and touch input.
 - Java 4-3-3 11v11 simulation ported from the original project: tactical repositioning, nearest-player pressure, goalkeeper positioning, stamina and player separation.
-- Basic ball movement, goal detection, score and match clock.
+- Aerodynamic ball flight (gravity, drag and Magnus spin) and stricter goal-line geometry.
+- Basic score and match clock; restarts and live referee decisions remain pending.
 - Match clock and score are separated into a plain Java class with unit tests.
 - Geometry is generated in code; no external models, kits, logos, sounds or images are bundled.
 

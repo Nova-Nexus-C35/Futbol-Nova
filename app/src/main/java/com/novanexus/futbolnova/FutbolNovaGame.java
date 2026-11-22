@@ -36,6 +36,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final List<ModelInstance> players = new ArrayList<>();
     private final Vector3 ballPosition = new Vector3(0f, BALL_RADIUS, 0f);
     private final Vector3 ballVelocity = new Vector3();
+    private final Vector3 ballSpin = new Vector3();
     private final Vector3 controlledPosition = new Vector3();
 
     private PerspectiveCamera camera;
@@ -179,8 +180,10 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void updateBall(float delta) {
-        ballVelocity.y -= 18f * delta;
-        ballPosition.mulAdd(ballVelocity, delta);
+        BallFlightModel.Step flight = BallFlightModel.integrateStep(ballPosition, ballVelocity, ballSpin, delta);
+        ballPosition.set(flight.position);
+        ballVelocity.set(flight.velocity);
+        ballSpin.set(flight.spin);
         if (ballPosition.y < BALL_RADIUS) {
             ballPosition.y = BALL_RADIUS;
             if (ballVelocity.y < 0f) ballVelocity.y *= -0.38f;
@@ -193,12 +196,14 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             ballVelocity.x *= -0.55f;
         }
 
-        if (Math.abs(ballPosition.z) > FIELD_HALF_LENGTH) {
-            boolean insideGoal = Math.abs(ballPosition.x) < 3.66f && ballPosition.y < 2.44f;
-            if (insideGoal) {
-                matchState.addGoal(ballPosition.z < 0f);
+        if (Math.abs(ballPosition.z) - BALL_RADIUS > FIELD_HALF_LENGTH) {
+            MatchRules.ExitDecision exit = MatchRules.classifyBallExit(
+                    ballPosition.x, ballPosition.y, ballPosition.z, false, BALL_RADIUS);
+            if (exit.restart == MatchRules.Restart.GOAL) {
+                matchState.addGoal(exit.awardedHome);
                 ballPosition.set(0f, BALL_RADIUS, 0f);
                 ballVelocity.setZero();
+                ballSpin.setZero();
             } else {
                 ballPosition.z = Math.signum(ballPosition.z) * FIELD_HALF_LENGTH;
                 ballVelocity.z *= -0.55f;

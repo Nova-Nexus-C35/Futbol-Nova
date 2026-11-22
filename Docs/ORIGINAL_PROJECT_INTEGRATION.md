@@ -48,6 +48,10 @@ Se incorporó `MatchSimulation.java`, primer port del controlador original de mo
 
 Esta fase no incluye todavía posesión real, pases/t tiros de IA, reglas completas, reloj por períodos ni modelos humanos animados.
 
+## Portabilidad de física y reglas geométricas — fase 2
+
+Se añadieron `BallFlightModel.java` y `MatchRules.java`, ports Java de los modelos originales de trayectoria y geometría de reglas. La física integra gravedad, arrastre y Magnus; la detección de gol comprueba el cruce completo de la línea y el espacio entre postes/bajo larguero. Se añadieron pruebas unitarias. Los saques, fuera de juego en vivo, rebotes con postes y árbitro aún no están conectados. Detalles: `Docs/PORTING_BALL_AND_RULES.md`.
+
 ## Orden de portabilidad
 
 1. Dominio deportivo: perfiles, IDs, equipos, alineaciones 4-3-3, contrato y reloj.
