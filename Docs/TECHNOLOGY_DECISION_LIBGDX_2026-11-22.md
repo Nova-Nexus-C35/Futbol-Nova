@@ -141,3 +141,10 @@ Investigar repositorios públicos para cada subsistema importante (render, físi
 - Valor: posible ayuda para movimiento de compañeros, formación y toma de decisiones; no sustituye la lógica táctica específica de fútbol.
 - Decisión: no añadir dependencia todavía. Primero crear interfaces y tests del dominio; incorporar solo si las pruebas muestran un beneficio claro y la compatibilidad/licencia quedan verificadas.
 
+
+
+## Resultado de prueba CI/paquete (2026-11-22)
+
+La ejecución #23 de GitHub Actions (`45066672267`, commit `9cbc16896bcaf9d8e9c2a5c4d106c71d9c4766f4`) completó con éxito las pruebas unitarias, la compilación Android debug ARM64 y el chequeo de `lib/arm64-v8a/libgdx.so` dentro del APK. El artefacto `futbol-nova-android-arm64-debug` se subió como ZIP de 3,298,300 bytes. El APK inspeccionado pesa 9,010,320 bytes y su SHA-256 es `0203eb7b2c91a762e749c6ef1b992be5f62b4626fa5f83655d8b053f563b8938`.
+
+Esta validación demuestra compilación y empaquetado del runtime nativo, no ejecución real en un teléfono. La instalación, controles táctiles, estabilidad, FPS, temperatura y memoria siguen pendientes de prueba física. Mantener la rama separada de main.
