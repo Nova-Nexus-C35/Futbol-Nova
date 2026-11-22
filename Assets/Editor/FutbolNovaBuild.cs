@@ -32,6 +32,7 @@ namespace FutbolNova.Editor
         {
             GenerateBootstrapScene();
             Directory.CreateDirectory("Build");
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
 
             BuildPlayerOptions options = new BuildPlayerOptions
             {
