@@ -22,7 +22,12 @@ Fecha: 2026-11-22.
 - Movimiento con velocidad diferenciada para porteros, fatiga/recuperación ligera y separación cinemática.
 - Límites de movimiento dentro del terreno.
 - Se portaron las condiciones base de control del balón y evaluación geométrica de entradas/tackles.
-- `FutbolNovaGame` ahora instancia la alineación desde `MatchSimulation` y actualiza las 22 posiciones cada frame.
+- `FutbolNovaGame` instancia la alineación desde `MatchSimulation` y actualiza las 22 posiciones cada frame.
+- La vista dejó de usar bloques: `PlayerVisual` dibuja humanoides low-poly con partes articuladas y animación procedural básica.
+- `MatchGameplay` conecta adquisición de posesión, receptores adelantados, líneas de pase, filtro de fuera de juego, pases, disparos y entradas.
+- La IA puede pasar/despejar y realizar entradas con enfriamiento; el juego ejecuta saques iniciales, saques de banda, córners y saques de puerta.
+- Se añadieron porterías, redes geométricas, gradas perimetrales y cámara de seguimiento del balón.
+- La velocidad máxima del futbolista se mantiene separada de la velocidad instantánea usada para la animación.
 
 ## Pruebas nuevas
 
@@ -30,6 +35,6 @@ Fecha: 2026-11-22.
 
 ## Alcance y limitaciones
 
-Esta fase es una primera portabilidad del movimiento táctico, no una conversión completa del controlador original. Todavía no se integran posesión, pases automáticos de IA, entradas en partido, árbitro, fuera de juego, saques, sustituciones, reloj por períodos, portero con animación/reacción ni guardado de eventos. Los jugadores siguen siendo placeholders geométricos; no se consideran modelos humanos finales ni animados.
+Esta portabilidad continúa siendo parcial. Aunque ya existen posesión, pases, tiros, tackles básicos, IA de pase/tackle y reinicios principales, aún faltan árbitro y faltas completas, fuera de juego sancionado en vivo, cambios de jugador, sustituciones, reloj por períodos y reacciones/animaciones especializadas del portero. Los modelos low-poly son una base procedural, no personajes finales con esqueletos, texturas, rostros y clips de animación.
 
-La física actual del balón en el render sigue siendo provisional y aún debe reemplazarse por el modelo aerodinámico original portado a Java. La siguiente fase debe implementar posesión y acciones de balón, luego reglas y reloj; después se sustituirán los placeholders por modelos humanos 3D y animaciones.
+El modelo aerodinámico del balón ya está conectado, pero faltan colisiones con postes/larguero y validación de física más completa. El siguiente bloque debe mejorar el pipeline de modelos/animaciones, cerrar reglas de partido, optimizar el estadio/cámara y validar rendimiento y controles en Android 9.

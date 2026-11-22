@@ -49,10 +49,10 @@ A screenshot showing only a flat-looking pitch and colored rectangular player ma
 
 ## Implementation status — 2026-11-22
 
-- **3D foundation — partial:** the Android build renders a perspective 3D pitch, ball and match camera. Full stadium, goals, stands, lighting/shadows and broadcast camera tracking are still pending.
-- **Playable actors — partial:** 22 players now use the original 4-3-3 lineup and move under the Java tactical simulation. Their current visible geometry is still temporary rectangular placeholders; human 3D models and animations are not yet integrated.
-- **Match gameplay — partial:** the 11v11 tactical movement, nearest-player pressure, goalkeeper positioning, basic stamina, ball flight (gravity/drag/Magnus) and goal-line geometry have been ported to Java. Possession, AI passing/shooting, live tackles, referee decisions and restarts remain pending.
-- **Automated verification:** GitHub Actions run [#31](https://github.com/Nova-Nexus-C35/Futbol-Nova/actions/runs/45070366933) succeeded. The ARM64 native libGDX runtime was found inside the APK, and the debug APK artifact was uploaded.
+- **3D foundation — partial:** perspective pitch, four surrounding stand masses, goal posts/crossbars and geometric net lines are rendered; the camera follows the ball with interpolation. Detailed stadium architecture, lighting/shadows, crowd and polished broadcast transitions remain pending.
+- **Playable actors — partial:** all 22 players use the original 4-3-3 and are rendered as procedural low-poly humanoids with torso, head, hair, arms, legs, boots and basic gait animation. They are not final skinned/textured character assets and need richer anatomy, faces, kits and animation clips.
+- **Match gameplay — partial:** Java now includes ball possession, forward pass target selection with pass-lane and offside-position filtering, user pass/shoot/tackle input, AI passing/clearance, nearest-opponent AI tackles with cooldowns, goal scoring and automatic kickoff/throw-in/corner/goal-kick restarts. Ball flight uses gravity, drag and Magnus; camera and ball rotation respond to play.
+- **Automated verification:** GitHub Actions run [#48](https://github.com/Nova-Nexus-C35/Futbol-Nova/actions/runs/45071709053) succeeded. Unit tests and ARM64 debug APK build passed, and the workflow verified `lib/arm64-v8a/libgdx.so` before uploading the artifact.
 - **Device verification:** not yet tested on the owner's Android 9 phone.
 
-The prototype is now a moving 3D match foundation, but it does not yet meet the final FIFA-inspired visual acceptance target. The placeholder player shapes must be replaced before that phase is considered complete.
+The game has advanced beyond rectangular placeholders, but this remains a low-poly playable foundation rather than a finished FIFA-quality product. Final character assets, polished animation, referee/foul logic, complete substitutions and period clock, audio, performance profiling and physical-device acceptance remain outstanding.

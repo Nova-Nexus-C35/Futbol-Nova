@@ -76,3 +76,25 @@ Se añadieron `BallFlightModel.java` y `MatchRules.java`, ports Java de los mode
 - Revisar identidad de clubes/plantillas, licencias y procedencia de assets gráficos.
 
 La importación actual es parcial: no se han copiado las 321 entradas completas del proyecto Godot. Se preserva el repositorio fuente y se migran datos y lógica compatible selectivamente.
+
+
+## Portabilidad de jugabilidad y presentación — 2026-11-22, fase 3
+
+Se amplió la base Java/libGDX con:
+
+- `MatchGameplay.java`: adquisición de posesión, selección de pase adelantado, comprobación de línea de pase, filtro de posición de fuera de juego, velocidades de pase/disparo y evaluación de entradas.
+- `PlayerVisual.java`: futbolistas humanoides low-poly generados proceduralmente con mallas compartidas y movimiento básico de brazos/piernas.
+- `FutbolNovaGame.java`: gradas perimetrales, porterías, redes geométricas, posesión, pase, tiro, entrada, pases/despejes de IA, entradas de IA, reinicios automáticos y cámara que sigue el balón.
+- `MatchSimulation.java`: separación entre velocidad máxima y velocidad observada para conservar la movilidad y alimentar la animación.
+
+### Validación de esta fase
+
+- GitHub Actions run [#48](https://github.com/Nova-Nexus-C35/Futbol-Nova/actions/runs/45071709053), commit `735b4127b6502cdf99cb616e5dd221c2dac2184d`: **success**.
+- Pruebas unitarias y compilación ARM64 completadas correctamente.
+- Verificación del nativo `lib/arm64-v8a/libgdx.so` completada.
+- Artefacto `futbol-nova-android-arm64-debug`: 3.447.722 bytes; disponible hasta el 2026-12-06.
+- La compilación automatizada no sustituye la instalación y prueba real en Android 9.
+
+### Pendiente
+
+Modelos de personajes finales con malla/esqueleto/texturas, clips de animación de fútbol, colisiones de postes/larguero, faltas y árbitro completos, control de cambio de jugador, reloj por períodos, sustituciones, audio, estadio detallado y pruebas de rendimiento en el teléfono objetivo.
