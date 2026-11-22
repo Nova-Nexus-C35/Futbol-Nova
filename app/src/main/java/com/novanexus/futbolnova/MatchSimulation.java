@@ -23,7 +23,7 @@ public final class MatchSimulation {
         public final boolean homeTeam;
         public final int shirtNumber;
         public final float homeX, homeZ;
-        public float x, z, targetX, targetZ, stamina = 100f, speed, forwardX, forwardZ = -1f;
+        public float x, z, targetX, targetZ, stamina = 100f, speed, movementSpeed, forwardX, forwardZ = -1f;
 
         private PlayerState(String playerId, String teamId, String role, boolean homeTeam,
                             int shirtNumber, float x, float z) {
@@ -67,9 +67,9 @@ public final class MatchSimulation {
         controlled.z=clamp(controlledZ,-FIELD_HALF_LENGTH+2f,FIELD_HALF_LENGTH-2f);
         float controlledDx=controlled.x-previousX, controlledDz=controlled.z-previousZ;
         float controlledDistance=(float)Math.sqrt(controlledDx*controlledDx+controlledDz*controlledDz);
-        controlled.speed=controlledDistance/delta;
+        controlled.movementSpeed=controlledDistance/delta;
         if(controlledDistance>0.0001f){controlled.forwardX=controlledDx/controlledDistance;controlled.forwardZ=controlledDz/controlledDistance;}
-        else controlled.speed=0f;
+        else controlled.movementSpeed=0f;
 
         decisionClock-=delta;
         if (decisionClock<=0f) {
@@ -88,9 +88,9 @@ public final class MatchSimulation {
                 float fatigue=0.78f+0.22f*(player.stamina/100f);
                 float step=Math.min(distance,player.speed*fatigue*delta);
                 player.x+=dx/distance*step; player.z+=dz/distance*step;
-                player.forwardX=dx/distance; player.forwardZ=dz/distance; player.speed=step/delta;
+                player.forwardX=dx/distance; player.forwardZ=dz/distance; player.movementSpeed=step/delta;
                 player.stamina=Math.max(0f,player.stamina-delta*0.10f);
-            } else { player.speed=0f; player.stamina=Math.min(100f,player.stamina+delta*0.16f); }
+            } else { player.movementSpeed=0f; player.stamina=Math.min(100f,player.stamina+delta*0.16f); }
             applySeparation(i,delta);
             player.x=clamp(player.x,-FIELD_HALF_WIDTH+0.6f,FIELD_HALF_WIDTH-0.6f);
             player.z=clamp(player.z,-FIELD_HALF_LENGTH+0.6f,FIELD_HALF_LENGTH-0.6f);
