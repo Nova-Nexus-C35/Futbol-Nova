@@ -33,7 +33,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final MatchState matchState = new MatchState();
     private final MatchSimulation matchSimulation = new MatchSimulation();
     private final List<Model> ownedModels = new ArrayList<>();
-    private final List<ModelInstance> players = new ArrayList<>();
+    private final List<PlayerVisual> playerVisuals = new ArrayList<>();
+    private final List<ModelInstance> environmentModels = new ArrayList<>();
     private final Vector3 ballPosition = new Vector3(0f, BALL_RADIUS, 0f);
     private final Vector3 ballVelocity = new Vector3();
     private final Vector3 ballSpin = new Vector3();
@@ -47,7 +48,11 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private Environment environment;
     private ModelInstance fieldInstance;
     private ModelInstance ballInstance;
-    private ModelInstance controlledPlayer;
+    private int possessionOwnerIndex = MatchGameplay.NO_OWNER;
+    private float aiKickClock = 0.9f;
+    private float animationClock;
+    private float tackleCooldown;
+    private boolean lastTouchHome = true;
     private boolean disposed;
 
     @Override
@@ -81,38 +86,57 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void createProceduralPitchAndTeams() {
         ModelBuilder builder = new ModelBuilder();
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        Model field = builder.createBox(68f, 0.35f, 105f,
-                new Material(ColorAttribute.createDiffuse(new Color(0.10f, 0.42f, 0.19f, 1f))), attributes);
-        own(field);
-        fieldInstance = new ModelInstance(field);
-        fieldInstance.transform.setToTranslation(0f, -0.22f, 0f);
+        Model field = builder.createBox(68f,0.35f,105f,new Material(ColorAttribute.createDiffuse(new Color(0.10f,0.42f,0.19f,1f))),attributes);
+        own(field); fieldInstance=new ModelInstance(field); fieldInstance.transform.setToTranslation(0f,-0.22f,0f);
 
-        Model homeModel = builder.createBox(0.72f, 1.55f, 0.58f,
-                new Material(ColorAttribute.createDiffuse(new Color(0.10f, 0.35f, 0.95f, 1f))), attributes);
-        Model awayModel = builder.createBox(0.72f, 1.55f, 0.58f,
-                new Material(ColorAttribute.createDiffuse(new Color(0.92f, 0.16f, 0.12f, 1f))), attributes);
-        own(homeModel);
-        own(awayModel);
+        Material standMat=new Material(ColorAttribute.createDiffuse(new Color(0.055f,0.075f,0.095f,1f)));
+        Model longStand=builder.createBox(9f,8f,112f,standMat,attributes);
+        Model endStand=builder.createBox(88f,8f,9f,standMat,attributes);
+        own(longStand);own(endStand);
+        addEnvironment(longStand,-41.5f,3.8f,0f);addEnvironment(longStand,41.5f,3.8f,0f);
+        addEnvironment(endStand,0f,3.8f,-58f);addEnvironment(endStand,0f,3.8f,58f);
 
-        if (!matchSimulation.start("nova_home", "nova_away")) {
-            throw new IllegalStateException("Could not initialize original 4-3-3 lineups");
+        Material white=new Material(ColorAttribute.createDiffuse(Color.WHITE));
+        Model post=builder.createBox(0.14f,2.44f,0.14f,white,attributes);
+        Model bar=builder.createBox(7.32f,0.14f,0.14f,white,attributes);
+        own(post);own(bar);
+        for(float z:new float[]{-53.1f,53.1f}){addEnvironment(post,-3.66f,1.22f,z);addEnvironment(post,3.66f,1.22f,z);addEnvironment(bar,0f,2.44f,z);}
+
+        Material homeShirt=new Material(ColorAttribute.createDiffuse(new Color(0.10f,0.35f,0.95f,1f)));
+        Material awayShirt=new Material(ColorAttribute.createDiffuse(new Color(0.92f,0.16f,0.12f,1f)));
+        Material homeShorts=new Material(ColorAttribute.createDiffuse(new Color(0.055f,0.09f,0.42f,1f)));
+        Material awayShorts=new Material(ColorAttribute.createDiffuse(new Color(0.12f,0.12f,0.15f,1f)));
+        Material skin=new Material(ColorAttribute.createDiffuse(new Color(0.55f,0.34f,0.23f,1f)));
+        Material hair=new Material(ColorAttribute.createDiffuse(new Color(0.055f,0.045f,0.04f,1f)));
+        Material socks=new Material(ColorAttribute.createDiffuse(new Color(0.92f,0.92f,0.92f,1f)));
+        Material boots=new Material(ColorAttribute.createDiffuse(new Color(0.72f,0.08f,0.08f,1f)));
+        Model homeTorso=builder.createCylinder(0.58f,0.68f,0.32f,8,homeShirt,attributes);
+        Model awayTorso=builder.createCylinder(0.58f,0.68f,0.32f,8,awayShirt,attributes);
+        Model homeShortModel=builder.createCylinder(0.44f,0.25f,0.29f,8,homeShorts,attributes);
+        Model awayShortModel=builder.createCylinder(0.44f,0.25f,0.29f,8,awayShorts,attributes);
+        Model headModel=builder.createSphere(0.32f,0.34f,0.30f,10,8,skin,attributes);
+        Model hairModel=builder.createSphere(0.32f,0.12f,0.30f,10,6,hair,attributes);
+        Model homeArm=builder.createCylinder(0.14f,0.44f,0.14f,6,homeShirt,attributes);
+        Model awayArm=builder.createCylinder(0.14f,0.44f,0.14f,6,awayShirt,attributes);
+        Model legModel=builder.createCylinder(0.19f,0.47f,0.19f,6,socks,attributes);
+        Model bootModel=builder.createBox(0.18f,0.12f,0.34f,boots,attributes);
+        for(Model model:new Model[]{homeTorso,awayTorso,homeShortModel,awayShortModel,headModel,hairModel,homeArm,awayArm,legModel,bootModel})own(model);
+
+        if(!matchSimulation.start("nova_home","nova_away"))throw new IllegalStateException("Could not initialize original 4-3-3 lineups");
+        List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
+        for(int i=0;i<lineup.size();i++){
+            MatchSimulation.PlayerState state=lineup.get(i);
+            playerVisuals.add(new PlayerVisual(state.homeTeam?homeTorso:awayTorso,
+                    state.homeTeam?homeShortModel:awayShortModel,headModel,hairModel,
+                    state.homeTeam?homeArm:awayArm,legModel,bootModel,state.shirtNumber));
+            if(i==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)controlledPosition.set(state.x,0f,state.z);
         }
-        List<MatchSimulation.PlayerState> lineup = matchSimulation.getPlayers();
-        for (int i = 0; i < lineup.size(); i++) {
-            MatchSimulation.PlayerState state = lineup.get(i);
-            ModelInstance instance = new ModelInstance(state.homeTeam ? homeModel : awayModel);
-            instance.transform.setToTranslation(state.x, 0.78f, state.z);
-            players.add(instance);
-            if (i == MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX) {
-                controlledPlayer = instance;
-                controlledPosition.set(state.x, 0.78f, state.z);
-            }
-        }
+        Model ball=builder.createSphere(1.1f,1.1f,1.1f,16,16,new Material(ColorAttribute.createDiffuse(Color.WHITE)),attributes);
+        own(ball);ballInstance=new ModelInstance(ball);
+    }
 
-        Model ball = builder.createSphere(1.1f, 1.1f, 1.1f, 16, 16,
-                new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes);
-        own(ball);
-        ballInstance = new ModelInstance(ball);
+    private void addEnvironment(Model model,float x,float y,float z){
+        ModelInstance instance=new ModelInstance(model);instance.transform.setToTranslation(x,y,z);environmentModels.add(instance);
     }
 
     private void own(Model model) {
@@ -128,9 +152,12 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         matchSimulation.update(delta, ballPosition.x, ballPosition.z,
                 controlledPosition.x, controlledPosition.z);
         List<MatchSimulation.PlayerState> lineup = matchSimulation.getPlayers();
-        for (int i = 0; i < lineup.size() && i < players.size(); i++) {
-            MatchSimulation.PlayerState state = lineup.get(i);
-            players.get(i).transform.setToTranslation(state.x, 0.78f, state.z);
+        updateGameplay(delta);
+        animationClock+=delta;
+        for(int i=0;i<lineup.size()&&i<playerVisuals.size();i++){
+            MatchSimulation.PlayerState state=lineup.get(i);
+            float yaw=(float)Math.atan2(-state.forwardX,-state.forwardZ);
+            playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.speed);
         }
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -141,42 +168,74 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         camera.update();
         ballInstance.transform.setToTranslation(ballPosition);
         modelBatch.begin(camera);
-        modelBatch.render(fieldInstance, environment);
-        for (ModelInstance player : players) modelBatch.render(player, environment);
-        modelBatch.render(ballInstance, environment);
+        modelBatch.render(fieldInstance,environment);
+        for(ModelInstance structure:environmentModels)modelBatch.render(structure,environment);
+        for(PlayerVisual player:playerVisuals)player.render(modelBatch,environment);
+        modelBatch.render(ballInstance,environment);
         modelBatch.end();
 
         drawPitchMarkings();
         drawHud();
     }
 
-    private void updateTouchControls(float delta) {
-        if (Gdx.input.isTouched()) {
-            float x = Gdx.input.getX();
-            float y = Gdx.input.getY();
-            float width = Gdx.graphics.getWidth();
-            float height = Gdx.graphics.getHeight();
-            if (x < width * 0.58f) {
-                float horizontal = (x - width * 0.27f) / (width * 0.27f);
-                float vertical = (height * 0.50f - y) / (height * 0.50f);
-                Vector3 movement = new Vector3(horizontal, 0f, -vertical);
-                if (movement.len2() > 1f) movement.nor();
-                controlledPosition.mulAdd(movement, 10f * delta);
-                controlledPosition.x = Math.max(-FIELD_HALF_WIDTH + 2f, Math.min(FIELD_HALF_WIDTH - 2f, controlledPosition.x));
-                controlledPosition.z = Math.max(-FIELD_HALF_LENGTH + 2f, Math.min(FIELD_HALF_LENGTH - 2f, controlledPosition.z));
-                controlledPlayer.transform.setToTranslation(controlledPosition);
+    private void updateTouchControls(float delta){
+        if(Gdx.input.isTouched()){
+            float x=Gdx.input.getX(),y=Gdx.input.getY(),width=Gdx.graphics.getWidth(),height=Gdx.graphics.getHeight();
+            if(x<width*0.58f){
+                float horizontal=(x-width*0.27f)/(width*0.27f),vertical=(height*0.50f-y)/(height*0.50f);
+                Vector3 movement=new Vector3(horizontal,0f,-vertical);if(movement.len2()>1f)movement.nor();
+                controlledPosition.mulAdd(movement,10f*delta);
+                controlledPosition.x=Math.max(-FIELD_HALF_WIDTH+2f,Math.min(FIELD_HALF_WIDTH-2f,controlledPosition.x));
+                controlledPosition.z=Math.max(-FIELD_HALF_LENGTH+2f,Math.min(FIELD_HALF_LENGTH-2f,controlledPosition.z));
             }
         }
+        if(Gdx.input.justTouched()&&Gdx.input.getX()>Gdx.graphics.getWidth()*0.60f){
+            float y=Gdx.input.getY(),h=Gdx.graphics.getHeight();
+            if(y<h*0.34f)performShot();else if(y<h*0.68f)performPass();else performTackle();
+        }
+    }
 
-        if (Gdx.input.justTouched() && Gdx.input.getX() > Gdx.graphics.getWidth() * 0.60f) {
-            float y = Gdx.input.getY();
-            ballPosition.set(controlledPosition.x, BALL_RADIUS, controlledPosition.z - 1.3f);
-            if (y < Gdx.graphics.getHeight() * 0.55f) {
-                ballVelocity.set((controlledPosition.x * -0.08f), 8f, -25f);
-            } else {
-                ballVelocity.set((controlledPosition.x * -0.04f), 2.5f, -13f);
-            }
-        }
+    private void performShot(){
+        if(possessionOwnerIndex!=MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        ballPosition.set(controlledPosition.x,BALL_RADIUS,controlledPosition.z-0.62f);
+        ballVelocity.set(MatchGameplay.shotVelocity(true,-ballPosition.x*0.22f));ballSpin.set(0f,18f,0f);
+        possessionOwnerIndex=MatchGameplay.NO_OWNER;lastTouchHome=true;
+    }
+
+    private void performPass(){
+        if(possessionOwnerIndex!=MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
+        int receiver=MatchGameplay.findForwardPassTarget(lineup,MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX,controlledPosition.x,controlledPosition.z,true);
+        ballPosition.set(controlledPosition.x,BALL_RADIUS,controlledPosition.z-0.62f);
+        if(receiver==MatchGameplay.NO_OWNER)ballVelocity.set(MatchGameplay.clearanceVelocity(true,controlledPosition.x));
+        else{MatchSimulation.PlayerState target=lineup.get(receiver);ballVelocity.set(MatchGameplay.passVelocity(controlledPosition.x,controlledPosition.z,target.x,target.z));}
+        ballSpin.setZero();possessionOwnerIndex=MatchGameplay.NO_OWNER;lastTouchHome=true;
+    }
+
+    private void performTackle(){
+        if(tackleCooldown>0f||possessionOwnerIndex<0||possessionOwnerIndex==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
+        MatchSimulation.PlayerState attacker=lineup.get(MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX),target=lineup.get(possessionOwnerIndex);
+        if(target.homeTeam)return;
+        MatchSimulation.TackleResult result=MatchGameplay.tackle(attacker,target,1.7f);tackleCooldown=0.75f;
+        if(result!=null&&result.success){possessionOwnerIndex=MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX;lastTouchHome=true;}
+        else if(result!=null&&result.foul){possessionOwnerIndex=MatchGameplay.NO_OWNER;ballVelocity.set(0f,2f,3f);lastTouchHome=true;}
+    }
+
+    private void updateGameplay(float delta){
+        tackleCooldown=Math.max(0f,tackleCooldown-delta);
+        List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
+        if(possessionOwnerIndex<0)possessionOwnerIndex=MatchGameplay.acquirePossession(lineup,ballPosition.x,ballPosition.y,ballPosition.z,ballVelocity.len());
+        if(possessionOwnerIndex<0||possessionOwnerIndex>=lineup.size()){possessionOwnerIndex=MatchGameplay.NO_OWNER;return;}
+        MatchSimulation.PlayerState owner=lineup.get(possessionOwnerIndex);
+        float offset=owner.homeTeam?-0.62f:0.62f;
+        ballPosition.set(owner.x,BALL_RADIUS,owner.z+offset);ballVelocity.setZero();ballSpin.setZero();lastTouchHome=owner.homeTeam;
+        if(possessionOwnerIndex==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        aiKickClock-=delta;if(aiKickClock>0f)return;
+        int receiver=MatchGameplay.findForwardPassTarget(lineup,possessionOwnerIndex,owner.x,owner.z,owner.homeTeam);
+        if(receiver!=MatchGameplay.NO_OWNER){MatchSimulation.PlayerState target=lineup.get(receiver);ballVelocity.set(MatchGameplay.passVelocity(owner.x,owner.z,target.x,target.z));}
+        else ballVelocity.set(MatchGameplay.clearanceVelocity(owner.homeTeam,owner.x));
+        possessionOwnerIndex=MatchGameplay.NO_OWNER;aiKickClock=1.15f;
     }
 
     private void updateBall(float delta) {
@@ -191,14 +250,14 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             ballVelocity.z *= 0.91f;
         }
 
-        if (Math.abs(ballPosition.x) > FIELD_HALF_WIDTH - BALL_RADIUS) {
-            ballPosition.x = Math.signum(ballPosition.x) * (FIELD_HALF_WIDTH - BALL_RADIUS);
+        if (Math.abs(ballPosition.x) - BALL_RADIUS > FIELD_HALF_WIDTH) {
+            ballPosition.x = Math.signum(ballPosition.x) * FIELD_HALF_WIDTH;
             ballVelocity.x *= -0.55f;
         }
 
         if (Math.abs(ballPosition.z) - BALL_RADIUS > FIELD_HALF_LENGTH) {
             MatchRules.ExitDecision exit = MatchRules.classifyBallExit(
-                    ballPosition.x, ballPosition.y, ballPosition.z, false, BALL_RADIUS);
+                    ballPosition.x, ballPosition.y, ballPosition.z, lastTouchHome, BALL_RADIUS);
             if (exit.restart == MatchRules.Restart.GOAL) {
                 matchState.addGoal(exit.awardedHome);
                 ballPosition.set(0f, BALL_RADIUS, 0f);
@@ -226,6 +285,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         line(34f, y, -52.5f, 34f, y, 52.5f);
         line(-34f, y, 0f, 34f, y, 0f);
         circleOnPitch(0f, 0f, 9.15f, y);
+        drawGoalNet(-53.2f,y); drawGoalNet(53.2f,y);
         line(-20.16f, y, -52.5f, 20.16f, y, -52.5f);
         line(-20.16f, y, -52.5f, -20.16f, y, -35f);
         line(20.16f, y, -52.5f, 20.16f, y, -35f);
@@ -233,6 +293,15 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         line(-20.16f, y, 52.5f, -20.16f, y, 35f);
         line(20.16f, y, 52.5f, 20.16f, y, 35f);
         shapeRenderer.end();
+    }
+
+    private void drawGoalNet(float z,float y){
+        float back=z+Math.signum(z)*2.2f;
+        line(-3.66f,y,z,-3.66f,2.44f,z);line(3.66f,y,z,3.66f,2.44f,z);
+        line(-3.66f,2.44f,z,3.66f,2.44f,z);
+        line(-3.66f,y,z,-3.66f,y,back);line(3.66f,y,z,3.66f,y,back);
+        line(-3.66f,2.44f,z,-3.66f,2.44f,back);line(3.66f,2.44f,z,3.66f,2.44f,back);
+        line(-3.66f,y,back,3.66f,y,back);line(-3.66f,2.44f,back,3.66f,2.44f,back);
     }
 
     private void circleOnPitch(float centerX, float centerZ, float radius, float y) {
@@ -256,8 +325,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 (int) (matchState.getElapsedSeconds() % 60f));
         font.draw(spriteBatch, "FUTBOL NOVA  |  " + matchState.getHomeGoals() + " - "
                 + matchState.getAwayGoals() + "  |  " + clock, 18f, Gdx.graphics.getHeight() - 18f);
-        font.draw(spriteBatch, "LADO IZQUIERDO: MOVER     DERECHA ARRIBA: TIRO     DERECHA ABAJO: PASE",
-                18f, 28f);
+        font.draw(spriteBatch, "IZQUIERDA: MOVER   DERECHA: ARRIBA TIRO | CENTRO PASE | ABAJO ROBO", 18f, 28f);
         spriteBatch.end();
     }
 
