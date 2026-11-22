@@ -39,6 +39,9 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final Vector3 ballVelocity = new Vector3();
     private final Vector3 ballSpin = new Vector3();
     private final Vector3 controlledPosition = new Vector3();
+    private final Vector3 cameraFollowPosition = new Vector3();
+    private final Vector3 cameraLookTarget = new Vector3();
+    private final float[] aiTackleCooldowns = new float[22];
 
     private PerspectiveCamera camera;
     private ModelBatch modelBatch;
@@ -52,6 +55,11 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private float aiKickClock = 0.9f;
     private float animationClock;
     private float tackleCooldown;
+    private float restartClock;
+    private float ballRotation;
+    private MatchRules.Restart pendingRestart = MatchRules.Restart.IN_PLAY;
+    private boolean restartAwardedHome;
+    private boolean kickoffRestart;
     private boolean lastTouchHome = true;
     private boolean disposed;
 
@@ -165,8 +173,13 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
+        camera.position.lerp(cameraFollowPosition.set(ballPosition.x*0.20f,78f,86f+ballPosition.z*0.18f),Math.min(1f,delta*0.55f));
+        camera.lookAt(cameraLookTarget.set(ballPosition.x*0.18f,0f,ballPosition.z*0.16f));
         camera.update();
+        ballRotation += ballVelocity.len()*delta*35f;
         ballInstance.transform.setToTranslation(ballPosition);
+        ballInstance.transform.rotate(Vector3.X,ballRotation);
+        ballInstance.transform.rotate(Vector3.Y,ballRotation*0.7f);
         modelBatch.begin(camera);
         modelBatch.render(fieldInstance,environment);
         for(ModelInstance structure:environmentModels)modelBatch.render(structure,environment);
@@ -224,54 +237,68 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private void updateGameplay(float delta){
         tackleCooldown=Math.max(0f,tackleCooldown-delta);
+        for(int i=0;i<aiTackleCooldowns.length;i++)aiTackleCooldowns[i]=Math.max(0f,aiTackleCooldowns[i]-delta);
+        if(restartClock>0f){
+            restartClock-=delta;
+            if(restartClock<=0f){
+                float attackSign=restartAwardedHome?-1f:1f;
+                if(kickoffRestart)ballVelocity.set(0f,1.2f,attackSign*5.5f);
+                else if(pendingRestart==MatchRules.Restart.THROW_IN)
+                    ballVelocity.set(ballPosition.x>=0f?-5.5f:5.5f,5.2f,attackSign*4.5f);
+                else if(pendingRestart==MatchRules.Restart.CORNER)
+                    ballVelocity.set(-ballPosition.x*0.22f,5.0f,attackSign*13f).nor().scl(16f);
+                else if(pendingRestart==MatchRules.Restart.GOAL_KICK)
+                    ballVelocity.set(0f,6.2f,attackSign*22f);
+                lastTouchHome=restartAwardedHome;
+                pendingRestart=MatchRules.Restart.IN_PLAY;
+                kickoffRestart=false;
+            }
+            return;
+        }
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
-        if(possessionOwnerIndex<0)possessionOwnerIndex=MatchGameplay.acquirePossession(lineup,ballPosition.x,ballPosition.y,ballPosition.z,ballVelocity.len());
-        if(possessionOwnerIndex<0||possessionOwnerIndex>=lineup.size()){possessionOwnerIndex=MatchGameplay.NO_OWNER;return;}
-        MatchSimulation.PlayerState owner=lineup.get(possessionOwnerIndex);
-        float offset=owner.homeTeam?-0.62f:0.62f;
-        ballPosition.set(owner.x,BALL_RADIUS,owner.z+offset);ballVelocity.setZero();ballSpin.setZero();lastTouchHome=owner.homeTeam;
-        if(possessionOwnerIndex==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
-        aiKickClock-=delta;if(aiKickClock>0f)return;
-        int receiver=MatchGameplay.findForwardPassTarget(lineup,possessionOwnerIndex,owner.x,owner.z,owner.homeTeam);
-        if(receiver!=MatchGameplay.NO_OWNER){MatchSimulation.PlayerState target=lineup.get(receiver);ballVelocity.set(MatchGameplay.passVelocity(owner.x,owner.z,target.x,target.z));}
-        else ballVelocity.set(MatchGameplay.clearanceVelocity(owner.homeTeam,owner.x));
-        possessionOwnerIndex=MatchGameplay.NO_OWNER;aiKickClock=1.15f;
-    }
-
-    private void updateBall(float delta) {
-        BallFlightModel.Step flight = BallFlightModel.integrateStep(ballPosition, ballVelocity, ballSpin, delta);
-        ballPosition.set(flight.position);
-        ballVelocity.set(flight.velocity);
-        ballSpin.set(flight.spin);
-        if (ballPosition.y < BALL_RADIUS) {
-            ballPosition.y = BALL_RADIUS;
-            if (ballVelocity.y < 0f) ballVelocity.y *= -0.38f;
-            ballVelocity.x *= 0.91f;
-            ballVelocity.z *= 0.91f;
+        if(possessionOwnerIndex<0)
+            possessionOwnerIndex=MatchGameplay.acquirePossession(lineup,ballPosition.x,ballPosition.y,ballPosition.z,ballVelocity.len());
+        if(possessionOwnerIndex<0||possessionOwnerIndex>=lineup.size()){
+            possessionOwnerIndex=MatchGameplay.NO_OWNER;return;
         }
 
-        if (Math.abs(ballPosition.x) - BALL_RADIUS > FIELD_HALF_WIDTH) {
-            ballPosition.x = Math.signum(ballPosition.x) * FIELD_HALF_WIDTH;
-            ballVelocity.x *= -0.55f;
+        // Nearest opponent may win the ball with a correctly oriented tackle; cooldown prevents repeated instant steals.
+        MatchSimulation.PlayerState currentOwner=lineup.get(possessionOwnerIndex);
+        int nearestDefender=MatchGameplay.NO_OWNER;float nearestDistance=1.7f;
+        for(int i=0;i<lineup.size();i++){
+            if(i==possessionOwnerIndex||lineup.get(i).homeTeam==currentOwner.homeTeam||aiTackleCooldowns[i]>0f)continue;
+            MatchSimulation.PlayerState defender=lineup.get(i);
+            float dx=defender.x-currentOwner.x,dz=defender.z-currentOwner.z;
+            float d=(float)Math.sqrt(dx*dx+dz*dz);
+            if(d<nearestDistance){nearestDistance=d;nearestDefender=i;}
         }
-
-        if (Math.abs(ballPosition.z) - BALL_RADIUS > FIELD_HALF_LENGTH) {
-            MatchRules.ExitDecision exit = MatchRules.classifyBallExit(
-                    ballPosition.x, ballPosition.y, ballPosition.z, lastTouchHome, BALL_RADIUS);
-            if (exit.restart == MatchRules.Restart.GOAL) {
-                matchState.addGoal(exit.awardedHome);
-                ballPosition.set(0f, BALL_RADIUS, 0f);
-                ballVelocity.setZero();
-                ballSpin.setZero();
-            } else {
-                ballPosition.z = Math.signum(ballPosition.z) * FIELD_HALF_LENGTH;
-                ballVelocity.z *= -0.55f;
+        if(nearestDefender!=MatchGameplay.NO_OWNER){
+            MatchSimulation.TackleResult tackle=MatchGameplay.tackle(lineup.get(nearestDefender),currentOwner,1.7f);
+            aiTackleCooldowns[nearestDefender]=1.35f;
+            if(tackle!=null&&tackle.success){
+                possessionOwnerIndex=nearestDefender;
+                currentOwner=lineup.get(possessionOwnerIndex);
+                aiKickClock=1.0f;
+            }else if(tackle!=null&&tackle.foul){
+                possessionOwnerIndex=MatchGameplay.NO_OWNER;
+                ballVelocity.set(0f,1.8f,2.5f);
+                lastTouchHome=!currentOwner.homeTeam;
+                return;
             }
         }
 
-        if (ballVelocity.len2() < 0.08f && ballPosition.y <= BALL_RADIUS + 0.02f) {
-            ballVelocity.setZero();
-        }
+        MatchSimulation.PlayerState owner=lineup.get(possessionOwnerIndex);
+        float offset=owner.homeTeam?-0.62f:0.62f;
+        ballPosition.set(owner.x,BALL_RADIUS,owner.z+offset);
+        ballVelocity.setZero();ballSpin.setZero();lastTouchHome=owner.homeTeam;
+        if(possessionOwnerIndex==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        aiKickClock-=delta;if(aiKickClock>0f)return;
+        int receiver=MatchGameplay.findForwardPassTarget(lineup,possessionOwnerIndex,owner.x,owner.z,owner.homeTeam);
+        if(receiver!=MatchGameplay.NO_OWNER){
+            MatchSimulation.PlayerState target=lineup.get(receiver);
+            ballVelocity.set(MatchGameplay.passVelocity(owner.x,owner.z,target.x,target.z));
+        }else ballVelocity.set(MatchGameplay.clearanceVelocity(owner.homeTeam,owner.x));
+        possessionOwnerIndex=MatchGameplay.NO_OWNER;aiKickClock=1.15f;
     }
 
     private void drawPitchMarkings() {
