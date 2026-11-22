@@ -42,6 +42,12 @@ Se añadió `OriginalProjectData`, que lee el catálogo de ligas cubanas, el con
 
 Esto demuestra lectura y análisis estructural de los datos, no que las ligas o carreras ya sean jugables.
 
+## Portabilidad 11v11 — fase 1 completada en Java
+
+Se incorporó `MatchSimulation.java`, primer port del controlador original de movimiento táctico. El juego crea 22 jugadores en formación 4-3-3, controla al delantero ST local, mueve la IA en decisiones de 0,20 s, ajusta posiciones por el balón y rol, mantiene a los porteros cerca de su área y aplica separación cinemática, fatiga ligera y límites del campo. Se añadieron pruebas unitarias para alineaciones, presión, límites, control del balón y evaluación de entradas. Detalles y límites: `Docs/PORTING_11V11_CONTROLLER.md`.
+
+Esta fase no incluye todavía posesión real, pases/t tiros de IA, reglas completas, reloj por períodos ni modelos humanos animados.
+
 ## Orden de portabilidad
 
 1. Dominio deportivo: perfiles, IDs, equipos, alineaciones 4-3-3, contrato y reloj.

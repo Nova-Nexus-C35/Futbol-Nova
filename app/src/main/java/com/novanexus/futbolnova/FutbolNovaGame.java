@@ -31,6 +31,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private static final float BALL_RADIUS = 0.55f;
 
     private final MatchState matchState = new MatchState();
+    private final MatchSimulation matchSimulation = new MatchSimulation();
     private final List<Model> ownedModels = new ArrayList<>();
     private final List<ModelInstance> players = new ArrayList<>();
     private final Vector3 ballPosition = new Vector3(0f, BALL_RADIUS, 0f);
@@ -79,39 +80,32 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void createProceduralPitchAndTeams() {
         ModelBuilder builder = new ModelBuilder();
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-
         Model field = builder.createBox(68f, 0.35f, 105f,
                 new Material(ColorAttribute.createDiffuse(new Color(0.10f, 0.42f, 0.19f, 1f))), attributes);
         own(field);
         fieldInstance = new ModelInstance(field);
         fieldInstance.transform.setToTranslation(0f, -0.22f, 0f);
 
-        Model homeModel = builder.createBox(1.15f, 1.85f, 0.9f,
+        Model homeModel = builder.createBox(0.72f, 1.55f, 0.58f,
                 new Material(ColorAttribute.createDiffuse(new Color(0.10f, 0.35f, 0.95f, 1f))), attributes);
-        Model awayModel = builder.createBox(1.15f, 1.85f, 0.9f,
+        Model awayModel = builder.createBox(0.72f, 1.55f, 0.58f,
                 new Material(ColorAttribute.createDiffuse(new Color(0.92f, 0.16f, 0.12f, 1f))), attributes);
         own(homeModel);
         own(awayModel);
 
-        float[][] formation = {
-                {0f, 45f},
-                {-23f, 31f}, {-8f, 34f}, {8f, 34f}, {23f, 31f},
-                {-18f, 10f}, {0f, 13f}, {18f, 10f},
-                {-19f, -20f}, {0f, -27f}, {19f, -20f}
-        };
-
-        for (int i = 0; i < formation.length; i++) {
-            ModelInstance home = new ModelInstance(homeModel);
-            home.transform.setToTranslation(formation[i][0], 0.93f, formation[i][1]);
-            players.add(home);
-            if (i == 6) {
-                controlledPlayer = home;
-                controlledPosition.set(formation[i][0], 0.93f, formation[i][1]);
+        if (!matchSimulation.start("nova_home", "nova_away")) {
+            throw new IllegalStateException("Could not initialize original 4-3-3 lineups");
+        }
+        List<MatchSimulation.PlayerState> lineup = matchSimulation.getPlayers();
+        for (int i = 0; i < lineup.size(); i++) {
+            MatchSimulation.PlayerState state = lineup.get(i);
+            ModelInstance instance = new ModelInstance(state.homeTeam ? homeModel : awayModel);
+            instance.transform.setToTranslation(state.x, 0.78f, state.z);
+            players.add(instance);
+            if (i == MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX) {
+                controlledPlayer = instance;
+                controlledPosition.set(state.x, 0.78f, state.z);
             }
-
-            ModelInstance away = new ModelInstance(awayModel);
-            away.transform.setToTranslation(formation[i][0], 0.93f, -formation[i][1]);
-            players.add(away);
         }
 
         Model ball = builder.createSphere(1.1f, 1.1f, 1.1f, 16, 16,
@@ -130,6 +124,13 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         matchState.update(delta);
         updateTouchControls(delta);
         updateBall(delta);
+        matchSimulation.update(delta, ballPosition.x, ballPosition.z,
+                controlledPosition.x, controlledPosition.z);
+        List<MatchSimulation.PlayerState> lineup = matchSimulation.getPlayers();
+        for (int i = 0; i < lineup.size() && i < players.size(); i++) {
+            MatchSimulation.PlayerState state = lineup.get(i);
+            players.get(i).transform.setToTranslation(state.x, 0.78f, state.z);
+        }
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClearColor(0.035f, 0.07f, 0.09f, 1f);

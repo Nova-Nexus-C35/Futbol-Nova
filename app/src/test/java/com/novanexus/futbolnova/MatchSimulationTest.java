@@ -1,0 +1,53 @@
+package com.novanexus.futbolnova;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public final class MatchSimulationTest {
+    @Test public void createsTwoValidElevenPlayer433Lineups() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        assertEquals(22,simulation.getPlayers().size());
+        int home=0,away=0;
+        for(MatchSimulation.PlayerState p:simulation.getPlayers()){if(p.homeTeam)home++;else away++;}
+        assertEquals(11,home);assertEquals(11,away);
+        assertEquals("ST",simulation.getControlledPlayer().role);
+        assertEquals("GK",simulation.getPlayers().get(0).role);
+        assertEquals(-47f,simulation.getPlayers().get(11).z,0.001f);
+    }
+    @Test public void rejectsInvalidTeamIdentifiers() {
+        MatchSimulation s=new MatchSimulation();
+        assertFalse(s.start("","away"));assertFalse(s.start("same","same"));assertFalse(s.start("home",null));
+    }
+    @Test public void nearestAttackerPressesBallAndPlayersStayInsidePitch() {
+        MatchSimulation s=new MatchSimulation();assertTrue(s.start("home","away"));
+        MatchSimulation.PlayerState winger=s.getPlayers().get(8);
+        float start=distance(winger.x,winger.z,-17f,-12f);
+        for(int i=0;i<60;i++)s.update(1f/60f,-17f,-12f,s.getControlledPlayer().x,s.getControlledPlayer().z);
+        float end=distance(winger.x,winger.z,-17f,-12f);
+        assertTrue("nearest winger should press toward ball",end<start);
+        for(MatchSimulation.PlayerState p:s.getPlayers()){
+            assertTrue(Math.abs(p.x)<=MatchSimulation.FIELD_HALF_WIDTH);
+            assertTrue(Math.abs(p.z)<=MatchSimulation.FIELD_HALF_LENGTH);
+        }
+    }
+    @Test public void ignoresInvalidDeltaTime() {
+        MatchSimulation s=new MatchSimulation();s.start("home","away");
+        float x=s.getPlayers().get(0).x;
+        s.update(Float.NaN,0f,0f,0f,0f);s.update(-1f,0f,0f,0f,0f);
+        assertEquals(x,s.getPlayers().get(0).x,0.0001f);
+    }
+    @Test public void ballControlAndTackleRulesMatchOriginalThresholds() {
+        assertTrue(MatchSimulation.canControlBall(1.1f,1.0f,3.9f));
+        assertFalse(MatchSimulation.canControlBall(1.2f,1.0f,3.0f));
+        MatchSimulation.TackleResult result=MatchSimulation.evaluateTackle(
+                0f,0f,0f,-1f,0f,-1f,0f,1f,1.7f);
+        assertTrue(result.inRange);assertTrue(result.success);assertFalse(result.foul);
+        MatchSimulation.TackleResult out=MatchSimulation.evaluateTackle(
+                0f,0f,0f,-1f,0f,-2f,0f,1f,1.7f);
+        assertFalse(out.inRange);
+    }
+    private static float distance(float x1,float z1,float x2,float z2){
+        float dx=x1-x2,dz=z1-z2;return (float)Math.sqrt(dx*dx+dz*dz);
+    }
+}
