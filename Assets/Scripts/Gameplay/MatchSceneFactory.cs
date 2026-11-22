@@ -46,7 +46,13 @@ namespace FutbolNova.Gameplay
             box.isTrigger = true;
             box.size = new Vector3(7.1f,2.4f,2.4f);
             GoalTrigger goal = trigger.AddComponent<GoalTrigger>();
-            goal.Initialize(owner, end > 0 ? TeamSide.Home : TeamSide.Away);
+            goal.Initialize(owner, GetScoringSideForGoalEnd(end));
+        }
+
+        public static TeamSide GetScoringSideForGoalEnd(int end)
+        {
+            // Home attacks toward negative Z; Away attacks toward positive Z.
+            return end < 0 ? TeamSide.Home : TeamSide.Away;
         }
 
         public List<PlayerAgent> BuildTeam(TeamSide side, Color color)
