@@ -1,6 +1,12 @@
 name: Unity validation and Android build
 
 on:
+  push:
+    branches:
+      - feature/rebuild-unity-android-foundation-2026-11-22
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       build_android:
@@ -11,12 +17,23 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 jobs:
   editmode-tests:
     name: Unity EditMode tests
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
+      - name: Validate Unity license secret
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          if [ -z "$UNITY_LICENSE" ]; then
+            echo "::error::Configure the repository Actions secret UNITY_LICENSE with a valid Unity license before running Unity CI."
+            exit 1
+          fi
+
       - name: Check out source
         uses: actions/checkout@v4
 
@@ -43,9 +60,19 @@ jobs:
   android-apk:
     name: Android ARM64 APK
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     needs: editmode-tests
     if: ${{ inputs.build_android }}
     steps:
+      - name: Validate Unity license secret
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          if [ -z "$UNITY_LICENSE" ]; then
+            echo "::error::Configure the repository Actions secret UNITY_LICENSE with a valid Unity license before building Android."
+            exit 1
+          fi
+
       - name: Check out source
         uses: actions/checkout@v4
 
