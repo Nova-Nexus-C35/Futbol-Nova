@@ -2,6 +2,7 @@ package com.novanexus.futbolnova;
 
 import com.badlogic.gdx.math.Vector3;
 import java.util.List;
+import java.util.ArrayList;
 
 /** Core possession, passing, shooting and tackle decisions ported from the original match controller. */
 public final class MatchGameplay {
@@ -24,6 +25,8 @@ public final class MatchGameplay {
             int passerIndex, float originX,float originZ,boolean homeTeam) {
         if(players==null || passerIndex<0 || passerIndex>=players.size()) return NO_OWNER;
         float attackSign=homeTeam?-1f:1f, bestScore=Float.NEGATIVE_INFINITY;
+        List<Float> defenders=new ArrayList<>();
+        for(MatchSimulation.PlayerState p:players)if(p.homeTeam!=homeTeam)defenders.add(p.z);
         int best=NO_OWNER;
         for(int i=0;i<players.size();i++){
             if(i==passerIndex) continue;
@@ -32,6 +35,8 @@ public final class MatchGameplay {
             float d=distance(originX,originZ,p.x,p.z);
             float gain=(originZ-p.z)*attackSign;
             if(d<3f || d>19f || gain<1f) continue;
+            MatchRules.OffsideDecision offside=MatchRules.evaluateOffsideAtPass(p.z,originZ,defenders,attackSign,true,"");
+            if(offside.offence)continue;
             if(!isPassLaneClear(players,originX,originZ,p.x,p.z,homeTeam,passerIndex,i)) continue;
             float score=gain*1.4f-d*0.35f;
             if(score>bestScore){bestScore=score;best=i;}
