@@ -15,8 +15,8 @@ public final class MatchGameplayTest {
  }
  @Test public void findsForwardPassTargetForBothAttackDirections(){
   MatchSimulation s=new MatchSimulation();s.start("home","away");List<MatchSimulation.PlayerState> p=s.getPlayers();
-  int home=MatchGameplay.findForwardPassTarget(p,9,p.get(9).x,p.get(9).z,true);
-  int away=MatchGameplay.findForwardPassTarget(p,20,p.get(20).x,p.get(20).z,false);
+  int home=MatchGameplay.findForwardPassTarget(p,7,p.get(7).x,p.get(7).z,true);
+  int away=MatchGameplay.findForwardPassTarget(p,18,p.get(18).x,p.get(18).z,false);
   assertTrue(home<11&&home>=0);assertTrue(away>=11);
  }
  @Test public void passLaneRejectsOpponentInPassingCorridor(){
