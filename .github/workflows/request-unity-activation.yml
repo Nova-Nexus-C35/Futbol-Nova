@@ -1,6 +1,12 @@
 name: Request Unity activation file
 
 on:
+  push:
+    branches:
+      - feature/rebuild-unity-android-foundation-2026-11-22
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
