@@ -4,6 +4,10 @@ plugins {
 
 def gdxVersion = providers.gradleProperty('gdxVersion').get()
 
+configurations {
+    gdxNatives
+}
+
 android {
     namespace 'com.novanexus.futbolnova'
     compileSdk 36
@@ -25,6 +29,19 @@ android {
 dependencies {
     implementation "com.badlogicgames.gdx:gdx:${gdxVersion}"
     implementation "com.badlogicgames.gdx:gdx-backend-android:${gdxVersion}"
-    implementation "com.badlogicgames.gdx:gdx-platform:${gdxVersion}:natives-arm64-v8a"
+    gdxNatives "com.badlogicgames.gdx:gdx-platform:${gdxVersion}:natives-arm64-v8a"
     testImplementation 'junit:junit:4.13.2'
+}
+
+
+tasks.register('copyGdxNatives', Copy) {
+    from { zipTree(configurations.gdxNatives.singleFile) }
+    include 'jni/arm64-v8a/*.so'
+    eachFile { details -> details.path = details.name }
+    includeEmptyDirs = false
+    into file("$projectDir/src/main/jniLibs/arm64-v8a")
+}
+
+tasks.named('preBuild').configure {
+    dependsOn tasks.named('copyGdxNatives')
 }
