@@ -61,10 +61,17 @@ Se añadieron `BallFlightModel.java` y `MatchRules.java`, ports Java de los mode
 5. Carreras: Manager, Leyenda, contratos, economía, cantera y progresión.
 6. Módulos: manifiestos y paquetes opcionales, conservando el juego base offline.
 
+## Validación automatizada — 2026-11-22
+
+- GitHub Actions run #31 terminó con éxito: [ver ejecución](https://github.com/Nova-Nexus-C35/Futbol-Nova/actions/runs/45070366933).
+- Las pruebas Java y la compilación ARM64 terminaron correctamente.
+- La verificación confirmó `lib/arm64-v8a/libgdx.so` dentro del APK.
+- Artefacto generado: `futbol-nova-android-arm64-debug` (3.441.295 bytes; disponible hasta el 06-12-2026).
+- Esto valida compilación automatizada, no ejecución real en el Android 9 del propietario.
+
 ## Pendiente de validación
 
-- Ejecutar las pruebas Java y la suite completa en GitHub Actions.
-- Compilar el APK ARM64 y probar lectura de assets en Android 9.
+- Probar instalación, apertura, rendimiento y controles en Android 9 ARM64.
 - Portar los subsistemas uno a uno con pruebas de regresión.
 - Revisar identidad de clubes/plantillas, licencias y procedencia de assets gráficos.
 

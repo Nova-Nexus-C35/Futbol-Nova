@@ -45,3 +45,14 @@ A screenshot showing only a flat-looking pitch and colored rectangular player ma
 - Confirmed: Java + libGDX remains the engine and implementation stack.
 - Confirmed: Android 9 / ARM64 and offline-first remain constraints.
 - Pending: detailed visual reference selection, asset strategy, animation pipeline, performance budget and device validation.
+
+
+## Implementation status — 2026-11-22
+
+- **3D foundation — partial:** the Android build renders a perspective 3D pitch, ball and match camera. Full stadium, goals, stands, lighting/shadows and broadcast camera tracking are still pending.
+- **Playable actors — partial:** 22 players now use the original 4-3-3 lineup and move under the Java tactical simulation. Their current visible geometry is still temporary rectangular placeholders; human 3D models and animations are not yet integrated.
+- **Match gameplay — partial:** the 11v11 tactical movement, nearest-player pressure, goalkeeper positioning, basic stamina, ball flight (gravity/drag/Magnus) and goal-line geometry have been ported to Java. Possession, AI passing/shooting, live tackles, referee decisions and restarts remain pending.
+- **Automated verification:** GitHub Actions run [#31](https://github.com/Nova-Nexus-C35/Futbol-Nova/actions/runs/45070366933) succeeded. The ARM64 native libGDX runtime was found inside the APK, and the debug APK artifact was uploaded.
+- **Device verification:** not yet tested on the owner's Android 9 phone.
+
+The prototype is now a moving 3D match foundation, but it does not yet meet the final FIFA-inspired visual acceptance target. The placeholder player shapes must be replaced before that phase is considered complete.
