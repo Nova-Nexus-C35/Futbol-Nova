@@ -99,7 +99,7 @@ namespace FutbolNova.Gameplay
                 CharacterController cc = player.AddComponent<CharacterController>();
                 cc.height = 1.9f; cc.radius = 0.42f; cc.center = new Vector3(0f,0.95f,0f);
                 PlayerAgent agent = player.AddComponent<PlayerAgent>();
-                agent.Initialize(side,i+1,side == TeamSide.Home && i == 0);
+                agent.Initialize(side,i+1,side == TeamSide.Home && i == 6);
                 GameObject anchor = new GameObject("Formation anchor");
                 anchor.transform.SetParent(transform);
                 anchor.transform.position = pos;
