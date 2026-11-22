@@ -28,9 +28,16 @@ jobs:
       - name: Validate Unity license secret
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         run: |
-          if [ -z "$UNITY_LICENSE" ]; then
-            echo "::error::Configure the repository Actions secret UNITY_LICENSE with a valid Unity license before running Unity CI."
+          if [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+            echo "::error::Configure UNITY_EMAIL and UNITY_PASSWORD Actions secrets for your Unity account."
+            exit 1
+          fi
+          if [ -z "$UNITY_LICENSE" ] && [ -z "$UNITY_SERIAL" ]; then
+            echo "::error::Configure UNITY_LICENSE (Personal) or UNITY_SERIAL (Professional) as an Actions secret."
             exit 1
           fi
 
@@ -41,6 +48,9 @@ jobs:
         uses: game-ci/unity-test-runner@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
           projectPath: .
           unityVersion: 6000.3.24f1
@@ -80,6 +90,9 @@ jobs:
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
           projectPath: .
           unityVersion: 6000.3.24f1
