@@ -1,10 +1,13 @@
 # Configurar Unity CI y generar el APK Android
 
-Estado: pendiente de credenciales de licencia Unity. No pegar licencias, contraseñas ni seriales en conversaciones o archivos del repositorio.
+Estado: bloqueado por la activación de Unity. No pegar licencias, contraseñas ni seriales en conversaciones o archivos del repositorio.
 
-## 1. Qué confirmó la primera ejecución
+## 1. Qué confirmó GitHub Actions
 
-GitHub Actions sí inició el workflow. El job terminó en el paso `Validate Unity license secrets` porque no encontró las credenciales de Unity. Unity Editor, las pruebas y la compilación Android no llegaron a ejecutarse. El job de APK quedó omitido porque depende de las pruebas.
+- Ejecución #9 (run ID `45064539126`): falló porque no existía `UNITY_LICENSE`.
+- Ejecución #19 (run ID `45064638129`): falló porque también faltaban `UNITY_EMAIL` y `UNITY_PASSWORD`.
+- Ejecución #25 (run ID `45064708965`): volvió a fallar en el mismo preflight de credenciales.
+- En todas, Unity Editor y las pruebas no llegaron a ejecutarse; el job Android fue omitido.
 
 ## 2. Secretos necesarios
 
@@ -24,25 +27,25 @@ Para Unity Professional:
 
 No guardar esos valores en commits ni enviarlos por el chat. El workflow solo los inyecta como variables de entorno en los pasos de Unity.
 
-## 3. Obtener un archivo de solicitud desde GitHub (sin Unity instalado en el teléfono)
+## 3. Obtener la licencia Personal
 
-1. Abrir la pestaña **Actions** del repositorio.
-2. Seleccionar **Request Unity activation file**.
-3. Pulsar **Run workflow**.
-4. Al terminar, abrir la ejecución y descargar el artefacto `unity-manual-activation-request`.
-5. Extraer el archivo `.alf` del ZIP.
+La guía actual de GameCI indica que se debe activar Unity Personal en Unity Hub y copiar el archivo `.ulf`. La ruta depende del sistema operativo:
 
-El artefacto es solo una solicitud de activación; todavía no es una licencia `.ulf`.
+- Windows: `C:\ProgramData\Unity\Unity_lic.ulf`
+- macOS: `/Library/Application Support/Unity/Unity_lic.ulf`
+- Linux: `~/.local/share/unity3d/Unity/Unity_lic.ulf`
 
-**Importante:** la documentación actual de GameCI advierte que Unity ya no admite la activación manual de licencias Personal en todos los casos. Si el portal de licencias no ofrece Personal o rechaza el archivo, no intentes trucos ni compartas credenciales: será necesario activar Personal mediante Unity Hub en un equipo compatible o utilizar una licencia Professional válida. Este flujo no garantiza que Unity emita una licencia Personal.
+La documentación actual ya no recomienda el antiguo workflow de solicitud manual `.alf`; se probó en este repositorio y GitHub devolvió que la acción está obsoleta. Ese workflow fue eliminado para no dejar un procedimiento roto.
 
-Referencia: https://game.ci/docs/github/activation/
+Como trabajas desde Android y no tienes PC, la activación Personal no se puede completar únicamente desde este chat ni desde el teléfono: hace falta acceso temporal a un equipo compatible con Unity Hub para generar el `.ulf`, o disponer de una licencia Professional válida. Si utilizas un equipo prestado, inicia sesión solo en Unity Hub, activa la licencia, copia el archivo y cierra sesión al terminar. Nunca compartas la contraseña en el chat.
+
+Referencia actual: https://game.ci/docs/github/activation/
 
 ## 4. Ejecutar las pruebas
 
 Cuando los secretos estén configurados:
 - Un push a la rama `feature/rebuild-unity-android-foundation-2026-11-22` o una actualización del PR #1 dispara el job EditMode automáticamente.
-- El resultado esperado es que las seis pruebas EditMode se ejecuten. No se considerarán aprobadas hasta ver el job completado con éxito.
+- Las seis pruebas EditMode solo se considerarán aprobadas cuando el job termine con éxito.
 
 ## 5. Generar el APK
 
@@ -55,6 +58,6 @@ Cuando las pruebas pasen:
 
 La salida esperada es `Build/FutbolNova.apk`. El APK solo se considerará entregable después de comprobar que el artefacto existe y que se instala/abre en un dispositivo Android.
 
-## 6. Estado de seguridad y publicación
+## 6. Estado de publicación
 
-El PR #1 permanece como borrador y no se ha fusionado. No se debe fusionar hasta que pasen las pruebas y la compilación; la prueba en dispositivo también queda pendiente.
+El PR #1 permanece como borrador y no se ha fusionado. No se debe fusionar hasta que pasen las pruebas, la compilación y la prueba en dispositivo.
