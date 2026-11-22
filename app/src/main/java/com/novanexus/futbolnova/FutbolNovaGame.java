@@ -157,7 +157,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         for(int i=0;i<lineup.size()&&i<playerVisuals.size();i++){
             MatchSimulation.PlayerState state=lineup.get(i);
             float yaw=(float)Math.atan2(-state.forwardX,-state.forwardZ);
-            playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.speed);
+            playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
         }
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
