@@ -14,7 +14,7 @@ namespace FutbolNova.Gameplay
         public MatchSceneFactory(MatchManager owner, Transform parent)
         {
             this.owner = owner;
-            this.transform = parent;
+            this.parent = parent;
         }
 
         public void BuildPitch()
