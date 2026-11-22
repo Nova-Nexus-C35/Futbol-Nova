@@ -6,7 +6,7 @@ def gdxVersion = providers.gradleProperty('gdxVersion').get()
 
 android {
     namespace 'com.novanexus.futbolnova'
-    compileSdk 35
+    compileSdk 36
     defaultConfig {
         applicationId 'com.novanexus.futbolnova'
         minSdk 28
