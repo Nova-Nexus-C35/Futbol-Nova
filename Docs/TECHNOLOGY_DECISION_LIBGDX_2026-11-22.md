@@ -113,3 +113,31 @@ La decisión es provisional hasta que el primer workflow termine con éxito y el
 ## Reglas permanentes de mejora
 
 Investigar repositorios públicos para cada subsistema importante (render, física, IA, árbitro, carrera, persistencia, input, animación, accesibilidad y build). Registrar URL, commit/tag revisado, licencia, plataforma, partes útiles, riesgos y decisión de reutilización. Preferir ideas y diseños compatibles; cualquier copia de código requiere auditoría de licencia y atribución. Actualizar este documento y el estado del proyecto después de cada decisión importante.
+
+
+## Investigación adicional de simulación e IA (2026-11-22)
+
+### OpenEngine — motor de partidos de fútbol (MIT)
+- URL: https://github.com/atas76/openengine
+- Licencia raíz verificada: MIT.
+- Java; usa Maven, Jackson, SQLite JDBC y Spring en su POM, con código de motor basado en estados/eventos, fases de partido, posesión, equipos, tácticas, posiciones y generación de transiciones.
+- El README explica un enfoque de motor basado en datos/contexto de partido y advierte que el desarrollo público pasa a un repositorio privado cuando alcance MVP. No es un juego 3D Android listo para integrar.
+- Valor para Fútbol Nova: separar el motor de partido del renderer; mantener coherencia entre atributos/tácticas/posiciones de entrada y eventos/resultados de salida; modelar fases y contexto, no elegir resultados arbitrarios.
+- Decisión: referencia conceptual y de dominio; no copiar código ni dependencias de escritorio/servidor.
+
+### Open Kick-Off — juego de fútbol 2D en Java/libGDX (MIT)
+- URL: https://github.com/ssenegas/kickoff
+- Licencia de código raíz: MIT.
+- Java/libGDX; remake 2D de Kick Off 2. El árbol revisado incluye Player, Ball, MatchScreen, MatchState, dimensiones de campo y estados de juego.
+- Se estudiaron Player/Ball/MatchScreen: actualización por delta, destino y movimiento de jugadores, dirección/animación por frames, velocidad y límites, balón con velocidad/arrastre/gravedad/rebote, state machine, cámara, colisiones, HUD y separación entre pitch/entities/screens.
+- Valor: ideas de organización de partido y ciclo update/render, movimiento por destino, cámara y state machine. El proyecto es 2D y no demuestra un juego 3D 11v11 terminado.
+- Decisión: referencia arquitectónica; no copiar código ni sprites/sonidos/recursos de terceros.
+
+### gdx-ai — herramientas de IA (Apache-2.0)
+- URL: https://github.com/libgdx/gdx-ai
+- Licencia raíz: Apache-2.0.
+- Java; aporta steering behaviors, formación, A*, pathfinding jerárquico, behavior trees, finite state machines, mensajería y scheduling.
+- Última actividad de código visible en octubre de 2024; debe verificarse compatibilidad con libGDX 1.14.2 antes de añadirla.
+- Valor: posible ayuda para movimiento de compañeros, formación y toma de decisiones; no sustituye la lógica táctica específica de fútbol.
+- Decisión: no añadir dependencia todavía. Primero crear interfaces y tests del dominio; incorporar solo si las pruebas muestran un beneficio claro y la compatibilidad/licencia quedan verificadas.
+
