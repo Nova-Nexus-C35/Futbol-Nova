@@ -62,8 +62,14 @@ public final class MatchSimulation {
         if (players.size()!=22 || !Float.isFinite(deltaSeconds) || deltaSeconds<=0f) return;
         float delta=Math.min(deltaSeconds,0.05f);
         PlayerState controlled=getControlledPlayer();
+        float previousX=controlled.x, previousZ=controlled.z;
         controlled.x=clamp(controlledX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f);
         controlled.z=clamp(controlledZ,-FIELD_HALF_LENGTH+2f,FIELD_HALF_LENGTH-2f);
+        float controlledDx=controlled.x-previousX, controlledDz=controlled.z-previousZ;
+        float controlledDistance=(float)Math.sqrt(controlledDx*controlledDx+controlledDz*controlledDz);
+        controlled.speed=controlledDistance/delta;
+        if(controlledDistance>0.0001f){controlled.forwardX=controlledDx/controlledDistance;controlled.forwardZ=controlledDz/controlledDistance;}
+        else controlled.speed=0f;
 
         decisionClock-=delta;
         if (decisionClock<=0f) {
