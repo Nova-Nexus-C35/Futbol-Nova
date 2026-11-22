@@ -68,6 +68,12 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         environment.add(new DirectionalLight().set(0.85f, 0.85f, 0.85f, -0.4f, -1f, -0.25f));
 
         createProceduralPitchAndTeams();
+        try {
+            OriginalProjectData.Summary summary = OriginalProjectData.loadBundledSummary();
+            Gdx.app.log("FutbolNova", "Original project data loaded: " + summary);
+        } catch (RuntimeException error) {
+            Gdx.app.error("FutbolNova", "Original project data could not be loaded", error);
+        }
     }
 
     private void createProceduralPitchAndTeams() {

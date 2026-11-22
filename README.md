@@ -44,3 +44,8 @@ APK output: `app/build/outputs/apk/debug/app-debug.apk`.
 - Do not claim build, test or device validation until the corresponding result exists.
 - Study public GitHub repositories for architecture and techniques; do not copy code/assets unless the exact licence and obligations are compatible.
 - Keep all features offline-capable unless an explicitly optional online feature is required.
+
+
+## Integración del proyecto original
+
+La fuente original está conservada en `Nova-Nexus-C35/Nova-Workspace/Projects/Games/futbol-nova/` y su versión histórica usa Godot 4.4.1. El proyecto Android actual mantiene Java 17 + libGDX por decisión del propietario. Los catálogos JSON originales se están migrando a `app/src/main/assets/data/original/` y se leen mediante `OriginalProjectData`. La portabilidad completa de gameplay sigue pendiente. Consulta `Docs/ORIGINAL_PROJECT_INTEGRATION.md`.
