@@ -36,8 +36,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final MatchClock matchClock = new MatchClock();
     private final MatchSimulation matchSimulation = new MatchSimulation();
     private List<OriginalProjectData.TeamRoster> playableRosters = new ArrayList<>();
-    private int homeRosterIndex;
-    private int awayRosterIndex = 1;
+    private TeamSelection teamSelection;
     private final List<Model> ownedModels = new ArrayList<>();
     private final List<PlayerVisual> playerVisuals = new ArrayList<>();
     private final List<ModelInstance> environmentModels = new ArrayList<>();
@@ -139,8 +138,10 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         boolean canonicalLineupsLoaded=false;
         try {
             playableRosters=OriginalProjectData.loadPlayableRosters();
-            canonicalLineupsLoaded=playableRosters.size()>=2
-                    &&matchSimulation.start(playableRosters.get(homeRosterIndex),playableRosters.get(awayRosterIndex));
+            if(playableRosters.size()>=2){
+                teamSelection=new TeamSelection(playableRosters);
+                canonicalLineupsLoaded=matchSimulation.start(teamSelection.getHome(),teamSelection.getAway());
+            }
             if(canonicalLineupsLoaded)Gdx.app.log("FutbolNova","Playable squads: "+matchSimulation.getHomeTeamName()+" vs "+matchSimulation.getAwayTeamName());
         } catch(RuntimeException error) {
             Gdx.app.error("FutbolNova","Canonical player rosters unavailable; using placeholder teams",error);
@@ -294,21 +295,15 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void cycleHomeRoster(){
-        if(playableRosters.size()<2)return;
-        homeRosterIndex=(homeRosterIndex+1)%playableRosters.size();
-        if(homeRosterIndex==awayRosterIndex)homeRosterIndex=(homeRosterIndex+1)%playableRosters.size();
-        rebuildSelectedLineups();
+        if(teamSelection!=null&&teamSelection.cycleHome())rebuildSelectedLineups();
     }
 
     private void cycleAwayRoster(){
-        if(playableRosters.size()<2)return;
-        awayRosterIndex=(awayRosterIndex+1)%playableRosters.size();
-        if(awayRosterIndex==homeRosterIndex)awayRosterIndex=(awayRosterIndex+1)%playableRosters.size();
-        rebuildSelectedLineups();
+        if(teamSelection!=null&&teamSelection.cycleAway())rebuildSelectedLineups();
     }
 
     private void rebuildSelectedLineups(){
-        if(matchSimulation.start(playableRosters.get(homeRosterIndex),playableRosters.get(awayRosterIndex))){
+        if(teamSelection!=null&&matchSimulation.start(teamSelection.getHome(),teamSelection.getAway())){
             MatchSimulation.PlayerState selected=matchSimulation.getControlledPlayer();
             if(selected!=null)controlledPosition.set(selected.x,0f,selected.z);
         }
@@ -316,7 +311,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private void resetMatch(){
         matchClock.reset();matchState.reset();
-        if(playableRosters.size()>=2)rebuildSelectedLineups();
+        if(teamSelection!=null)rebuildSelectedLineups();
         ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
         possessionOwnerIndex=MatchGameplay.NO_OWNER;aiKickClock=0.9f;tackleCooldown=0f;
         restartClock=0f;pendingRestart=MatchRules.Restart.IN_PLAY;kickoffRestart=false;
