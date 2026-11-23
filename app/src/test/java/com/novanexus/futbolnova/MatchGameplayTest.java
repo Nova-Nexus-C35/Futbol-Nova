@@ -79,4 +79,11 @@ public final class MatchGameplayTest {
   MatchGameplay.PassTargetDecision secondHalf=MatchGameplay.findForwardPassDecision(players,7,0f,0f,true,false);
   assertEquals(9,secondHalf.receiverIndex);assertTrue(secondHalf.offside);
  }
+
+ @Test public void cpuCarriesIntoSpaceButReleasesUnderPressureOrNearGoal(){
+  assertTrue(MatchGameplay.shouldAiCarryBall(12f,7f));
+  assertFalse(MatchGameplay.shouldAiCarryBall(34f,7f));
+  assertFalse(MatchGameplay.shouldAiCarryBall(20f,3f));
+  assertFalse(MatchGameplay.shouldAiCarryBall(Float.NaN,8f));
+ }
 }
