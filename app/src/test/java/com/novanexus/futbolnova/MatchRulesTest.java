@@ -7,9 +7,9 @@ public class MatchRulesTest{
  @Test public void requiresFullBallToCrossAndFitInsideGoal(){assertEquals(MatchRules.Restart.IN_PLAY,MatchRules.classifyBallExit(34.1f,0,12,true,0.22f).restart);assertEquals(MatchRules.Restart.IN_PLAY,MatchRules.classifyBallExit(34,0,52.5f,true,0.22f).restart);assertEquals(MatchRules.Restart.GOAL_KICK,MatchRules.classifyBallExit(3.5f,1,53,false,0.22f).restart);}
 
  @Test public void goalAwardingReversesWhenTeamsSwitchEnds(){
-  MatchRules.ExitDecision firstHalf=MatchRules.classifyBallExit(0,1,53.2f,false,34f,52.5f,3.66f,2.44f,0.22f,true);
+  MatchRules.ExitDecision firstHalf=MatchRules.classifyBallExit(0,1,-53.2f,false,34f,52.5f,3.66f,2.44f,0.22f,true);
   assertEquals(MatchRules.Restart.GOAL,firstHalf.restart);assertTrue(firstHalf.awardedHome);
-  MatchRules.ExitDecision secondHalf=MatchRules.classifyBallExit(0,1,-53.2f,false,34f,52.5f,3.66f,2.44f,0.22f,false);
+  MatchRules.ExitDecision secondHalf=MatchRules.classifyBallExit(0,1,53.2f,false,34f,52.5f,3.66f,2.44f,0.22f,false);
   assertEquals(MatchRules.Restart.GOAL,secondHalf.restart);assertTrue(secondHalf.awardedHome);
  }
 }
