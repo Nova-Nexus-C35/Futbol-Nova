@@ -44,6 +44,19 @@ public final class MatchClockTest {
         assertEquals(MatchClock.Phase.FULL_TIME, clock.getPhase());
     }
 
+    @Test public void gameplayInputIsDisabledOutsideUnpausedLivePlay() {
+        MatchClock clock = new MatchClock(20f);
+        assertFalse(clock.canAcceptGameplayInput());
+        clock.start();
+        assertTrue(clock.canAcceptGameplayInput());
+        clock.pause();
+        assertFalse(clock.canAcceptGameplayInput());
+        clock.resume();
+        assertTrue(clock.canAcceptGameplayInput());
+        clock.update(20f);
+        assertFalse(clock.canAcceptGameplayInput());
+    }
+
     @Test public void pauseResumeAndInvalidDeltaAreSafe() {
         MatchClock clock = new MatchClock(20f);
         clock.start();
