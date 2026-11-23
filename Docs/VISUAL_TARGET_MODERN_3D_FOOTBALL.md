@@ -71,3 +71,11 @@ La referencia FIFA describe el nivel y la dirección de calidad deseados; no aut
 - FutbolNovaGame usa ahora este controlador en el render del partido, sustituyendo el seguimiento anterior más rígido.
 - Se añadieron pruebas para perspectiva elevada, seguimiento y límites de campo, y protección frente a delta inválido.
 - Esta es una primera cámara de retransmisión funcional, no un sistema completo de cámaras FIFA: faltan cambios de plano por contexto, seguimiento de posesión, zoom dinámico horizontal, repeticiones y opciones configurables.
+
+
+## Progreso de implementación — césped y graderíos por niveles (2026-11-23)
+
+- El campo procedural ahora usa franjas alternas de césped con dos materiales verdes, conservando las marcas reglamentarias y la geometría de juego existente.
+- Los cuatro bloques sólidos de graderío se sustituyeron por seis niveles escalonados alrededor del campo, con dos tonos de asientos para dar profundidad a la silueta del estadio.
+- Se reutilizan mallas compartidas e instancias para limitar el coste de memoria y llamadas de creación de modelos.
+- Siguen pendientes asientos individuales, público, barandillas, cubierta, túneles, banquillos, iluminación de estadio y sombras avanzadas. El estadio continúa siendo procedural de prototipo.
