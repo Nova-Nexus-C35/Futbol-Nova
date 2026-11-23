@@ -148,3 +148,12 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Verificación de escritura: `FutbolNovaGame.java` releído desde GitHub después de la escritura; blob SHA `ac27615bce6eec262490a31324ad7ca898ff7dad`.
 - CI de la tanda anterior: run #55, job `android`, conclusión `success`. Esta ejecución no valida todavía la nueva integración; el nuevo run debe completarse antes de marcarla como compilada.
 - Pendiente de prueba física: comprobar detección de toques en la franja superior, pause/resume, descanso y final en Android 9 ARM64, además de multitáctil simultáneo. No afirmar aceptación táctil hasta probar en dispositivo.
+
+
+### Implementación: cambio manual de futbolista (2026-11-23)
+
+- `MatchSimulation` ya no depende de un índice fijo para controlar al jugador: permite recorrer cíclicamente los diez futbolistas de campo del equipo local y mantiene al portero bajo IA.
+- El cambio actualiza la posición de control táctil al futbolista seleccionado; la simulación excluye dinámicamente al jugador seleccionado de la IA.
+- Se conectaron las acciones de tiro, pase y entrada al índice dinámico del jugador controlado.
+- El sector superior central del HUD cambia el futbolista; la zona superior izquierda conserva inicio/continuación y la derecha pausa/reanudación.
+- Se añadió prueba unitaria del ciclo y de la exclusión del portero. Pendiente comprobar usabilidad y multitáctil en Android físico.
