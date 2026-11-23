@@ -458,11 +458,16 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             float ownGoalDirection=keeper.homeTeam
                     ?(matchSimulation.homeAttacksNegativeZ()?1f:-1f)
                     :(matchSimulation.homeAttacksNegativeZ()?-1f:1f);
-            if(!MatchGameplay.canGoalkeeperAttemptSave(keeper.x,keeper.z,ballPosition.x,
-                    ballPosition.y,ballPosition.z,ballVelocity.z,ownGoalDirection))continue;
+            float interceptTime=MatchGameplay.goalkeeperInterceptTime(keeper.x,keeper.z,
+                    ballPosition.x,ballPosition.y,ballPosition.z,ballVelocity.x,ballVelocity.y,
+                    ballVelocity.z,ownGoalDirection);
+            if(interceptTime<0f)continue;
             float speed=ballVelocity.len();
-            ballPosition.set(keeper.x,Math.min(1.25f,Math.max(BALL_RADIUS,ballPosition.y)),
-                    keeper.z-ownGoalDirection*1.05f);
+            float interceptX=ballPosition.x+ballVelocity.x*interceptTime;
+            float interceptY=ballPosition.y+ballVelocity.y*interceptTime
+                    -0.5f*BallFlightModel.DEFAULT_GRAVITY*interceptTime*interceptTime;
+            float interceptZ=ownGoalDirection*52.5f-ownGoalDirection*0.65f;
+            ballPosition.set(interceptX,Math.max(BALL_RADIUS,interceptY),interceptZ);
             ballSpin.setZero();
             pendingOffsideReceiver=MatchGameplay.NO_OWNER;
             lastTouchHome=keeper.homeTeam;
