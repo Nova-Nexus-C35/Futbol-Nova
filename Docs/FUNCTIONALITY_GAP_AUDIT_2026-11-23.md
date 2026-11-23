@@ -250,3 +250,5 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Si ese jugador participa recibiendo el pase, el juego detiene el balón y concede un tiro libre indirecto automático al rival desde la posición de la infracción.
 - Se registra el fuera de juego por equipo y se añade al historial acotado de eventos. Si el balón lo intercepta otro jugador o sale del campo, se cancela la infracción pendiente.
 - Se añadieron pruebas de decisión de pase y del contador de fuera de juego. La regla sigue siendo una aproximación: no cubre todas las situaciones de interferencia, rebotes ni excepciones complejas de reglamento.
+
+- Se limpian las infracciones de fuera de juego pendientes al iniciar/reiniciar períodos y cuando interviene un portero; el HUD muestra también el contador de fueras de juego. La prueba de fuera de juego cubre ambos sentidos de ataque.
