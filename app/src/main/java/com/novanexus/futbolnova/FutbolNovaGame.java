@@ -217,7 +217,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                     float radius=Math.max(1f,width*0.22f);
                     float horizontal=(x-width*0.28f)/radius;
                     float vertical=(height*0.50f-y)/radius;
-                    Vector3 movement=new Vector3(horizontal,0f,vertical);
+                    Vector3 movement=new Vector3(horizontal,0f,-vertical);
                     if(movement.len2()>1f)movement.nor();
                     controlledPosition.mulAdd(movement,10f*delta);
                     controlledPosition.x=Math.max(-FIELD_HALF_WIDTH+2f,Math.min(FIELD_HALF_WIDTH-2f,controlledPosition.x));
