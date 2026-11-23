@@ -381,6 +381,13 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         }
     }
 
+    private void recordFoulAndApplyDiscipline(MatchSimulation.PlayerState offender){
+        if(offender==null||!offender.active)return;
+        matchStatistics.recordFoul(offender.playerId,offender.homeTeam);
+        MatchDiscipline.Outcome outcome=matchDiscipline.recordFoul(offender.playerId);
+        if(outcome==MatchDiscipline.Outcome.DISMISSED)applyDismissal(offender.playerId);
+    }
+
     public MatchDiscipline getMatchDiscipline(){return matchDiscipline;}
 
     private void performShot(){
@@ -416,7 +423,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(target.homeTeam)return;
         MatchSimulation.TackleResult result=MatchGameplay.tackle(attacker,target,1.7f);tackleCooldown=0.75f;
         if(result!=null&&result.success){matchStatistics.recordTackle(attacker.playerId,true);possessionOwnerIndex=matchSimulation.getControlledPlayerIndex();lastTouchHome=true;}
-        else if(result!=null&&result.foul){matchStatistics.recordFoul(attacker.playerId,true);awardFoulRestart(target.x,target.z,true,false);}
+        else if(result!=null&&result.foul){recordFoulAndApplyDiscipline(attacker);awardFoulRestart(target.x,target.z,true,false);}
     }
 
     private void updateBall(float delta) {
@@ -573,7 +580,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 currentOwner=lineup.get(possessionOwnerIndex);
                 aiKickClock=1.0f;
             }else if(tackle!=null&&tackle.foul){
-                matchStatistics.recordFoul(lineup.get(nearestDefender).playerId,nearestDefender<11);
+                recordFoulAndApplyDiscipline(lineup.get(nearestDefender));
                 awardFoulRestart(currentOwner.x,currentOwner.z,nearestDefender<11,currentOwner.homeTeam);
                 return;
             }
@@ -722,6 +729,9 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(activePlayer!=null)font.draw(spriteBatch,"JUGADOR: "+activePlayer.playerName
                 +"  #"+activePlayer.shirtNumber+"  "+activePlayer.role,
                 18f,Gdx.graphics.getHeight()-70f);
+        font.draw(spriteBatch,"TARJETAS A "+countTeamCards(true,false)+"-"+countTeamCards(false,false)
+                +"  ROJAS "+countTeamCards(true,true)+"-"+countTeamCards(false,true)
+                +"  JUGADORES "+matchSimulation.getActivePlayerCount(true)+"-"+matchSimulation.getActivePlayerCount(false),18f,78f);
         font.draw(spriteBatch, "IZQUIERDA: MOVER   DERECHA: ARRIBA TIRO | CENTRO PASE | ABAJO ROBO", 18f, 28f);
         font.draw(spriteBatch,"TIROS "+matchStatistics.getShots(true)+"-"+matchStatistics.getShots(false)
                 +"  PASES "+matchStatistics.getPasses(true)+"-"+matchStatistics.getPasses(false)
@@ -741,6 +751,15 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             font.draw(spriteBatch,"LOCAL: "+matchSimulation.getHomeTeamName()+"   VISITANTE: "+matchSimulation.getAwayTeamName(),18f,Gdx.graphics.getHeight()-48f);
         else font.draw(spriteBatch,"ARRIBA CENTRO: CAMBIAR JUGADOR   ARRIBA DERECHA: PAUSA / CONTINUAR",18f,Gdx.graphics.getHeight()-48f);
         spriteBatch.end();
+    }
+
+    private int countTeamCards(boolean homeTeam,boolean redCards){
+        int count=0;
+        for(MatchSimulation.PlayerState player:matchSimulation.getPlayers()){
+            if(player.homeTeam!=homeTeam)continue;
+            if(redCards?matchDiscipline.isSentOff(player.playerId):matchDiscipline.getYellowCards(player.playerId)>0)count++;
+        }
+        return count;
     }
 
     @Override
