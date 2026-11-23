@@ -159,8 +159,11 @@ public final class MatchSimulation {
     /** Cycles through the ten outfield players on the home team; the goalkeeper is AI-controlled. */
     public int cycleControlledPlayer() {
         if (players.size()!=22) return -1;
-        controlledPlayerIndex = controlledPlayerIndex >= 10 ? 1 : controlledPlayerIndex + 1;
-        return controlledPlayerIndex;
+        for(int attempt=0;attempt<10;attempt++){
+            controlledPlayerIndex=controlledPlayerIndex>=10?1:controlledPlayerIndex+1;
+            if(players.get(controlledPlayerIndex).active)return controlledPlayerIndex;
+        }
+        return -1;
     }
 
     public void update(float deltaSeconds,float ballX,float ballZ,float controlledX,float controlledZ) {
