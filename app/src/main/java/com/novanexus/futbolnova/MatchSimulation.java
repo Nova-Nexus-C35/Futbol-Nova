@@ -160,10 +160,12 @@ public final class MatchSimulation {
     /** Cycles through the ten outfield players on the home team; the goalkeeper is AI-controlled. */
     public int cycleControlledPlayer() {
         if (players.size()!=22) return -1;
-        for(int attempt=0;attempt<10;attempt++){
-            controlledPlayerIndex=controlledPlayerIndex>=10?1:controlledPlayerIndex+1;
-            if(players.get(controlledPlayerIndex).active)return controlledPlayerIndex;
+        int start=controlledPlayerIndex<1?0:controlledPlayerIndex;
+        for(int offset=1;offset<=10;offset++){
+            int candidate=((start-1+offset)%10)+1;
+            if(players.get(candidate).active){controlledPlayerIndex=candidate;return candidate;}
         }
+        controlledPlayerIndex=-1;
         return -1;
     }
 
