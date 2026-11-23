@@ -72,3 +72,23 @@ La búsqueda se repetirá al iniciar cada subsistema relevante. Toda futura inte
 ### Implementación propia inspirada en el principio de predicción
 
 Se añadió en MatchGameplay una función Java independiente que estima el tiempo hasta el plano de intervención del portero, proyecta X/Y usando la gravedad compartida con BallFlightModel y rechaza trayectorias fuera de los postes, por encima del larguero, fuera del alcance lateral o que no se dirigen a la portería. FutbolNovaGame usa esa predicción para resolver la parada cerca del plano de gol. No se copió código de los repositorios estudiados.
+
+
+## Revisión ampliada de arquitectura táctica y render Android — 2026-11-23
+
+- [awest813/League-Soccer](https://github.com/awest813/League-Soccer) — motor C++17 con 22 jugadores, física de balón, árbitro, offside, faltas, set pieces, replay, estadísticas y carrera. El repositorio declara Apache-2.0. Referencia de arquitectura y QA; no se integra directamente por su stack C++/desktop.
+- [UoS-CIDA-Lab/MESSI](https://github.com/UoS-CIDA-Lab/MESSI) — simulador 11v11 JAX para investigación multiagente con dos tiempos, fuera de juego, faltas, tarjetas, set pieces, sustituciones y física 3D. Stack JAX/Python: solo referencia para contratos deterministas; licencia no verificada aquí.
+- [DeltaBitsSystem/FootballEngine](https://github.com/DeltaBitsSystem/FootballEngine) — motor táctico F# WIP con percepción espacial, roles, influencia de zonas, presión y decisiones contextuales. Licencia no verificada; referencia conceptual solamente.
+- [the3deer/android-3D-engine](https://github.com/the3deer/android-3D-engine) — motor Android OpenGL ES con soporte descrito para glTF, skinning, animaciones y PBR. No se adopta; verificar LICENSE e integración libGDX/GLES antes de considerarlo.
+- [berabera54152-cell/3D-Soccer-Game-Engine](https://github.com/berabera54152-cell/3D-Soccer-Game-Engine) — ejemplo MIT en Three.js/JavaScript con control, IA y física híbrida. Útil para comparar estados; no compatible directamente con Java/libGDX.
+
+### Cambio propio basado en esta investigación
+
+Se añadió una selección de carril de conducción para el portador IA: evalúa tres trayectorias adelantadas (centro y dos diagonales), mide la distancia al rival más cercano y mantiene el destino dentro del campo. FutbolNovaGame actualiza el objetivo del jugador mientras conserva la posesión y antes de decidir el pase. Es una implementación Java propia, no una copia de los repositorios citados.
+
+### Criterios para la próxima fase de IA
+
+1. Ampliar la elección contextual a regate, protección, pase corto/largo, pase filtrado, centro y tiro, usando atributos y presión.
+2. Añadir apoyo y desmarque de compañeros con límites de ocupación de espacio; separar fase ofensiva y defensiva.
+3. Validar cada decisión con escenarios deterministas y pruebas de invariantes, no solo con capturas del render.
+4. Evitar dependencias JAX/F#/C++/JS dentro del runtime Android. Portar únicamente algoritmos originales tras revisión técnica y legal.
