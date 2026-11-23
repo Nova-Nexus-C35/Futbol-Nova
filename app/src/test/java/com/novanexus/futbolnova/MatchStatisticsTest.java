@@ -1,0 +1,28 @@
+package com.novanexus.futbolnova;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class MatchStatisticsTest {
+    @Test public void recordsIndependentTeamCountersAndEvents(){
+        MatchStatistics stats=new MatchStatistics();
+        stats.recordShot(true);stats.recordShot(false);stats.recordPassAttempt(true);
+        stats.recordTackle(false);stats.recordFoul(false);stats.recordSave(true);stats.recordGoal(true);
+        assertEquals(1,stats.getShots(true));assertEquals(1,stats.getShots(false));
+        assertEquals(1,stats.getPasses(true));assertEquals(1,stats.getTackles(false));
+        assertEquals(1,stats.getFouls(false));assertEquals(1,stats.getSaves(true));
+        assertEquals(1,stats.getGoals(true));assertEquals(7,stats.getEvents().size());
+        assertEquals(MatchStatistics.EventType.GOAL,stats.getEvents().get(6).type);
+    }
+    @Test public void eventLedgerIsBoundedAndCountersRemainComplete(){
+        MatchStatistics stats=new MatchStatistics();
+        for(int i=0;i<300;i++)stats.recordShot(true);
+        assertEquals(300,stats.getShots(true));assertEquals(256,stats.getEvents().size());
+    }
+    @Test public void resetClearsCountersAndEvents(){
+        MatchStatistics stats=new MatchStatistics();stats.recordGoal(true);stats.recordPassAttempt(false);
+        stats.reset();
+        assertEquals(0,stats.getGoals(true));assertEquals(0,stats.getPasses(false));
+        assertTrue(stats.getEvents().isEmpty());
+    }
+}
