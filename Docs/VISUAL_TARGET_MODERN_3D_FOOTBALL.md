@@ -79,3 +79,11 @@ La referencia FIFA describe el nivel y la dirección de calidad deseados; no aut
 - Los cuatro bloques sólidos de graderío se sustituyeron por seis niveles escalonados alrededor del campo, con dos tonos de asientos para dar profundidad a la silueta del estadio.
 - Se reutilizan mallas compartidas e instancias para limitar el coste de memoria y llamadas de creación de modelos.
 - Siguen pendientes asientos individuales, público, barandillas, cubierta, túneles, banquillos, iluminación de estadio y sombras avanzadas. El estadio continúa siendo procedural de prototipo.
+
+
+## Progreso de implementación — detalles de campo y redes (2026-11-23)
+
+- Se añadieron las áreas de meta (seis yardas), puntos central y de penalti, y arcos de esquina para completar la lectura reglamentaria del terreno.
+- Las porterías ahora muestran una cuadrícula de red en el fondo, techo y laterales, no solo el marco.
+- Las redes son todavía líneas estáticas; falta deformación/animación de red al recibir un gol y colisión física precisa con postes y travesaño.
+- CI #142 falló por una secuencia de escape literal en una declaración de FutbolNovaGame.java. Se corrigió en un commit posterior y se está solicitando una validación nueva antes de dar por compilado el lote.
