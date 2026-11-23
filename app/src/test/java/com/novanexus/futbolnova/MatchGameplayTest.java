@@ -49,6 +49,16 @@ public final class MatchGameplayTest {
   assertTrue(firstClearance.z<0f);assertTrue(secondClearance.z>0f);
  }
 
+ @Test public void penaltyShotTargetsFarSideAndReversesAttackDirection(){
+  Vector3 keeperRight=MatchGameplay.penaltyShotVelocity(1.8f,true,true);
+  Vector3 keeperLeft=MatchGameplay.penaltyShotVelocity(-1.8f,true,true);
+  Vector3 secondHalf=MatchGameplay.penaltyShotVelocity(1.8f,true,false);
+  assertTrue(keeperRight.x<0f);assertTrue(keeperLeft.x>0f);
+  assertTrue(keeperRight.z<0f);assertTrue(secondHalf.z>0f);
+  assertTrue(keeperRight.y>0f);
+  assertEquals(0f,MatchGameplay.penaltyShotVelocity(Float.NaN,true,true).x,0.0001f);
+ }
+
  @Test public void aiShootsTowardFarPostAndAdjustsForPressure(){
   float keeperRight=MatchGameplay.chooseAiShotAimX(0f,2f,5f);
   float keeperLeft=MatchGameplay.chooseAiShotAimX(0f,-2f,5f);
