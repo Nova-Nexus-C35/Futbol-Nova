@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 
 /**
  * Elevated broadcast-style 3D camera. It follows the live ball with damped motion,
- * keeps the play inside the pitch view and widens slightly during fast transitions.
+ * keeps the play inside the pitch view and raises slightly during fast transitions.
  */
 public final class BroadcastCamera {
     private static final float SIDE_OFFSET = 56f;
@@ -14,7 +14,8 @@ public final class BroadcastCamera {
     private static final float BASE_TRAILING_DISTANCE = 23f;
     private static final float FOLLOW_RESPONSE = 3.8f;
     private final Vector3 smoothedFocus = new Vector3();
-    private final Vector3 desiredPosition = new Vector3();\n    private final Vector3 requestedFocus = new Vector3();
+    private final Vector3 desiredPosition = new Vector3();
+    private final Vector3 requestedFocus = new Vector3();
     private final Vector3 desiredTarget = new Vector3();
     private boolean initialized;
 
@@ -31,12 +32,13 @@ public final class BroadcastCamera {
             return;
         }
         float safeDelta = Float.isFinite(delta) ? MathUtils.clamp(delta, 0f, 0.1f) : 0f;
+        float safeSpeed = Float.isFinite(ballSpeed) ? MathUtils.clamp(ballSpeed, 0f, 35f) : 0f;
         float alpha = 1f - (float)Math.exp(-FOLLOW_RESPONSE * safeDelta);
         requestedFocus.set(
                 MathUtils.clamp(focus.x, -34f, 34f), 0f,
                 MathUtils.clamp(focus.z, -52.5f, 52.5f));
         smoothedFocus.lerp(requestedFocus, alpha);
-        apply(camera, MathUtils.clamp(ballSpeed, 0f, 35f));
+        apply(camera, safeSpeed);
     }
 
     private void apply(PerspectiveCamera camera, float ballSpeed) {
@@ -46,11 +48,7 @@ public final class BroadcastCamera {
                 BASE_HEIGHT + transitionLift,
                 smoothedFocus.z + BASE_TRAILING_DISTANCE);
         desiredTarget.set(smoothedFocus.x * 0.32f, 0.65f, smoothedFocus.z * 0.62f);
-        if (!initialized) {
-            camera.position.set(desiredPosition);
-        } else {
-            camera.position.set(desiredPosition);
-        }
+        camera.position.set(desiredPosition);
         camera.lookAt(desiredTarget);
         camera.up.set(Vector3.Y);
         camera.near = 0.1f;
