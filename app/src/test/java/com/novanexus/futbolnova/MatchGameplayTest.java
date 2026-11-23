@@ -41,6 +41,15 @@ public final class MatchGameplayTest {
   assertTrue(firstClearance.z<0f);assertTrue(secondClearance.z>0f);
  }
 
+ @Test public void aiShootsTowardFarPostAndAdjustsForPressure(){
+  float keeperRight=MatchGameplay.chooseAiShotAimX(0f,2f,5f);
+  float keeperLeft=MatchGameplay.chooseAiShotAimX(0f,-2f,5f);
+  assertTrue(keeperRight<0f);assertTrue(keeperLeft>0f);
+  float pressured=MatchGameplay.chooseAiShotAimX(0f,2f,1.2f);
+  assertTrue(pressured<keeperRight);
+  assertTrue(Math.abs(pressured)<=3.1f);
+  assertEquals(0f,MatchGameplay.chooseAiShotAimX(Float.NaN,0f,2f),0.0001f);
+ }
  @Test public void goalkeeperOnlyAttemptsReachableShotsMovingTowardItsOwnGoal(){
   assertTrue(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,1.2f,48f,12f,1f));
   assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,1.2f,48f,-12f,1f));
