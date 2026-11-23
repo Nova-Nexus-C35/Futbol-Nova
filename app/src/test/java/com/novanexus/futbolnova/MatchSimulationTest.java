@@ -124,6 +124,23 @@ public final class MatchSimulationTest {
         assertTrue(Math.abs(target.z)<=MatchSimulation.FIELD_HALF_LENGTH-3f);
     }
 
+    @Test public void defensiveRoleTracksItsClosestAttackingThreatGoalSide() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        java.util.List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+        MatchSimulation.PlayerState centreBack=players.get(2);
+        MatchSimulation.PlayerState striker=players.get(20);
+        centreBack.x=-7f;centreBack.z=36f;
+        striker.x=-8f;striker.z=22f;
+        MatchSimulation.TacticalTarget target=MatchSimulation.calculateDefensiveMarkTarget(
+                centreBack,players,true);
+        assertEquals(striker.x,target.x,0.001f);
+        assertTrue("defender should position on the goal side of the attacker",target.z>striker.z);
+        assertEquals(2.2f,target.z-striker.z,0.001f);
+        assertTrue(Math.abs(target.x)<=MatchSimulation.FIELD_HALF_WIDTH-2f);
+        assertTrue(Math.abs(target.z)<=MatchSimulation.FIELD_HALF_LENGTH-3f);
+    }
+
     @Test public void roleAwareShapeReversesAfterHalfTime() {
         MatchSimulation simulation=new MatchSimulation();
         assertTrue(simulation.start("home","away"));
