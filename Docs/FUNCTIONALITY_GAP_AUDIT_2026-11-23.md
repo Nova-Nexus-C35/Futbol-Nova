@@ -349,3 +349,12 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - La CI #162 mostró cuatro UnsatisfiedLinkError en BroadcastCameraTest; se había añadido el artefacto de nativos desktop al runtime de pruebas, pero las pruebas aún no inicializaban explícitamente GdxNativesLoader.
 - BroadcastCameraTest ahora carga las bibliotecas nativas de libGDX en @BeforeClass, antes de construir PerspectiveCamera.
 - El archivo fue releído desde GitHub y el blob verificado. La CI correspondiente al HEAD más reciente sigue pendiente; no se declara solucionado hasta que pasen las pruebas y el empaquetado ARM64.
+
+
+### Portero: predicción de trayectoria de tiro (2026-11-23)
+
+- MatchGameplay.goalkeeperInterceptTime() calcula el tiempo hasta un plano de intervención delante de la línea de gol y estima X/Y de la pelota usando BallFlightModel.DEFAULT_GRAVITY.
+- Rechaza disparos que se alejan de la portería, cruzan fuera de los postes, superan el larguero, quedan fuera del alcance lateral del guardameta o están fuera de la ventana de reacción de 1,2 segundos.
+- FutbolNovaGame.tryGoalkeeperSave() usa la predicción y resuelve el contacto en el punto estimado, en lugar de exigir únicamente que el balón ya esté a menos de 2,4 m del portero.
+- MatchGameplayTest cubre ambos sentidos de ataque y rechazos por trayectoria fuera de portería/altura.
+- Limitación: todavía no hay animaciones esqueléticas de estirada, atrapada, blocaje o despeje; la resolución física del contacto sigue siendo simplificada y debe probarse en Android.
