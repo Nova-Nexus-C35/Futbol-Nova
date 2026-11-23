@@ -107,3 +107,14 @@ Se sustituyó el movimiento de apoyo genérico por un objetivo sin balón sensib
 ### Límites
 
 La posesión colectiva se estima comparando la distancia del jugador propio y rival más cercanos al balón; no es todavía un estado de posesión autoritativo. Faltan asignación de marcas individuales, coberturas coordinadas, líneas defensivas basadas en amenazas, atributos/rasgos individuales y decisiones probabilísticas de pase/regate/tiro. Las pruebas cubren geometría de forma y sentido de ataque, no validación de comportamiento visual en dispositivo.
+
+
+## Referencias nuevas para decisiones contextuales — 2026-11-23
+
+- [kylemath/soccerSim](https://github.com/kylemath/soccerSim) — simulador Python modular con jugador/agente, formaciones, física y pruebas; el README declara MIT. Referencia para separar motor, decisiones y harness de calibración; no se integra por su runtime Python/Flask.
+- [Tobilion/footysim](https://github.com/Tobilion/footysim) — motor espacial 11v11 con decisiones por jugador, cálculo de carriles, presión, marcaje, pases, tiros, xG, fatiga y microestadísticas. Se consultó su descripción de arquitectura; la licencia no se verificó en esta revisión, por lo que no se reutiliza código.
+- [davidklemme/abpfiff](https://github.com/davidklemme/abpfiff) — motor modular con cálculo espacial de líneas de pase, movimiento por rol, decisiones de pase/tiro/regate y predicción de recepción. Su licencia PolyForm Noncommercial 1.0.0 restringe el uso comercial; se excluye de reutilización directa y solo se estudian conceptos generales.
+
+### Aplicación propia
+
+Se añadió selección de objetivo de tiro de la IA orientada al poste contrario: el cálculo considera la posición horizontal del portero rival y la presión defensiva cercana, y limita el punto de mira al interior de la portería. La integración reutiliza la física de tiro existente; no se incorporó código ni dependencia de estos proyectos.
