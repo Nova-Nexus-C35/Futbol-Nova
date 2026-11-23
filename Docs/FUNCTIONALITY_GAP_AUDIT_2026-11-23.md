@@ -198,3 +198,12 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se añadió una prueba unitaria de alcance del portero (dirección, altura y distancia). La intervención es todavía una primera aproximación geométrica: no incluye animación de estirada, manos, predicción avanzada ni colisión física del cuerpo del portero.
 - Los archivos `MatchSimulation.java`, `MatchGameplay.java`, `FutbolNovaGame.java`, `MatchGameplayTest.java` y esta auditoría fueron releídos desde GitHub después de las escrituras.
 - CI de esta tanda aún no validada: los commits consecutivos cancelaron las ejecuciones intermedias. La última ejecución asociada al siguiente commit debe finalizar en verde antes de declarar compilación aprobada.
+
+### Implementación: estadísticas básicas y registro de eventos (2026-11-23)
+
+- Se añadió `MatchStatistics`, independiente de la escena, con contadores locales/visitantes para tiros, pases intentados, entradas, faltas, paradas y goles.
+- Mantiene un registro de los últimos 256 eventos para evitar crecimiento de memoria sin límite; los contadores del partido siguen siendo acumulativos.
+- Se conectaron al juego los eventos de tiro, pase intentado, entrada exitosa, falta detectada, parada del portero y gol.
+- El HUD muestra contadores agregados por equipo. El estado se reinicia al comenzar un amistoso nuevo, no en el descanso.
+- Se añadieron pruebas para separación por equipo, eventos, límite de historial y reset.
+- Estas estadísticas son una primera instrumentación: aún no calculan posesión porcentual, precisión de pase, tiros a puerta, regates ni estadísticas individuales; tampoco hay pantalla de resumen postpartido ni persistencia histórica.
