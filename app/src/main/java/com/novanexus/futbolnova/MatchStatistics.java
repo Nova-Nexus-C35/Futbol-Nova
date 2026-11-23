@@ -61,12 +61,11 @@ public final class MatchStatistics {
         java.util.Arrays.fill(saves,0);java.util.Arrays.fill(goals,0);
     }
     private PlayerCounters count(String playerId){
-        if(playerId==null||playerId.isEmpty())return EMPTY_COUNTERS;
+        if(playerId==null||playerId.isEmpty())return new PlayerCounters("");
         PlayerCounters counters=playerCounters.get(playerId);
         if(counters==null){counters=new PlayerCounters(playerId);playerCounters.put(playerId,counters);}
         return counters;
     }
-    private static final PlayerCounters EMPTY_COUNTERS=new PlayerCounters("");
     private void add(EventType type,boolean home){add(type,home,null);}
     private void add(EventType type,boolean home,String playerId){
         if(events.size()==MAX_EVENTS)events.remove(0);
