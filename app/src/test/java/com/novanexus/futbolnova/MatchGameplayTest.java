@@ -54,4 +54,19 @@ public final class MatchGameplayTest {
   assertFalse(MatchGameplay.shouldAiShoot(40f,18f));
   assertFalse(MatchGameplay.shouldAiShoot(Float.NaN,0f));
  }
+
+ @Test public void flagsOffsideReceiverWhenNoOnsideForwardOptionExists(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState passer=players.get(7),receiver=players.get(9);
+  passer.x=0f;passer.z=0f;receiver.x=0f;receiver.z=-25f;
+  for(int i=0;i<players.size();i++){
+   MatchSimulation.PlayerState player=players.get(i);
+   if(i<11&&i!=7&&i!=9){player.x=28f;player.z=0f;}
+   if(i>=11){player.x=25f;player.z=(i%2==0)?-18f:-20f;}
+  }
+  MatchGameplay.PassTargetDecision decision=MatchGameplay.findForwardPassDecision(players,7,0f,0f,true,true);
+  assertEquals(9,decision.receiverIndex);assertTrue(decision.offside);
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.findForwardPassTarget(players,7,0f,0f,true,true));
+ }
 }
