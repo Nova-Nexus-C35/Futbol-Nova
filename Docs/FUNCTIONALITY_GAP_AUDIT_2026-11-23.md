@@ -291,3 +291,11 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se integró en FutbolNovaGame y reemplazó el seguimiento de cámara previo. El resto de geometría, jugadores y estadio sigue siendo el prototipo procedural descrito anteriormente.
 - Se añadieron pruebas unitarias de encuadre, suavizado, límites y protección ante delta no finito. Se corrigió la implementación antes de registrar el avance y se releerán los archivos para verificarlo.
 - No equivale aún a la cámara completa de un FIFA moderno: faltan cortes por contexto, seguimiento de posesión, zoom y planos configurables, repetición de goles y pruebas visuales en dispositivo.
+
+
+### Implementación: mejora procedural del campo y graderíos 3D (2026-11-23)
+
+- Se añadieron franjas alternas de césped mediante dos mallas/materiales compartidos, conservando el campo reglamentario y sus líneas.
+- Se sustituyeron los cuatro bloques de gradas por seis niveles escalonados por lado, con tonos alternos para dar volumen y lectura de estadio desde la nueva cámara elevada.
+- Los elementos se instancian desde mallas compartidas para evitar crear una malla independiente por fila.
+- Limitación: todavía no hay público modelado, asientos individuales, cubiertas, barandillas, túneles, banquillos ni sombras avanzadas. Se registra como mejora de prototipo y no como estadio moderno terminado.
