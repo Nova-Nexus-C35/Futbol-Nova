@@ -40,3 +40,23 @@ Buscar repositorios públicos es una actividad permanente del desarrollo. Cada h
 La ejecución Android CI #160 (commit previo `09aead75766875fe71818b72dbd567a23bff8c39`) ejecutó 56 pruebas y falló en las cuatro pruebas de `BroadcastCameraTest` con `java.lang.UnsatisfiedLinkError`. La causa es que las pruebas JVM ejercitan utilidades matemáticas/cámara de libGDX que requieren las bibliotecas nativas de escritorio; el proyecto solo declaraba nativos ARM64 para empaquetar la aplicación.
 
 Se añadió `testRuntimeOnly "com.badlogicgames.gdx:gdx-platform:${gdxVersion}:natives-desktop"` a `app/build.gradle`. Es una dependencia exclusiva del runtime de pruebas; no sustituye ni se empaqueta en lugar de los nativos ARM64 de Android. La corrección queda pendiente de confirmación por la siguiente ejecución CI asociada al nuevo HEAD.
+
+
+## Ampliación de investigación — 2026-11-23
+
+Se amplió la búsqueda a repositorios públicos encontrados en GitHub. Se registran como referencias de estudio, no como dependencias ni como código incorporado:
+
+- [Pirhan/soccer-game-ai](https://github.com/Pirhan/soccer-game-ai) — proyecto Java 5v5 con IA para regate, tiro, pase y formaciones; GitHub identifica licencia MIT. Es la referencia de lenguaje más próxima para estudiar descomposición de decisiones ofensivas, pero el alcance 5v5 y sus bibliotecas antiguas (Slick/LWJGL y librerías incluidas) no lo hacen integrable directamente en Android/libGDX. Revisar LICENSE y dependencias de cada archivo antes de portar cualquier fragmento.
+- [brenosss/touchlines](https://github.com/brenosss/touchlines) — motor de partido 2D con árbol de decisiones pass/carry/shoot/dribble/through-ball, posicionamiento de portero, fuera de juego, tácticas y pruebas deterministas. GitHub muestra AGPL-3.0. Se utilizará solo como referencia conceptual mientras no exista una decisión jurídica explícita sobre obligaciones AGPL; no copiar ni enlazar código al runtime.
+- [santisiri/fobal-simulator](https://github.com/santisiri/fobal-simulator) — simulación retro-isométrica 2D con motor headless, protocolo versionado, servidor, IA utilitaria, roles, desmarques, marcaje y estadísticas. No se confirmó licencia en esta revisión; solo estudio de arquitectura y escenarios, sin reutilizar código/assets.
+- [FlavioMili/Player12](https://github.com/FlavioMili/Player12) — simulador/manager de fútbol con partidos, táctica, replay, estadísticas y guardado; está desarrollado en C++23/SDL3 y GitHub muestra GPL-3.0. No es compatible directamente con Java/libGDX ni se portará código por defecto; puede orientar requisitos de persistencia y modos de gestión futuros.
+
+### Prioridades extraídas, sin adopción de código
+
+1. Crear decisiones ofensivas separadas y testeables: pase, conducción, regate, tiro, centro y protección.
+2. Mantener una simulación determinista/headless para pruebas de partido, independiente del render 3D.
+3. Añadir roles y responsabilidades para evitar que todos los jugadores persigan el balón; usar escenarios reproducibles para presión, marcaje y transición.
+4. Diseñar eventos/versionado de partido para replay, estadísticas e historial.
+5. Tratar la licencia AGPL de TouchLines y GPL de Player12 como restricciones reales: no copiar ni mezclar código sin evaluación legal y cumplimiento explícito.
+
+La búsqueda se repetirá al iniciar cada subsistema relevante. Toda futura integración deberá tener una ficha con origen, commit/versión, licencia del archivo concreto, dependencias, atribución, compatibilidad Android ARM64 y pruebas.
