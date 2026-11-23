@@ -252,3 +252,15 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se añadieron pruebas de decisión de pase y del contador de fuera de juego. La regla sigue siendo una aproximación: no cubre todas las situaciones de interferencia, rebotes ni excepciones complejas de reglamento.
 
 - Se limpian las infracciones de fuera de juego pendientes al iniciar/reiniciar períodos y cuando interviene un portero; el HUD muestra también el contador de fueras de juego. La prueba de fuera de juego cubre ambos sentidos de ataque.
+
+
+### Implementación: estadísticas individuales por identidad de jugador (2026-11-23)
+
+- MatchStatistics conserva los contadores por equipo y ahora mantiene también contadores individuales por ID canónico del jugador: tiros, pases intentados, entradas, faltas, paradas, goles y fueras de juego.
+- Los eventos recientes incluyen playerId cuando el origen se conoce. El historial continúa limitado a 256 eventos para controlar memoria; los contadores individuales son acumulativos durante el partido y no se pierden al rotar el historial.
+- Se conectaron al registro individual las acciones humanas y de IA que tienen un jugador identificable: disparos, pases, entradas, faltas, paradas y fuera de juego. El gol se registra todavía por equipo porque el sistema actual no identifica con fiabilidad al goleador en la detección de cruce de línea.
+- Se añadieron pruebas para verificar estadísticas de dos jugadores, persistencia de contadores más allá del límite del historial y limpieza al reiniciar.
+- Verificación de GitHub: MatchStatistics.java, MatchStatisticsTest.java y FutbolNovaGame.java se releyeron después de sus escrituras; los contenidos observados incluyen los nuevos contadores y atribuciones por ID.
+- La ejecución CI #118 (commit da23db6562590a42e61621e5ec5cd5eb66b8c123) terminó con éxito, incluyendo pruebas Java, compilación de APK debug ARM64, verificación del runtime nativo y subida del artefacto. Esa ejecución es anterior a esta nueva implementación individual; debe validarse una nueva CI para estos cambios.
+- El resumen de auditoría anterior que marcaba fuera de juego vivo y tiros de IA como pendientes queda superado parcialmente por las secciones de implementación posteriores: el juego ahora marca fuera de juego al recibir el pase seleccionado y la IA puede disparar en una zona ofensiva central. Siguen siendo aproximaciones y no cubren toda la casuística reglamentaria ni una IA táctica completa.
+- Pendiente: mostrar tabla individual y resumen postpartido; atribuir con fiabilidad el goleador; registrar métricas adicionales (tiros a puerta, precisión de pase, regates, minutos y posesión); persistir estadísticas e historial entre sesiones. No afirmar que el sistema estadístico completo esté terminado.
