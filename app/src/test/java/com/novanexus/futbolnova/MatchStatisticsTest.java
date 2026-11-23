@@ -45,7 +45,8 @@ public class MatchStatisticsTest {
         assertEquals(1,stats.getPlayerCounters("player-7").getPasses());
         assertEquals(1,stats.getPlayerCounters("player-9").getTackles());
         assertEquals(256,stats.getEvents().size());
-        assertEquals("player-7",stats.getEvents().get(255).playerId);
+        assertEquals("player-7",stats.getEvents().get(254).playerId);
+        assertEquals("player-9",stats.getEvents().get(255).playerId);
         stats.reset();
         assertNull(stats.getPlayerCounters("player-7"));
         assertTrue(stats.getPlayers().isEmpty());
