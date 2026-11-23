@@ -234,10 +234,57 @@ public final class MatchSimulation {
         boolean teamAttacking=ownDistance<=oppositionDistance;
         TacticalTarget shape=calculateOffBallTarget(p,ballX,ballZ,teamAttacking,homeAttacksNegativeZ);
         p.targetX=shape.x;p.targetZ=shape.z;
+        if(!teamAttacking&&isDefensiveRole(p.role)){
+            TacticalTarget mark=calculateDefensiveMarkTarget(p,players,homeAttacksNegativeZ);
+            p.targetX=mark.x;p.targetZ=mark.z;
+        }
         if(nearestOwn==index&&distance(p.homeX,p.homeZ,ballX,ballZ)<29f){
             p.targetX=clamp(ballX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f);
             p.targetZ=clamp(ballZ+attackSign*1.25f,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f);
         }
+    }
+
+    private static boolean isDefensiveRole(String role) {
+        return "LB".equals(role)||"LCB".equals(role)||"RCB".equals(role)
+                ||"RB".equals(role)||"DM".equals(role);
+    }
+
+    /** Assigns a nearby opposing attacker to its closest defensive-role player. */
+    public static TacticalTarget calculateDefensiveMarkTarget(PlayerState defender,
+            List<PlayerState> lineup,boolean homeAttacksNegativeZ) {
+        if(defender==null||lineup==null||!isDefensiveRole(defender.role))
+            return new TacticalTarget(defender==null?0f:defender.homeX,
+                    defender==null?0f:defender.homeZ);
+        float attackSign=defender.homeTeam?(homeAttacksNegativeZ?-1f:1f)
+                :(homeAttacksNegativeZ?1f:-1f);
+        PlayerState assigned=null;
+        float assignedDistance=Float.MAX_VALUE;
+        for(PlayerState opponent:lineup){
+            if(opponent.homeTeam==defender.homeTeam||"GK".equals(opponent.role))continue;
+            float defenderDistance=distance(defender.x,defender.z,opponent.x,opponent.z);
+            boolean closestMarker=true;
+            for(PlayerState teammate:lineup){
+                if(teammate.homeTeam!=defender.homeTeam||!isDefensiveRole(teammate.role)
+                        ||teammate==defender)continue;
+                if(distance(teammate.x,teammate.z,opponent.x,opponent.z)<defenderDistance){
+                    closestMarker=false;break;
+                }
+            }
+            if(closestMarker&&defenderDistance<assignedDistance){
+                assigned=opponent;assignedDistance=defenderDistance;
+            }
+        }
+        if(assigned==null)return new TacticalTarget(
+                clamp(defender.homeX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f),
+                clamp(defender.homeZ,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f));
+        float targetX=assigned.x;
+        float targetZ=assigned.z-attackSign*2.2f;
+        float dx=targetX-defender.homeX,dz=targetZ-defender.homeZ;
+        float displacement=(float)Math.sqrt(dx*dx+dz*dz);
+        if(displacement>13f){targetX=defender.homeX+dx*13f/displacement;
+            targetZ=defender.homeZ+dz*13f/displacement;}
+        return new TacticalTarget(clamp(targetX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f),
+                clamp(targetZ,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f));
     }
 
     private int nearestTeammateToBall(boolean home,float ballX,float ballZ) {
