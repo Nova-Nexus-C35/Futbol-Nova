@@ -56,7 +56,7 @@ public final class MatchGameplay {
             MatchSimulation.PlayerState player=players.get(i);
             if(player.homeTeam!=homeTeam||"GK".equals(player.role))continue;
             float distance=distance(originX,originZ,player.x,player.z);
-            float gain=(originZ-player.z)*attackSign;
+            float gain=(player.z-originZ)*attackSign;
             if(distance<3f||distance>19f||gain<1f)continue;
             if(!isPassLaneClear(players,originX,originZ,player.x,player.z,homeTeam,passerIndex,i))continue;
             MatchRules.OffsideDecision offside=MatchRules.evaluateOffsideAtPass(
