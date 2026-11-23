@@ -358,3 +358,36 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - FutbolNovaGame.tryGoalkeeperSave() usa la predicción y resuelve el contacto en el punto estimado, en lugar de exigir únicamente que el balón ya esté a menos de 2,4 m del portero.
 - MatchGameplayTest cubre ambos sentidos de ataque y rechazos por trayectoria fuera de portería/altura.
 - Limitación: todavía no hay animaciones esqueléticas de estirada, atrapada, blocaje o despeje; la resolución física del contacto sigue siendo simplificada y debe probarse en Android.
+
+
+---
+
+## Actualización de estado — 2026-11-23, rama de desarrollo
+
+Esta sección complementa la auditoría histórica anterior; no borra el contexto del snapshot original.
+
+### Cambios confirmados desde el snapshot anterior
+
+- MatchClock tiene fases PRE_MATCH, FIRST_HALF, HALF_TIME, SECOND_HALF y FULL_TIME, pausa/reanudación, duración de cada mitad y tiempo añadido configurable. La interfaz permite iniciar, pausar/reanudar, pasar al segundo tiempo y reiniciar otro amistoso. El tiempo añadido aún no está conectado a una UI de árbitro/eventos.
+- El selector prepartido recorre equipos válidos del catálogo; MatchSimulation.start(TeamRoster, TeamRoster) arma dos onces desde los JSON canónicos. Se muestran nombres e identidades de jugadores en el HUD. Sigue pendiente una pantalla visual completa de selección, alineaciones y uniformes auténticos.
+- El cambio de futbolista local recorre los diez jugadores de campo y evita seleccionar al portero. El control táctil identifica punteros independientes para movimiento y acciones; falta validación física en el teléfono objetivo.
+- El pase puede marcar al receptor en fuera de juego y sancionarlo si interviene tocando el balón. Aún no modela todas las condiciones reglamentarias de participación activa, interferencia ni excepciones de juego deliberado.
+- El portero dispone de predicción de intercepción en el plano de gol y respuesta simplificada de blocaje/desvío. No hay todavía animaciones de estirada, captura esquelética, salidas, control de rebote ni recuperación física realista.
+- CI #173, asociado al commit 2c9cee38a021abf5ad33d42d0e6e47b644bde09f, terminó correctamente: pruebas unitarias, build Android ARM64, verificación del runtime nativo y subida del APK debug. Esto no acredita pruebas manuales en el dispositivo.
+
+### Nuevo incremento de IA ofensiva
+
+Se implementó selección de carril de conducción para el portador controlado por IA. Evalúa centro y dos diagonales hacia delante, calcula el espacio frente a rivales y actualiza el objetivo de movimiento durante la fase de conducción. Se añadieron pruebas para evitar defensores y para la dirección invertida tras el descanso.
+
+### Pendiente y no debe darse por terminado
+
+- La conducción aún no es un regate técnico: faltan fintas, cambios de ritmo, protección y contacto.
+- La IA todavía no coordina apoyos/desmarques, basculación, coberturas, marcaje por zonas ni transiciones tácticas completas.
+- El reglamento vivo no está completo: árbitro, ventaja, tarjetas, lesiones, sustituciones, penaltis/tiros libres ejecutados por el jugador y reinicios reglamentarios siguen incompletos.
+- Persistencia, historial, resumen postpartido y estadísticas completas siguen pendientes.
+- Estadio, personajes riggeados, kits, animaciones, audio y HUD siguen siendo una base procedural, no presentación comparable a un juego FIFA moderno.
+- El APK debug CI aún requiere descarga/instalación y pruebas reales en Android 9 ARM64. No declarar versión final ni publicación estable hasta completar esa aceptación.
+
+### Repositorios adicionales consultados
+
+Se revisaron League-Soccer (C++/Apache-2.0), MESSI (JAX/Python, referencia de investigación), FootballEngine (F# WIP), android-3D-engine (Android/OpenGL ES, licencia pendiente de verificación) y 3D-Soccer-Game-Engine (Three.js/MIT). Ninguno se incorporó como dependencia ni se copiaron assets/código. Ver Docs/OPEN_SOURCE_RESEARCH.md para decisiones y compatibilidad.
