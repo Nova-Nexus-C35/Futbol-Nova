@@ -264,3 +264,12 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - La ejecución CI #118 (commit da23db6562590a42e61621e5ec5cd5eb66b8c123) terminó con éxito, incluyendo pruebas Java, compilación de APK debug ARM64, verificación del runtime nativo y subida del artefacto. Esa ejecución es anterior a esta nueva implementación individual; debe validarse una nueva CI para estos cambios.
 - El resumen de auditoría anterior que marcaba fuera de juego vivo y tiros de IA como pendientes queda superado parcialmente por las secciones de implementación posteriores: el juego ahora marca fuera de juego al recibir el pase seleccionado y la IA puede disparar en una zona ofensiva central. Siguen siendo aproximaciones y no cubren toda la casuística reglamentaria ni una IA táctica completa.
 - Pendiente: mostrar tabla individual y resumen postpartido; atribuir con fiabilidad el goleador; registrar métricas adicionales (tiros a puerta, precisión de pase, regates, minutos y posesión); persistir estadísticas e historial entre sesiones. No afirmar que el sistema estadístico completo esté terminado.
+
+
+### Implementación: conducción contextual del balón por la IA (2026-11-23)
+
+- Se añadió una decisión determinista para que la IA conduzca el balón hacia espacios libres cuando aún está fuera de su zona de tiro y el rival más cercano está a 4,5 metros o más.
+- La decisión se reevalúa cada 0,45 segundos; si el rival presiona, el jugador sale de la zona de conducción y busca pase/despeje, o dispara si cumple la condición de tiro ya existente.
+- La conducción aprovecha el movimiento del poseedor que ya realiza MatchSimulation, por lo que no crea un segundo sistema de movimiento ni duplica el estado del balón.
+- Se añadieron pruebas para espacio libre, cercanía a portería, presión rival y datos no finitos.
+- Limitación: esto constituye conducción básica en espacio, no un sistema de regates técnicos, fintas, protección corporal, cambio de ritmo o selección avanzada de carriles.
