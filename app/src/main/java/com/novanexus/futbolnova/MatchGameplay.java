@@ -121,6 +121,33 @@ public final class MatchGameplay {
                 &&goalProgress>=0f&&goalProgress<34f&&nearestOpponentDistance>=4.5f;
     }
 
+    /**
+     * Predicts whether a shot will cross the goal mouth within the keeper's reaction window
+     * and within the keeper's lateral reach. Returns the predicted contact time, or -1.
+     * Uses the same gravity constant as BallFlightModel; the short prediction horizon keeps
+     * aerodynamic approximation error bounded for the save decision.
+     */
+    public static float goalkeeperInterceptTime(float keeperX,float keeperZ,
+            float ballX,float ballY,float ballZ,float velocityX,float velocityY,float velocityZ,
+            float ownGoalDirection) {
+        if(!Float.isFinite(keeperX)||!Float.isFinite(keeperZ)||!Float.isFinite(ballX)
+                ||!Float.isFinite(ballY)||!Float.isFinite(ballZ)||!Float.isFinite(velocityX)
+                ||!Float.isFinite(velocityY)||!Float.isFinite(velocityZ)
+                ||!Float.isFinite(ownGoalDirection)||Math.abs(ownGoalDirection)<0.5f)
+            return -1f;
+        if(velocityZ*ownGoalDirection<=0.35f)return -1f;
+        float goalPlane=ownGoalDirection*52.5f-ownGoalDirection*0.65f;
+        float time=(goalPlane-ballZ)/velocityZ;
+        if(!Float.isFinite(time)||time<0f||time>1.2f)return -1f;
+        float predictedX=ballX+velocityX*time;
+        float predictedY=ballY+velocityY*time-0.5f*BallFlightModel.DEFAULT_GRAVITY*time*time;
+        if(predictedX< -3.66f||predictedX>3.66f||predictedY<0.15f||predictedY>2.44f)
+            return -1f;
+        if(Math.abs(predictedX-keeperX)>2.7f||Math.abs(goalPlane-keeperZ)>5.5f)
+            return -1f;
+        return time;
+    }
+
     /** True when a keeper can reach a low or mid-height shot travelling toward their own goal. */
     public static boolean canGoalkeeperAttemptSave(float keeperX,float keeperZ,
             float ballX,float ballY,float ballZ,float velocityZ,float ownGoalDirection) {
