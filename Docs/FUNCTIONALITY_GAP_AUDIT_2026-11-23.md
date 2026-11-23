@@ -442,3 +442,12 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - La velocidad mantiene elevación inicial y respeta el sentido de ataque del equipo, incluido el cambio de campo tras el descanso.
 - La decisión se aisló en MatchGameplay.penaltyShotVelocity() y se añadieron pruebas para portero a izquierda/derecha, dirección de ambos tiempos y entrada no finita.
 - Limitación: el penalti sigue siendo una resolución automática, no una ejecución interactiva con carrera, elección de potencia/colocación, movimiento anticipado del portero, infracciones de jugadores, rebotes ni repetición reglamentaria. No equivale a un sistema completo de penaltis.
+
+
+### Refactor verificable: ejecución centralizada de reinicios (2026-11-23)
+
+- Se centralizó en `MatchRules.restartVelocity()` el cálculo de velocidad inicial de saque inicial, banda, córner, saque de meta, tiro libre y penalti.
+- `FutbolNovaGame.updateGameplay()` ahora delega la ejecución del reinicio al motor de reglas; se conserva el comportamiento previo de velocidades, orientación según equipo beneficiado y cambio de campo.
+- Se añadieron pruebas unitarias para la dirección de ambos equipos, saque de banda, córner, saque de meta, tiro libre, penalti según la posición lateral del portero y protección frente a coordenadas no finitas.
+- Esta separación facilita sustituir los reinicios automáticos por ejecuciones interactivas sin duplicar reglas en el controlador principal.
+- Limitación: los reinicios siguen ejecutándose automáticamente tras una espera; todavía faltan control manual de potencia/dirección, colocación de barrera, distancias reglamentarias, restricciones de jugadores y validación física de saques de banda/córner/tiros libres.
