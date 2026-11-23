@@ -122,6 +122,36 @@ public final class MatchGameplay {
     }
 
     /**
+     * Selects a safe forward dribbling lane for an AI ball carrier.
+     * The three candidate lanes are scored by nearest-opponent clearance, while
+     * lateral movement is kept modest and the target remains inside the pitch.
+     * The returned vector stores the target X/Z in its x/z components.
+     */
+    public static Vector3 chooseAiCarryTarget(List<MatchSimulation.PlayerState> players,
+            int ownerIndex,boolean homeAttacksNegativeZ) {
+        if(players==null||ownerIndex<0||ownerIndex>=players.size())return new Vector3();
+        MatchSimulation.PlayerState owner=players.get(ownerIndex);
+        float attackSign=owner.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
+        float targetZ=clamp(owner.z+attackSign*5.5f,
+                -MatchSimulation.FIELD_HALF_LENGTH+2f,MatchSimulation.FIELD_HALF_LENGTH-2f);
+        float[] lateralOffsets={0f,-4.5f,4.5f};
+        float bestX=owner.x,bestScore=Float.NEGATIVE_INFINITY;
+        for(float offset:lateralOffsets){
+            float candidateX=clamp(owner.x+offset,
+                    -MatchSimulation.FIELD_HALF_WIDTH+2f,MatchSimulation.FIELD_HALF_WIDTH-2f);
+            float nearestOpponent=Float.MAX_VALUE;
+            for(MatchSimulation.PlayerState candidate:players){
+                if(candidate.homeTeam==owner.homeTeam)continue;
+                float dx=candidate.x-candidateX,dz=candidate.z-targetZ;
+                nearestOpponent=Math.min(nearestOpponent,(float)Math.sqrt(dx*dx+dz*dz));
+            }
+            float score=nearestOpponent*1.25f-Math.abs(candidateX-owner.x)*0.20f;
+            if(score>bestScore){bestScore=score;bestX=candidateX;}
+        }
+        return new Vector3(bestX,0f,targetZ);
+    }
+
+    /**
      * Predicts whether a shot will cross the goal mouth within the keeper's reaction window
      * and within the keeper's lateral reach. Returns the predicted contact time, or -1.
      * Uses the same gravity constant as BallFlightModel; the short prediction horizon keeps
