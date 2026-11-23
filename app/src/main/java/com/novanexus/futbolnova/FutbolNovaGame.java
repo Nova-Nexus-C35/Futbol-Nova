@@ -254,6 +254,12 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             }
             return;
         }
+        if(x>=width*0.32f){
+            int selected=matchSimulation.cycleControlledPlayer();
+            MatchSimulation.PlayerState player=matchSimulation.getControlledPlayer();
+            if(selected>=0&&player!=null)controlledPosition.set(player.x,0f,player.z);
+            return;
+        }
         switch(matchClock.getPhase()){
             case PRE_MATCH: matchClock.start(); break;
             case HALF_TIME: matchClock.startSecondHalf(); break;
@@ -262,14 +268,14 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void performShot(){
-        if(possessionOwnerIndex!=MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        if(possessionOwnerIndex!=matchSimulation.getControlledPlayerIndex())return;
         ballPosition.set(controlledPosition.x,BALL_RADIUS,controlledPosition.z-0.62f);
         ballVelocity.set(MatchGameplay.shotVelocity(true,-ballPosition.x*0.22f));ballSpin.set(0f,18f,0f);
         possessionOwnerIndex=MatchGameplay.NO_OWNER;lastTouchHome=true;
     }
 
     private void performPass(){
-        if(possessionOwnerIndex!=MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        if(possessionOwnerIndex!=matchSimulation.getControlledPlayerIndex())return;
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
         int receiver=MatchGameplay.findForwardPassTarget(lineup,MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX,controlledPosition.x,controlledPosition.z,true);
         ballPosition.set(controlledPosition.x,BALL_RADIUS,controlledPosition.z-0.62f);
@@ -281,7 +287,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void performTackle(){
         if(tackleCooldown>0f||possessionOwnerIndex<0||possessionOwnerIndex==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
-        MatchSimulation.PlayerState attacker=lineup.get(MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX),target=lineup.get(possessionOwnerIndex);
+        MatchSimulation.PlayerState attacker=lineup.get(matchSimulation.getControlledPlayerIndex()),target=lineup.get(possessionOwnerIndex);
         if(target.homeTeam)return;
         MatchSimulation.TackleResult result=MatchGameplay.tackle(attacker,target,1.7f);tackleCooldown=0.75f;
         if(result!=null&&result.success){possessionOwnerIndex=MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX;lastTouchHome=true;}
@@ -376,7 +382,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         float offset=owner.homeTeam?-0.62f:0.62f;
         ballPosition.set(owner.x,BALL_RADIUS,owner.z+offset);
         ballVelocity.setZero();ballSpin.setZero();lastTouchHome=owner.homeTeam;
-        if(possessionOwnerIndex==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        if(possessionOwnerIndex==matchSimulation.getControlledPlayerIndex())return;
         aiKickClock-=delta;if(aiKickClock>0f)return;
         int receiver=MatchGameplay.findForwardPassTarget(lineup,possessionOwnerIndex,owner.x,owner.z,owner.homeTeam);
         if(receiver!=MatchGameplay.NO_OWNER){
@@ -446,7 +452,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             default: phaseText=matchClock.isPaused()?"PARTIDO PAUSADO - TOCA ARRIBA A LA DERECHA PARA SEGUIR":"";
         }
         if(!phaseText.isEmpty())font.draw(spriteBatch,phaseText,18f,Gdx.graphics.getHeight()*0.56f);
-        font.draw(spriteBatch,"ARRIBA DERECHA: PAUSA / CONTINUAR",18f,Gdx.graphics.getHeight()-48f);
+        font.draw(spriteBatch,"ARRIBA CENTRO: CAMBIAR JUGADOR   ARRIBA DERECHA: PAUSA",18f,Gdx.graphics.getHeight()-48f);
         spriteBatch.end();
     }
 
