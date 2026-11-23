@@ -18,6 +18,7 @@ public final class MatchReport {
     public List<CardRecord> cards = new ArrayList<>();
     /** Ordered event timeline copied from the bounded in-match statistics ledger. */
     public List<EventRecord> events = new ArrayList<>();
+    public List<PlayerRecord> players = new ArrayList<>();
 
     public static final class CardRecord {
         public String playerId;
@@ -33,6 +34,19 @@ public final class MatchReport {
     }
 
     /** One chronological gameplay event; order is preserved even when no timestamp exists. */
+    /** Per-player totals captured at full time. */
+    public static final class PlayerRecord {
+        public String playerId;
+        public int shots,passes,tackles,fouls,saves,goals,offsides;
+        public PlayerRecord() {}
+        PlayerRecord(MatchStatistics.PlayerCounters counters) {
+            playerId=counters.playerId;
+            shots=counters.getShots();passes=counters.getPasses();
+            tackles=counters.getTackles();fouls=counters.getFouls();
+            saves=counters.getSaves();goals=counters.getGoals();
+            offsides=counters.getOffsides();
+        }
+    }
     public static final class EventRecord {
         public String type;
         public boolean homeTeam;
@@ -59,6 +73,7 @@ public final class MatchReport {
         report.homeOffsides=stats.getOffsides(true);report.awayOffsides=stats.getOffsides(false);
         for(MatchDiscipline.CardEvent event:discipline.snapshotEvents())report.cards.add(new CardRecord(event));
         for(MatchStatistics.Event event:stats.getEvents())report.events.add(new EventRecord(event));
+        for(MatchStatistics.PlayerCounters player:stats.getPlayers())report.players.add(new PlayerRecord(player));
         return report;
     }
 

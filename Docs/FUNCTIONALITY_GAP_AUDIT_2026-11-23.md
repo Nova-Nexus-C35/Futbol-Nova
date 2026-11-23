@@ -549,3 +549,13 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - En el descanso se permite cambiar a cualquiera de los dos equipos antes de iniciar la segunda parte; si ambos banquillos están vacíos, se continúa directamente.
 - No se alteran los límites ni las reglas del backend de sustituciones.
 - Validación automatizada de esta interfaz pendiente en CI; no se declara prueba táctil física.
+
+### Estado verificado posterior y estadísticas individuales (2026-11-23)
+
+- CI #244 (45288529392) terminó success para el commit a6ae7bb1f57092857f6dbfbcb4a25d3bd73cdd56; la interfaz táctil de sustituciones del equipo visitante quedó incluida en una compilación Android ARM64 validada por CI.
+- CI #245 (45288905365) terminó success para el commit 2b56854f40dfb56e852a9c78d4d3eb231802a4bb; se validaron la compilación Android ARM64 y la prueba JSON de cronología ordenada del partido. Artefacto debug ID 14872334495, ZIP 3,479,253 bytes, digest SHA-256 a9603b2b4607762208bfe3aad29e32a65fd214f1281ceff9ca99b590cde2f741, expiración 2026-12-07T23:28:12Z.
+- La cronología persistida conserva hasta 256 eventos recientes, en orden, con tipo, equipo y jugador cuando se conoce. Los eventos aún no llevan marca de tiempo individual; no interpretar el orden como minuto exacto.
+- En este incremento, MatchReport incorpora una tabla de totales por futbolista (tiros, pases intentados, entradas, faltas, paradas, goles y fueras de juego) copiada del ledger de estadísticas y serializada en JSON. Se añaden pruebas de ida y vuelta para comprobar estadísticas del goleador y del infractor.
+- Head de la rama al iniciar este incremento: 2b56854f40dfb56e852a9c78d4d3eb231802a4bb. La modificación siguiente queda pendiente de su propia CI; no confundir la validación #245 con esta nueva tanda.
+- Siguen pendientes los contadores de posesión, tiros a puerta, precisión de pase, regates y duelos, porque el runtime no los registra de forma suficiente para reportarlos sin inventar datos.
+- Esta auditoría amplía el registro de avances: sus secciones históricas describen el estado en el momento en que se escribieron y no deben tomarse como una descripción actual completa. La fuente vigente para el estado más reciente es el último registro fechado y el historial de commits/CI de la rama.

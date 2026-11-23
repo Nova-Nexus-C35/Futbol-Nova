@@ -43,6 +43,27 @@ public class MatchReportTest {
         assertEquals("home_09",restored.events.get(3).playerId);
     }
 
+    @Test public void reportCapturesPerPlayerStatistics(){
+        MatchStatistics stats=new MatchStatistics();
+        stats.recordShot("home_09",true);
+        stats.recordShot("home_09",true);
+        stats.recordPassAttempt("home_09",true);
+        stats.recordGoal("home_09",true);
+        stats.recordFoul("away_04",false);
+        MatchReport original=MatchReport.capture("Cuba","Visitante",1,0,2700f,stats,new MatchDiscipline());
+        MatchReport restored=MatchReport.fromJson(original.toJson());
+        assertNotNull(restored);
+        assertEquals(2,restored.players.size());
+        MatchReport.PlayerRecord scorer=restored.players.get(0);
+        assertEquals("home_09",scorer.playerId);
+        assertEquals(2,scorer.shots);
+        assertEquals(1,scorer.passes);
+        assertEquals(1,scorer.goals);
+        MatchReport.PlayerRecord fouler=restored.players.get(1);
+        assertEquals("away_04",fouler.playerId);
+        assertEquals(1,fouler.fouls);
+    }
+
     @Test public void invalidReportJsonIsRejected(){
         assertNull(MatchReport.fromJson(""));
         assertNull(MatchReport.fromJson("{invalid"));
