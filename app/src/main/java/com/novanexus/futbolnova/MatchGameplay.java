@@ -21,32 +21,52 @@ public final class MatchGameplay {
         return best;
     }
 
+    public static final class PassTargetDecision {
+        public final int receiverIndex;
+        public final boolean offside;
+        private PassTargetDecision(int receiverIndex,boolean offside){
+            this.receiverIndex=receiverIndex;this.offside=offside;
+        }
+    }
+
     public static int findForwardPassTarget(List<MatchSimulation.PlayerState> players,
-            int passerIndex, float originX,float originZ,boolean homeTeam) {
+            int passerIndex,float originX,float originZ,boolean homeTeam) {
         return findForwardPassTarget(players,passerIndex,originX,originZ,homeTeam,true);
     }
 
     public static int findForwardPassTarget(List<MatchSimulation.PlayerState> players,
-            int passerIndex, float originX,float originZ,boolean homeTeam,boolean homeAttacksNegativeZ) {
-        if(players==null || passerIndex<0 || passerIndex>=players.size()) return NO_OWNER;
-        float attackSign=homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f), bestScore=Float.NEGATIVE_INFINITY;
+            int passerIndex,float originX,float originZ,boolean homeTeam,boolean homeAttacksNegativeZ) {
+        PassTargetDecision decision=findForwardPassDecision(players,passerIndex,originX,originZ,homeTeam,homeAttacksNegativeZ);
+        return decision.offside?NO_OWNER:decision.receiverIndex;
+    }
+
+    /** Prefers onside receivers; if every viable forward option is offside, returns the best flagged option. */
+    public static PassTargetDecision findForwardPassDecision(List<MatchSimulation.PlayerState> players,
+            int passerIndex,float originX,float originZ,boolean homeTeam,boolean homeAttacksNegativeZ) {
+        if(players==null||passerIndex<0||passerIndex>=players.size())
+            return new PassTargetDecision(NO_OWNER,false);
+        float attackSign=homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
         List<Float> defenders=new ArrayList<>();
-        for(MatchSimulation.PlayerState p:players)if(p.homeTeam!=homeTeam)defenders.add(p.z);
-        int best=NO_OWNER;
+        for(MatchSimulation.PlayerState player:players)if(player.homeTeam!=homeTeam)defenders.add(player.z);
+        int bestOnside=NO_OWNER,bestAny=NO_OWNER;
+        float bestOnsideScore=Float.NEGATIVE_INFINITY,bestAnyScore=Float.NEGATIVE_INFINITY;
+        boolean bestAnyOffside=false;
         for(int i=0;i<players.size();i++){
-            if(i==passerIndex) continue;
-            MatchSimulation.PlayerState p=players.get(i);
-            if(p.homeTeam!=homeTeam || "GK".equals(p.role)) continue;
-            float d=distance(originX,originZ,p.x,p.z);
-            float gain=(originZ-p.z)*attackSign;
-            if(d<3f || d>19f || gain<1f) continue;
-            MatchRules.OffsideDecision offside=MatchRules.evaluateOffsideAtPass(p.z,originZ,defenders,attackSign,true,"");
-            if(offside.offence)continue;
-            if(!isPassLaneClear(players,originX,originZ,p.x,p.z,homeTeam,passerIndex,i)) continue;
-            float score=gain*1.4f-d*0.35f;
-            if(score>bestScore){bestScore=score;best=i;}
+            if(i==passerIndex)continue;
+            MatchSimulation.PlayerState player=players.get(i);
+            if(player.homeTeam!=homeTeam||"GK".equals(player.role))continue;
+            float distance=distance(originX,originZ,player.x,player.z);
+            float gain=(originZ-player.z)*attackSign;
+            if(distance<3f||distance>19f||gain<1f)continue;
+            if(!isPassLaneClear(players,originX,originZ,player.x,player.z,homeTeam,passerIndex,i))continue;
+            MatchRules.OffsideDecision offside=MatchRules.evaluateOffsideAtPass(
+                    player.z,originZ,defenders,attackSign,true,"");
+            float score=gain*1.4f-distance*0.35f;
+            if(score>bestAnyScore){bestAnyScore=score;bestAny=i;bestAnyOffside=offside.offence;}
+            if(!offside.offence&&score>bestOnsideScore){bestOnsideScore=score;bestOnside=i;}
         }
-        return best;
+        if(bestOnside!=NO_OWNER)return new PassTargetDecision(bestOnside,false);
+        return new PassTargetDecision(bestAny,bestAny!=NO_OWNER&&bestAnyOffside);
     }
 
     public static boolean isPassLaneClear(List<MatchSimulation.PlayerState> players,
