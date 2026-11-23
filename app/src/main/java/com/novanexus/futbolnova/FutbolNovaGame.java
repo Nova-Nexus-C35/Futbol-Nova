@@ -347,7 +347,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(restartClock>0f){
             restartClock-=delta;
             if(restartClock<=0f){
-                float attackSign=restartAwardedHome?-1f:1f;
+                float attackSign=restartAwardedHome?(matchSimulation.homeAttacksNegativeZ()?-1f:1f):(matchSimulation.homeAttacksNegativeZ()?1f:-1f);
                 if(kickoffRestart)ballVelocity.set(0f,1.2f,attackSign*5.5f);
                 else if(pendingRestart==MatchRules.Restart.THROW_IN)
                     ballVelocity.set(ballPosition.x>=0f?-5.5f:5.5f,5.2f,attackSign*4.5f);
