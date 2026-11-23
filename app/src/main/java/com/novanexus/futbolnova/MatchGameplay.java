@@ -23,8 +23,13 @@ public final class MatchGameplay {
 
     public static int findForwardPassTarget(List<MatchSimulation.PlayerState> players,
             int passerIndex, float originX,float originZ,boolean homeTeam) {
+        return findForwardPassTarget(players,passerIndex,originX,originZ,homeTeam,true);
+    }
+
+    public static int findForwardPassTarget(List<MatchSimulation.PlayerState> players,
+            int passerIndex, float originX,float originZ,boolean homeTeam,boolean homeAttacksNegativeZ) {
         if(players==null || passerIndex<0 || passerIndex>=players.size()) return NO_OWNER;
-        float attackSign=homeTeam?-1f:1f, bestScore=Float.NEGATIVE_INFINITY;
+        float attackSign=homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f), bestScore=Float.NEGATIVE_INFINITY;
         List<Float> defenders=new ArrayList<>();
         for(MatchSimulation.PlayerState p:players)if(p.homeTeam!=homeTeam)defenders.add(p.z);
         int best=NO_OWNER;
@@ -65,13 +70,21 @@ public final class MatchGameplay {
     }
 
     public static Vector3 shotVelocity(boolean homeTeam,float aimX) {
-        float attackSign=homeTeam?-1f:1f;
+        return shotVelocity(homeTeam,aimX,true);
+    }
+
+    public static Vector3 shotVelocity(boolean homeTeam,float aimX,boolean homeAttacksNegativeZ) {
+        float attackSign=homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
         Vector3 target=new Vector3(clamp(aimX,-3.1f,3.1f),0.65f,attackSign*52.5f);
         return target.nor().scl(27f).add(0f,5.8f,0f);
     }
 
     public static Vector3 clearanceVelocity(boolean homeTeam,float ballX) {
-        float attackSign=homeTeam?-1f:1f;
+        return clearanceVelocity(homeTeam,ballX,true);
+    }
+
+    public static Vector3 clearanceVelocity(boolean homeTeam,float ballX,boolean homeAttacksNegativeZ) {
+        float attackSign=homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
         float side=ballX>=0f?-1f:1f;
         return new Vector3(side*0.32f,0.42f,attackSign).nor().scl(18f);
     }
