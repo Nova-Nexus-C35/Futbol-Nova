@@ -333,3 +333,19 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Brazos y piernas se animan desde pivotes aproximados de hombros/caderas; botas acompañan el ciclo. Las funciones de animación son deterministas y protegen frente a valores no finitos.
 - PlayerAnimationTest comprueba pose inactiva, alternancia de swing positivo/negativo, amplitud acotada y recuperación ante entradas inválidas.
 - Limitación: no es todavía un rig esquelético con skin ni animaciones completas de fútbol; las piezas siguen siendo mallas low-poly independientes. Faltan clips de carrera/transición, pase, tiro, regate, salto, caída, tackle, portero y sincronización de contacto con el balón.
+
+
+### Corrección: bloqueo de acciones durante pausa y fuera del partido (2026-11-23)
+
+- Se detectó que el controlador táctil podía procesar movimiento, pase, tiro o entrada incluso en prepartido, descanso, pausa y final, porque las zonas de juego no comprobaban el estado de la máquina de reloj.
+- MatchClock.canAcceptGameplayInput() ahora devuelve verdadero únicamente durante primera/segunda parte y cuando el reloj no está pausado.
+- FutbolNovaGame.updateTouchControls() conserva las acciones superiores de interfaz (selección/inicio/pausa/cambio de jugador), pero descarta movimiento y acciones de juego cuando el estado no permite jugar.
+- MatchClockTest añade cobertura de la transición prepartido → juego → pausa → reanudación → final para esa condición.
+- Los tres archivos fueron releídos desde GitHub después de cada escritura y se verificó el contenido esperado.
+- Esto corrige la aceptación de entradas, pero no sustituye pruebas físicas multitáctiles en Android.
+
+### Corrección de entorno de pruebas libGDX (2026-11-23)
+
+- La CI #162 mostró cuatro UnsatisfiedLinkError en BroadcastCameraTest; se había añadido el artefacto de nativos desktop al runtime de pruebas, pero las pruebas aún no inicializaban explícitamente GdxNativesLoader.
+- BroadcastCameraTest ahora carga las bibliotecas nativas de libGDX en @BeforeClass, antes de construir PerspectiveCamera.
+- El archivo fue releído desde GitHub y el blob verificado. La CI correspondiente al HEAD más reciente sigue pendiente; no se declara solucionado hasta que pasen las pruebas y el empaquetado ARM64.
