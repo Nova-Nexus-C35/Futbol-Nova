@@ -36,6 +36,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final MatchStatistics matchStatistics = new MatchStatistics();
     private final MatchDiscipline matchDiscipline = new MatchDiscipline();
     private final MatchClock matchClock = new MatchClock();
+    private boolean matchReportSaved;
     private final MatchSimulation matchSimulation = new MatchSimulation();
     private List<OriginalProjectData.TeamRoster> playableRosters = new ArrayList<>();
     private TeamSelection teamSelection;
@@ -207,6 +208,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                     controlledPosition.x, controlledPosition.z);
             updateGameplay(delta);
         }
+        saveCompletedMatchReport();
         List<MatchSimulation.PlayerState> lineup = matchSimulation.getPlayers();
         animationClock+=delta;
         for(int i=0;i<lineup.size()&&i<playerVisuals.size();i++){
@@ -296,6 +298,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             if(x<width*0.32f){cycleHomeRoster();return;}
             if(x<width*0.72f){cycleAwayRoster();return;}
             if(matchClock.start()){
+                matchReportSaved=false;
                 ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
                 possessionOwnerIndex=MatchGameplay.NO_OWNER;pendingOffsideReceiver=MatchGameplay.NO_OWNER;restartAwardedHome=true;
                 kickoffRestart=true;pendingRestart=MatchRules.Restart.IN_PLAY;
@@ -344,6 +347,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void resetMatch(){
+        saveCompletedMatchReport();
+        matchReportSaved=false;
         matchClock.reset();matchState.reset();matchStatistics.reset();matchDiscipline.reset();
         if(teamSelection!=null)rebuildSelectedLineups();
         ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
@@ -389,6 +394,16 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 return;
             }
         }
+    }
+
+    private void saveCompletedMatchReport(){
+        if(matchReportSaved||matchClock.getPhase()!=MatchClock.Phase.FULL_TIME||Gdx.app==null)return;
+        MatchReport report=MatchReport.capture(matchSimulation.getHomeTeamName(),
+                matchSimulation.getAwayTeamName(),matchState.getHomeGoals(),matchState.getAwayGoals(),
+                matchClock.getTotalElapsedSeconds(),matchStatistics,matchDiscipline);
+        MatchReportStore.save(Gdx.app.getPreferences("futbol_nova_match_reports"),report);
+        matchReportSaved=true;
+        Gdx.app.log("FutbolNova","Saved completed match report: "+report.matchId);
     }
 
     private void recordFoulAndApplyDiscipline(MatchSimulation.PlayerState offender){
@@ -759,6 +774,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(!phaseText.isEmpty())font.draw(spriteBatch,phaseText,18f,Gdx.graphics.getHeight()*0.56f);
         if(matchClock.getPhase()==MatchClock.Phase.PRE_MATCH)
             font.draw(spriteBatch,"LOCAL: "+matchSimulation.getHomeTeamName()+"   VISITANTE: "+matchSimulation.getAwayTeamName(),18f,Gdx.graphics.getHeight()-48f);
+        if(matchClock.getPhase()==MatchClock.Phase.FULL_TIME&&Gdx.app!=null)
+            font.draw(spriteBatch,"ACTAS GUARDADAS: "+MatchReportStore.count(Gdx.app.getPreferences("futbol_nova_match_reports")),18f,102f);
         else font.draw(spriteBatch,"ARRIBA CENTRO: CAMBIAR JUGADOR   ARRIBA DERECHA: PAUSA / CONTINUAR",18f,Gdx.graphics.getHeight()-48f);
         spriteBatch.end();
     }
@@ -783,6 +800,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     @Override
     public void dispose() {
+        saveCompletedMatchReport();
         if (disposed) return;
         disposed = true;
         if (modelBatch != null) modelBatch.dispose();

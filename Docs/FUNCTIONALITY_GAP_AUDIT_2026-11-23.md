@@ -487,3 +487,11 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Los flujos de falta registran el tiempo del partido y la amonestación por persistencia se etiqueta como tal. Los métodos públicos de decisión arbitral permiten emitir amarilla o roja con motivo explícito y conservan compatibilidad con las llamadas anteriores.
 - El historial es únicamente en memoria durante el partido. Todavía no se guarda en disco, no genera informe exportable y se pierde al reiniciar el encuentro; no debe confundirse con persistencia de actas.
 - Pruebas añadidas para orden cronológico, motivos, tiempos, expulsión y protección de la instantánea inmutable.
+
+
+### Actas de partido persistentes (2026-11-23)
+
+- Al llegar a tiempo completo, el juego crea una instantánea con equipos, marcador, tiempo reglamentario transcurrido, estadísticas de ambos equipos y el historial cronológico de tarjetas.
+- El almacén local conserva hasta 20 actas en las preferencias de Android; la más reciente ocupa la primera posición. El guardado se hace una sola vez por partido y se fuerza también antes de reiniciar un encuentro terminado o cerrar la aplicación en tiempo completo.
+- El modelo de acta es independiente de Android y se serializa a JSON, con pruebas de ida y vuelta para el marcador, estadísticas y eventos disciplinarios. El HUD indica cuántas actas locales se han guardado.
+- El almacenamiento es local al dispositivo y no equivale a sincronización en la nube ni a exportación PDF/CSV. No se guarda el estado de un partido que aún está en juego si el proceso se cierra inesperadamente; la persistencia de progreso en mitad del encuentro queda pendiente.
