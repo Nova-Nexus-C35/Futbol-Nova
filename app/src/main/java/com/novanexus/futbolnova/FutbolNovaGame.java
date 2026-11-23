@@ -49,7 +49,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final Vector3 cameraLookTarget = new Vector3();
     private final float[] aiTackleCooldowns = new float[22];
 
-    private PerspectiveCamera camera;
+    private PerspectiveCamera camera;\n    private final BroadcastCamera broadcastCamera = new BroadcastCamera();
     private ModelBatch modelBatch;
     private ShapeRenderer shapeRenderer;
     private SpriteBatch spriteBatch;
@@ -82,8 +82,9 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         camera.position.set(0f, 78f, 86f);
         camera.lookAt(0f, 0f, 0f);
         camera.near = 0.1f;
-        camera.far = 240f;
+        camera.far = 260f;
         camera.update();
+        broadcastCamera.reset(camera, ballPosition);
 
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.78f, 0.78f, 0.78f, 1f));
@@ -196,9 +197,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
-        camera.position.lerp(cameraFollowPosition.set(ballPosition.x*0.20f,78f,86f+ballPosition.z*0.18f),Math.min(1f,delta*0.55f));
-        camera.lookAt(cameraLookTarget.set(ballPosition.x*0.18f,0f,ballPosition.z*0.16f));
-        camera.update();
+        broadcastCamera.update(camera, ballPosition, ballVelocity.len(), delta);
         ballRotation += ballVelocity.len()*delta*35f;
         ballInstance.transform.setToTranslation(ballPosition);
         ballInstance.transform.rotate(Vector3.X,ballRotation);
