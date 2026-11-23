@@ -19,10 +19,13 @@ public final class MatchRules{
   return classifyBallExit(x,y,z,lastHome,34f,52.5f,3.66f,2.44f,radius);
  }
  public static ExitDecision classifyBallExit(float x,float y,float z,boolean lastHome,float hw,float hl,float gw,float bar,float r){
+  return classifyBallExit(x,y,z,lastHome,hw,hl,gw,bar,r,true);
+ }
+ public static ExitDecision classifyBallExit(float x,float y,float z,boolean lastHome,float hw,float hl,float gw,float bar,float r,boolean homeDefendsPositiveZ){
   boolean touch=Math.abs(x)-r>hw,goal=Math.abs(z)-r>hl;
   if(!touch&&!goal)return new ExitDecision(Restart.IN_PLAY,false,x,y,z);
   if(goal){
-   boolean defendingHome=z>0f,attackingHome=!defendingHome;
+   boolean defendingHome=homeDefendsPositiveZ?z>0f:z<0f,attackingHome=!defendingHome;
    if(Math.abs(x)+r<=gw&&y-r>=0f&&y+r<=bar)return new ExitDecision(Restart.GOAL,attackingHome,0f,0f,0f);
    if(lastHome==defendingHome)return new ExitDecision(Restart.CORNER,attackingHome,Math.signum(x)*hw,0f,Math.signum(z)*hl);
    return new ExitDecision(Restart.GOAL_KICK,defendingHome,0f,0f,hl*(defendingHome?1f:-1f)*0.88f);
