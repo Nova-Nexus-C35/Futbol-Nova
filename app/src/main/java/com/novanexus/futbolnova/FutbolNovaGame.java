@@ -353,13 +353,23 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     public MatchDiscipline.Outcome issueYellowCard(String playerId){
-        MatchDiscipline.Outcome outcome=matchDiscipline.issueYellow(playerId);
+        return issueYellowCard(playerId,MatchDiscipline.Reason.REFEREE_DECISION);
+    }
+
+    public MatchDiscipline.Outcome issueYellowCard(String playerId,MatchDiscipline.Reason reason){
+        MatchDiscipline.Outcome outcome=matchDiscipline.issueYellow(
+                playerId,reason,matchClock.getTotalElapsedSeconds());
         if(outcome==MatchDiscipline.Outcome.DISMISSED)applyDismissal(playerId);
         return outcome;
     }
 
     public MatchDiscipline.Outcome issueRedCard(String playerId){
-        MatchDiscipline.Outcome outcome=matchDiscipline.issueRed(playerId);
+        return issueRedCard(playerId,MatchDiscipline.Reason.REFEREE_DECISION);
+    }
+
+    public MatchDiscipline.Outcome issueRedCard(String playerId,MatchDiscipline.Reason reason){
+        MatchDiscipline.Outcome outcome=matchDiscipline.issueRed(
+                playerId,reason,matchClock.getTotalElapsedSeconds());
         if(outcome==MatchDiscipline.Outcome.DISMISSED)applyDismissal(playerId);
         return outcome;
     }
@@ -384,7 +394,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void recordFoulAndApplyDiscipline(MatchSimulation.PlayerState offender){
         if(offender==null||!offender.active)return;
         matchStatistics.recordFoul(offender.playerId,offender.homeTeam);
-        MatchDiscipline.Outcome outcome=matchDiscipline.recordFoul(offender.playerId);
+        MatchDiscipline.Outcome outcome=matchDiscipline.recordFoul(offender.playerId,matchClock.getTotalElapsedSeconds());
         if(outcome==MatchDiscipline.Outcome.DISMISSED)applyDismissal(offender.playerId);
     }
 
