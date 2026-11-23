@@ -90,10 +90,12 @@ public final class MatchSimulationTest {
         assertEquals(3,simulation.getBenchPlayers(false).size());
         MatchSimulation.PlayerState outgoing=simulation.getPlayers().get(9);
         String outgoingId=outgoing.playerId;
-        assertTrue(simulation.substitutePlayer(true,outgoingId,"H13",1,false));
+        String incomingId=simulation.getBenchPlayers(true).get(0).id;
+        String incomingName=simulation.getBenchPlayers(true).get(0).name;
+        assertTrue(simulation.substitutePlayer(true,outgoingId,incomingId,1,false));
         MatchSimulation.PlayerState replacement=simulation.getPlayers().get(9);
-        assertEquals("H13",replacement.playerId);
-        assertEquals("Home 13",replacement.playerName);
+        assertEquals(incomingId,replacement.playerId);
+        assertEquals(incomingName,replacement.playerName);
         assertEquals(outgoing.role,replacement.role);
         assertEquals(22,simulation.getPlayers().size());
         assertEquals(11,simulation.getActivePlayerCount(true));
@@ -114,15 +116,20 @@ public final class MatchSimulationTest {
         assertTrue(simulation.start(
                 new OriginalProjectData.TeamRoster("H","Home","L",1,homeSquad),
                 new OriginalProjectData.TeamRoster("A","Away","L",1,awaySquad)));
-        assertFalse(simulation.substitutePlayer(true,"H9","H16",4,false));
-        assertTrue(simulation.substitutePlayer(true,"H9","H16",1,false));
-        assertTrue(simulation.substitutePlayer(true,"H10","H15",1,false));
-        assertTrue(simulation.substitutePlayer(true,"H11","H14",2,false));
-        assertTrue(simulation.substitutePlayer(true,"H12","H13",3,false));
-        assertTrue(simulation.substitutePlayer(true,"H8","H12",0,true));
+        String invalidWindowIncoming=simulation.getBenchPlayers(true).get(0).id;
+        String firstOutgoing=simulation.getPlayers().get(9).playerId;
+        assertFalse(simulation.substitutePlayer(true,firstOutgoing,invalidWindowIncoming,4,false));
+        int[] outgoingSlots={9,10,8,7,6};
+        for(int i=0;i<outgoingSlots.length;i++){
+            String outgoing=simulation.getPlayers().get(outgoingSlots[i]).playerId;
+            String incoming=simulation.getBenchPlayers(true).get(0).id;
+            int window=i==0?1:(i==1?1:(i==2?2:(i==3?3:0)));
+            assertTrue(simulation.substitutePlayer(true,outgoing,incoming,window,i==4));
+        }
         assertEquals(5,simulation.getSubstitutionsUsed(true));
         assertEquals(3,simulation.getSubstitutionWindowsUsed(true));
-        assertFalse(simulation.substitutePlayer(true,"H7","H8",0,true));
+        assertFalse(simulation.substitutePlayer(true,simulation.getPlayers().get(5).playerId,
+                simulation.getBenchPlayers(true).get(0).id,0,true));
     }
 
     @Test public void substitutionsRejectWrongTeamDismissedOutgoingAndNonBenchIncoming() {
@@ -137,11 +144,16 @@ public final class MatchSimulationTest {
         assertTrue(simulation.start(
                 new OriginalProjectData.TeamRoster("H","Home","L",1,homeSquad),
                 new OriginalProjectData.TeamRoster("A","Away","L",1,awaySquad)));
-        assertFalse(simulation.substitutePlayer(true,"A9","H12",1,false));
-        assertFalse(simulation.substitutePlayer(true,"H9","A12",1,false));
-        assertTrue(simulation.dismissPlayer("H9"));
-        assertFalse(simulation.substitutePlayer(true,"H9","H12",1,false));
-        assertFalse(simulation.substitutePlayer(true,"H10","H10",1,false));
+        String outgoing=simulation.getPlayers().get(9).playerId;
+        String anotherHomeStarter=simulation.getPlayers().get(10).playerId;
+        String homeIncoming=simulation.getBenchPlayers(true).get(0).id;
+        String awayIncoming=simulation.getBenchPlayers(false).get(0).id;
+        String awayStarter=simulation.getPlayers().get(20).playerId;
+        assertFalse(simulation.substitutePlayer(true,outgoing,awayIncoming,1,false));
+        assertFalse(simulation.substitutePlayer(true,awayStarter,homeIncoming,1,false));
+        assertFalse(simulation.substitutePlayer(true,outgoing,anotherHomeStarter,1,false));
+        assertTrue(simulation.dismissPlayer(outgoing));
+        assertFalse(simulation.substitutePlayer(true,outgoing,homeIncoming,1,false));
     }
 
     private static float distance(float x1,float z1,float x2,float z2){
