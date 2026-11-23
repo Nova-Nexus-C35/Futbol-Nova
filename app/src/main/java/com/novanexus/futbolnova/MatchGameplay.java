@@ -151,6 +151,18 @@ public final class MatchGameplay {
         return new Vector3(bestX,0f,targetZ);
     }
 
+    /** Selects the far-post lane instead of aiming predictably at the goalkeeper. */
+    public static float chooseAiShotAimX(float carrierX,float goalkeeperX,float nearestDefenderDistance) {
+        if(!Float.isFinite(carrierX)||!Float.isFinite(goalkeeperX)||!Float.isFinite(nearestDefenderDistance))
+            return 0f;
+        float direction;
+        if(goalkeeperX>0.65f)direction=-1f;
+        else if(goalkeeperX< -0.65f)direction=1f;
+        else direction=carrierX>=0f?-1f:1f;
+        float pressure=nearestDefenderDistance<2.5f?0.45f:0f;
+        return clamp(direction*(2.45f+pressure),-3.1f,3.1f);
+    }
+
     /**
      * Predicts whether a shot will cross the goal mouth within the keeper's reaction window
      * and within the keeper's lateral reach. Returns the predicted contact time, or -1.
