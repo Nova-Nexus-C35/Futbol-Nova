@@ -325,3 +325,11 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - PlayerVisual ahora calcula centros de extremidades desde pivotes aproximados de hombros y caderas y rota cada pieza alrededor de esos pivotes, mejorando la lectura de carrera respecto al giro sobre el centro de cada pieza.
 - Se añadieron pruebas unitarias de pose de reposo, alternancia, límites de amplitud y entradas inválidas.
 - Limitación: sigue siendo locomoción procedural sobre modelos low-poly compartidos. No hay todavía esqueleto/skin, clips de animación de calidad moderna ni animaciones específicas de balón, tiros, pases, saltos, barridas, caídas, celebraciones o atajadas.
+
+
+### Implementación: animación procedural articulada de jugadores (2026-11-23)
+
+- Se conectó PlayerVisual con PlayerAnimation para generar oscilación de zancada y movimiento vertical de torso/cabeza según velocidad, con fase individual por dorsal.
+- Brazos y piernas se animan desde pivotes aproximados de hombros/caderas; botas acompañan el ciclo. Las funciones de animación son deterministas y protegen frente a valores no finitos.
+- PlayerAnimationTest comprueba pose inactiva, alternancia de swing positivo/negativo, amplitud acotada y recuperación ante entradas inválidas.
+- Limitación: no es todavía un rig esquelético con skin ni animaciones completas de fútbol; las piezas siguen siendo mallas low-poly independientes. Faltan clips de carrera/transición, pase, tiro, regate, salto, caída, tackle, portero y sincronización de contacto con el balón.
