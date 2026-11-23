@@ -176,6 +176,20 @@ public final class MatchGameplay {
         return new Vector3(bestX,0f,targetZ);
     }
 
+    /** Builds a penalty shot toward the side opposite the goalkeeper's current lateral position. */
+    public static Vector3 penaltyShotVelocity(float goalkeeperX, boolean homeTeam,
+            boolean homeAttacksNegativeZ) {
+        float attackSign = homeTeam
+                ? (homeAttacksNegativeZ ? -1f : 1f)
+                : (homeAttacksNegativeZ ? 1f : -1f);
+        if (!Float.isFinite(goalkeeperX)) {
+            return new Vector3(0f, 2.5f, attackSign * 28f);
+        }
+        float targetX = goalkeeperX >= 0f ? -2.85f : 2.85f;
+        Vector3 direction = new Vector3(targetX, 0.12f, attackSign * 11f).nor();
+        return direction.scl(28f).add(0f, 2.5f, 0f);
+    }
+
     /** Selects the far-post lane instead of aiming predictably at the goalkeeper. */
     public static float chooseAiShotAimX(float carrierX,float goalkeeperX,float nearestDefenderDistance) {
         if(!Float.isFinite(carrierX)||!Float.isFinite(goalkeeperX)||!Float.isFinite(nearestDefenderDistance))
