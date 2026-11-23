@@ -237,6 +237,11 @@ public final class MatchSimulation {
         if(!teamAttacking&&isDefensiveRole(p.role)){
             TacticalTarget mark=calculateDefensiveMarkTarget(p,players,homeAttacksNegativeZ);
             p.targetX=mark.x;p.targetZ=mark.z;
+            if(Math.abs(mark.x-p.homeX)<0.01f&&Math.abs(mark.z-p.homeZ)<0.01f){
+                TacticalTarget cover=calculateDefensiveCoverTarget(p,players,ballX,ballZ,
+                        homeAttacksNegativeZ);
+                p.targetX=cover.x;p.targetZ=cover.z;
+            }
         }
         if(nearestOwn==index&&distance(p.homeX,p.homeZ,ballX,ballZ)<29f){
             p.targetX=clamp(ballX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f);
@@ -283,6 +288,36 @@ public final class MatchSimulation {
         float displacement=(float)Math.sqrt(dx*dx+dz*dz);
         if(displacement>13f){targetX=defender.homeX+dx*13f/displacement;
             targetZ=defender.homeZ+dz*13f/displacement;}
+        return new TacticalTarget(clamp(targetX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f),
+                clamp(targetZ,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f));
+    }
+
+    /** Holds a goal-side cover lane when no opponent is assigned to this defender. */
+    public static TacticalTarget calculateDefensiveCoverTarget(PlayerState defender,
+            List<PlayerState> lineup,float ballX,float ballZ,boolean homeAttacksNegativeZ) {
+        if(defender==null||lineup==null||!isDefensiveRole(defender.role)
+                ||!Float.isFinite(ballX)||!Float.isFinite(ballZ))
+            return new TacticalTarget(defender==null?0f:defender.homeX,
+                    defender==null?0f:defender.homeZ);
+        float attackSign=defender.homeTeam?(homeAttacksNegativeZ?-1f:1f)
+                :(homeAttacksNegativeZ?1f:-1f);
+        float nearestDistance=Float.MAX_VALUE;
+        PlayerState nearestDefender=null;
+        for(PlayerState teammate:lineup){
+            if(teammate.homeTeam!=defender.homeTeam||!isDefensiveRole(teammate.role))continue;
+            float d=distance(teammate.x,teammate.z,ballX,ballZ);
+            if(d<nearestDistance){nearestDistance=d;nearestDefender=teammate;}
+        }
+        if(nearestDefender==defender)
+            return new TacticalTarget(clamp(ballX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f),
+                    clamp(ballZ+attackSign*1.4f,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f));
+        float targetX=defender.homeX+(ballX-defender.homeX)*0.22f;
+        float targetZ=ballZ+attackSign*5f;
+        float maxShift=11f;
+        float dx=targetX-defender.homeX,dz=targetZ-defender.homeZ;
+        float displacement=(float)Math.sqrt(dx*dx+dz*dz);
+        if(displacement>maxShift){targetX=defender.homeX+dx*maxShift/displacement;
+            targetZ=defender.homeZ+dz*maxShift/displacement;}
         return new TacticalTarget(clamp(targetX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f),
                 clamp(targetZ,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f));
     }
