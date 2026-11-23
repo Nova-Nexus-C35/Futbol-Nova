@@ -49,7 +49,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final Vector3 cameraLookTarget = new Vector3();
     private final float[] aiTackleCooldowns = new float[22];
 
-    private PerspectiveCamera camera;\n    private final BroadcastCamera broadcastCamera = new BroadcastCamera();
+    private PerspectiveCamera camera;
+    private final BroadcastCamera broadcastCamera = new BroadcastCamera();
     private ModelBatch modelBatch;
     private ShapeRenderer shapeRenderer;
     private SpriteBatch spriteBatch;
