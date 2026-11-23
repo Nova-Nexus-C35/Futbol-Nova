@@ -52,6 +52,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final Vector3 cameraLookTarget = new Vector3();
     private final Vector3 touchMovement = new Vector3();
     private final float[] aiTackleCooldowns = new float[22];
+    private final float[] goalkeeperRecoveryTimers = new float[22];
+    private final float[] goalkeeperDiveDirections = new float[22];
 
     private PerspectiveCamera camera;
     private final BroadcastCamera broadcastCamera = new BroadcastCamera();
@@ -220,7 +222,12 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         for(int i=0;i<lineup.size()&&i<playerVisuals.size();i++){
             MatchSimulation.PlayerState state=lineup.get(i);
             float yaw=(float)Math.atan2(-state.forwardX,-state.forwardZ);
-            if(state.active)playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
+            if(state.active){
+                playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
+                if((i==0||i==11)&&goalkeeperRecoveryTimers[i]>0f)
+                    playerVisuals.get(i).setGoalkeeperDive(goalkeeperDiveDirections[i],
+                            Math.min(1f,goalkeeperRecoveryTimers[i]/0.78f));
+            }
         }
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -574,7 +581,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             if(ballVelocity.y<0f)ballVelocity.y*=-0.38f;
             ballVelocity.x*=0.91f;ballVelocity.z*=0.91f;
         }
-        if(tryGoalkeeperSave())return;
+        if(tryGoalkeeperSave(delta))return;
         BallCollisionModel.resolveGoalFrame(ballPosition,ballVelocity,3.66f,2.44f,52.5f,BALL_RADIUS);
         BallCollisionModel.resolveGoalFrame(ballPosition,ballVelocity,3.66f,2.44f,-52.5f,BALL_RADIUS);
         BallCollisionModel.resolvePlayerContact(ballPosition,ballVelocity,matchSimulation.getPlayers());
@@ -652,37 +659,48 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         restartClock=1.2f;
     }
 
-    private boolean tryGoalkeeperSave(){
+    private boolean tryGoalkeeperSave(float delta){
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
         if(lineup.size()!=22)return false;
         for(int keeperIndex:new int[]{0,11}){
             MatchSimulation.PlayerState keeper=lineup.get(keeperIndex);
-            if(!keeper.active)continue;
+            goalkeeperRecoveryTimers[keeperIndex]=Math.max(0f,
+                    goalkeeperRecoveryTimers[keeperIndex]-delta);
+            if(!keeper.active||goalkeeperRecoveryTimers[keeperIndex]>0f)continue;
             float ownGoalDirection=keeper.homeTeam
                     ?(matchSimulation.homeAttacksNegativeZ()?1f:-1f)
                     :(matchSimulation.homeAttacksNegativeZ()?-1f:1f);
-            float interceptTime=MatchGameplay.goalkeeperInterceptTime(keeper.x,keeper.z,
-                    ballPosition.x,ballPosition.y,ballPosition.z,ballVelocity.x,ballVelocity.y,
-                    ballVelocity.z,ownGoalDirection);
-            if(interceptTime<0f)continue;
-            float speed=ballVelocity.len();
-            float interceptX=ballPosition.x+ballVelocity.x*interceptTime;
-            float interceptY=ballPosition.y+ballVelocity.y*interceptTime
-                    -0.5f*BallFlightModel.DEFAULT_GRAVITY*interceptTime*interceptTime;
-            float interceptZ=ownGoalDirection*52.5f-ownGoalDirection*0.65f;
-            ballPosition.set(interceptX,Math.max(BALL_RADIUS,interceptY),interceptZ);
+            GoalkeeperSaveModel.Plan plan=GoalkeeperSaveModel.evaluate(keeper.x,keeper.z,
+                    ballPosition.x,ballPosition.y,ballPosition.z,ballVelocity.x,
+                    ballVelocity.y,ballVelocity.z,ownGoalDirection);
+            if(plan==null)continue;
+
+            // The goalkeeper starts moving toward the predicted contact point before the shot arrives.
+            keeper.targetX=plan.targetX;
+            keeper.targetZ=plan.targetZ;
+            float timeToContact=plan.time;
+            float lateralError=Math.abs(keeper.x-plan.interceptX);
+            float depthError=Math.abs(keeper.z-plan.interceptZ);
+            if(timeToContact>Math.max(0.09f,delta*1.5f)
+                    ||lateralError>1.45f||depthError>2.35f)continue;
+
+            ballPosition.set(plan.interceptX,Math.max(BALL_RADIUS,plan.interceptY),plan.interceptZ);
             ballSpin.setZero();
             pendingOffsideReceiver=MatchGameplay.NO_OWNER;
             lastTouchHome=keeper.homeTeam;
             matchStatistics.recordSave(keeper.playerId,keeper.homeTeam);
-            if(speed<9f){
+            goalkeeperDiveDirections[keeperIndex]=plan.diveDirection;
+            if(plan.action==GoalkeeperSaveModel.Action.CATCH){
                 possessionOwnerIndex=keeperIndex;
                 ballVelocity.setZero();
+                goalkeeperRecoveryTimers[keeperIndex]=0.42f;
             }else{
                 possessionOwnerIndex=MatchGameplay.NO_OWNER;
-                ballVelocity.set(ballVelocity.x*0.35f,
-                        Math.max(2.5f,Math.abs(ballVelocity.y)*0.35f),
-                        -ownGoalDirection*Math.max(5f,speed*0.48f));
+                ballVelocity.set(
+                        ballVelocity.x*0.28f+plan.diveDirection*Math.max(1.8f,plan.speed*0.16f),
+                        Math.max(3f,Math.abs(ballVelocity.y)*0.25f+2.4f),
+                        -ownGoalDirection*Math.max(5f,plan.speed*0.45f));
+                goalkeeperRecoveryTimers[keeperIndex]=0.78f;
             }
             return true;
         }

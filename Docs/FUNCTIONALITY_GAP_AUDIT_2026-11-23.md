@@ -573,3 +573,12 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - CI #249 (`45290692033`) detectó que `MatchReportTest.java` terminaba sin la llave de cierre de la clase, por lo que Java fallaba con `reached end of file while parsing`.
 - Se añade únicamente la llave de cierre que faltaba; no se cambia el comportamiento del exportador.
 - La nueva validación CI de esta corrección queda pendiente. No se declara APK ni pruebas aprobadas hasta que el nuevo run termine correctamente.
+
+
+### Portero: predicción de alcance, desplazamiento y respuesta de parada (2026-11-23)
+
+- La CI #250 terminó correctamente para el SHA `e94139e897a13a85261e2c022ebe5205ad168d68`. Artefacto Android ARM64 debug: ID `14874321903`, 3,481,188 bytes, SHA-256 `ee159a433dbe7bb690724cd81fdfe2c0f798ecc53e4edbede25b2ea6f34b82a0`, expira el 2026-12-07.
+- Se añadió `GoalkeeperSaveModel`, independiente de la capa gráfica: predice el punto de cruce con el plano de portería, comprueba el alcance lateral según el tiempo disponible, limita el área de intervención y clasifica blocajes de balones lentos/bajos frente a desvíos de disparos más fuertes o altos.
+- La integración actual mueve el objetivo del portero hacia el punto previsto antes del contacto, registra la parada, conserva la posesión en los blocajes y produce un desvío hacia fuera de la portería en las paradas de reacción. La pose procedural inclina el cuerpo y abre las extremidades durante la recuperación breve.
+- Se añadieron pruebas deterministas para predicción, blocaje, rechazo de disparos inalcanzables/datos inválidos y ambos sentidos de ataque.
+- Limitaciones: la estirada es una pose procedural breve, no una animación esquelética ni una simulación de colisión corporal continua; la resolución de parada todavía coloca el balón en el plano de contacto previsto y no sustituye un sistema completo de portero con rebotes, centros, salidas, despejes y recuperación física. La validación CI de esta tanda queda pendiente.

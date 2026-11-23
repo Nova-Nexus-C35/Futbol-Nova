@@ -52,6 +52,20 @@ public final class PlayerVisual {
         instance.transform.rotate(Vector3.X,angle*57.29578f);
     }
 
+    /** Applies a short lateral dive pose after the normal procedural gait update. */
+    public void setGoalkeeperDive(float direction,float intensity) {
+        float side=direction<0f?-1f:1f;
+        float amount=Math.max(0f,Math.min(1f,intensity));
+        float roll=side*32f*amount;
+        torso.transform.rotate(Vector3.Z,roll);
+        shorts.transform.rotate(Vector3.Z,roll*0.55f);
+        head.transform.rotate(Vector3.Z,roll*0.35f);
+        leftArm.transform.rotate(Vector3.Z,-side*24f*amount);
+        rightArm.transform.rotate(Vector3.Z,-side*24f*amount);
+        leftLeg.transform.rotate(Vector3.Z,side*12f*amount);
+        rightLeg.transform.rotate(Vector3.Z,side*12f*amount);
+    }
+
     public void render(ModelBatch batch,Environment environment) {
         batch.render(torso,environment);batch.render(shorts,environment);batch.render(head,environment);batch.render(hair,environment);
         batch.render(leftArm,environment);batch.render(rightArm,environment);
