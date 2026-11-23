@@ -145,6 +145,32 @@ public final class MatchSimulationTest {
         assertTrue(Math.abs(target.z)<=MatchSimulation.FIELD_HALF_LENGTH-3f);
     }
 
+    @Test public void unassignedDefenderDropsIntoGoalSideCoverLane() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        java.util.List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+        MatchSimulation.PlayerState cover=players.get(4);
+        MatchSimulation.PlayerState leftBack=players.get(1);
+        MatchSimulation.PlayerState centreBack=players.get(2);
+        MatchSimulation.PlayerState rightCentreBack=players.get(3);
+        MatchSimulation.PlayerState dm=players.get(5);
+        // Keep the other defensive roles clustered around the ball so this fullback
+        // is not the closest marker for any of the opposition's outfield players.
+        leftBack.x=-5f;leftBack.z=18f;
+        centreBack.x=-2f;centreBack.z=18f;
+        rightCentreBack.x=2f;rightCentreBack.z=18f;
+        dm.x=5f;dm.z=18f;
+        cover.x=22f;cover.z=32f;
+        MatchSimulation.TacticalTarget target=MatchSimulation.calculateDefensiveCoverTarget(
+                cover,players,0f,10f,true);
+        assertTrue("cover should shift toward the ball",Math.abs(target.x)<Math.abs(cover.homeX));
+        assertTrue("cover should remain on the goal side",target.z<10f);
+        assertTrue("cover movement must remain bounded",
+                Math.hypot(target.x-cover.homeX,target.z-cover.homeZ)<=11.001);
+        assertTrue(Math.abs(target.x)<=MatchSimulation.FIELD_HALF_WIDTH-2f);
+        assertTrue(Math.abs(target.z)<=MatchSimulation.FIELD_HALF_LENGTH-3f);
+    }
+
     @Test public void roleAwareShapeReversesAfterHalfTime() {
         MatchSimulation simulation=new MatchSimulation();
         assertTrue(simulation.start("home","away"));
