@@ -188,3 +188,13 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se corrigió la posición inicial del disparo para que el balón salga desde el lado correcto del futbolista según la dirección de ataque actual, incluido el segundo tiempo.
 - Archivos de selector, runtime, prueba y esta auditoría fueron releídos desde GitHub después de sus escrituras. La ejecución #82 fue cancelada por nuevos commits; no cuenta como validación. Debe completarse la ejecución CI correspondiente al último commit antes de declarar aprobada esta tanda.
 - Limitaciones que permanecen: las plantillas disponibles no cubren todos los clubes de Primera y Segunda; los dorsales reales, banquillo y suplentes todavía no están modelados; las equipaciones continúan siendo colores genéricos; y no se ha probado en el teléfono físico.
+
+### Implementación: primera intervención funcional del portero y orientación tras el descanso (2026-11-23)
+
+- La IA de movimiento ahora calcula el avance del jugador más cercano al balón usando la dirección real de ataque de cada equipo; antes estaba fija a los sentidos del primer tiempo.
+- El punto de contacto del balón en los pases del usuario y de la IA ahora queda delante del poseedor según el sentido de ataque actual, también tras cambiar de campo.
+- Se añadió una comprobación geométrica determinista para que el portero solo intente intervenir si el balón va hacia su propia portería, está a distancia alcanzable y no supera la altura configurada.
+- La escena conecta esa comprobación con dos respuestas: blocaje/posesión si la velocidad es moderada, o despeje/parada con rebote si el disparo llega rápido. El balón se devuelve hacia el terreno de juego y se registra el último toque del equipo del portero.
+- Se añadió una prueba unitaria de alcance del portero (dirección, altura y distancia). La intervención es todavía una primera aproximación geométrica: no incluye animación de estirada, manos, predicción avanzada ni colisión física del cuerpo del portero.
+- Los archivos `MatchSimulation.java`, `MatchGameplay.java`, `FutbolNovaGame.java`, `MatchGameplayTest.java` y esta auditoría fueron releídos desde GitHub después de las escrituras.
+- CI de esta tanda aún no validada: los commits consecutivos cancelaron las ejecuciones intermedias. La última ejecución asociada al siguiente commit debe finalizar en verde antes de declarar compilación aprobada.
