@@ -61,6 +61,19 @@ public final class MatchSimulationTest {
         assertTrue(simulation.getControlledPlayerIndex()<=10);
     }
 
+    @Test public void dismissedPlayerKeepsStableIndexButStopsParticipating(){
+        MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+        MatchSimulation.PlayerState dismissed=simulation.getPlayers().get(9);
+        String id=dismissed.playerId;
+        assertEquals(11,simulation.getActivePlayerCount(true));
+        assertTrue(simulation.dismissPlayer(id));
+        assertFalse(dismissed.active);
+        assertEquals(10,simulation.getActivePlayerCount(true));
+        assertEquals(22,simulation.getPlayers().size());
+        assertNotEquals(id,simulation.getControlledPlayer().playerId);
+        assertFalse(simulation.dismissPlayer(id));
+    }
+
     private static float distance(float x1,float z1,float x2,float z2){
         float dx=x1-x2,dz=z1-z2;return (float)Math.sqrt(dx*dx+dz*dz);
     }
