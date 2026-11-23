@@ -141,7 +141,8 @@ public final class MatchSimulation {
         if(playerId==null||playerId.trim().isEmpty())return false;
         for(int i=0;i<players.size();i++){
             PlayerState player=players.get(i);
-            if(!player.playerId.equals(playerId)||!player.active)return false;
+            if(!player.playerId.equals(playerId))continue;
+            if(!player.active)return false;
             player.active=false;player.movementSpeed=0f;player.targetX=player.x;player.targetZ=player.z;
             if(i==controlledPlayerIndex){
                 controlledPlayerIndex=-1;
