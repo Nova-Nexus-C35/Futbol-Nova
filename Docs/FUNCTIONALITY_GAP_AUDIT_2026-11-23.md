@@ -453,6 +453,16 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Limitación: los reinicios siguen ejecutándose automáticamente tras una espera; todavía faltan control manual de potencia/dirección, colocación de barrera, distancias reglamentarias, restricciones de jugadores y validación física de saques de banda/córner/tiros libres.
 
 
+### Integración disciplinaria en faltas y HUD (2026-11-23)
+
+- Los dos flujos de falta que existen actualmente (entrada manual del usuario y entrada automática de la IA) registran la infracción en estadísticas y en el libro disciplinario del partido.
+- Como la detección de falta actual solo identifica una entrada por detrás y no mide fuerza, riesgo de lesión ni negación de ocasión manifiesta, no se inventa una roja automática por gravedad. Se implementó un criterio acotado y explícito de infracción persistente: cada tercera falta registrada por el mismo futbolista genera una amarilla; el siguiente ciclo de tres faltas genera la segunda amarilla y su expulsión.
+- La expulsión por roja directa continúa disponible mediante el evento arbitral explícito `issueRedCard`; la segunda amarilla retira al jugador mediante el mismo mecanismo.
+- El HUD muestra amarillas, expulsados y jugadores activos de ambos equipos. El registro disciplinario conserva las faltas acumuladas desde la última amonestación.
+- Se corrigió además la búsqueda del jugador expulsado: antes la comprobación terminaba al inspeccionar el primer futbolista distinto, impidiendo encontrar IDs que no fueran el primero de la alineación. Se añadió cobertura de pruebas de expulsión y posesión/pases.
+- Limitaciones pendientes: el umbral de tres faltas es una heurística de juego y no un árbitro reglamentario completo; no hay valoración de intensidad, juego brusco grave, conducta violenta, ventaja, protesta, simulación ni tarjetas para incidentes sin balón. Tampoco hay animación/representación física del árbitro mostrando la tarjeta, sustituciones reglamentarias ni acta persistente. La roja directa exige evento explícito hasta que existan datos fiables de gravedad.
+- Validación CI de esta tanda pendiente; no se afirma compilación ni ejecución física hasta obtener los resultados.
+
 ### Integración inicial de expulsiones en la simulación (2026-11-23)
 
 - `FutbolNovaGame` mantiene un registro disciplinario por partido y expone eventos explícitos para emitir amarilla o roja. La segunda amarilla y la roja directa activan la retirada del jugador.
