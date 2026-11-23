@@ -35,6 +35,36 @@ public class MatchDisciplineTest {
         assertTrue(discipline.isSentOff("home_05"));
     }
 
+    @Test public void cardEventsKeepReasonAndMatchTimeInOrder(){
+        MatchDiscipline discipline=new MatchDiscipline();
+        assertEquals(MatchDiscipline.Outcome.CAUTION,
+                discipline.issueYellow("home_04",MatchDiscipline.Reason.DISSENT,125f));
+        assertEquals(MatchDiscipline.Outcome.DISMISSED,
+                discipline.issueRed("away_02",MatchDiscipline.Reason.VIOLENT_CONDUCT,180f));
+        assertEquals(2,discipline.snapshotEvents().size());
+        MatchDiscipline.CardEvent caution=discipline.snapshotEvents().get(0);
+        assertEquals(MatchDiscipline.Card.YELLOW,caution.card);
+        assertEquals(MatchDiscipline.Reason.DISSENT,caution.reason);
+        assertEquals(125f,caution.elapsedSeconds,0.001f);
+        assertFalse(caution.dismissed);
+        MatchDiscipline.CardEvent red=discipline.snapshotEvents().get(1);
+        assertEquals(MatchDiscipline.Card.RED,red.card);
+        assertEquals(MatchDiscipline.Reason.VIOLENT_CONDUCT,red.reason);
+        assertTrue(red.dismissed);
+        try{discipline.snapshotEvents().clear();fail("event history must be immutable");}
+        catch(UnsupportedOperationException expected){/* immutable by contract */}
+    }
+
+    @Test public void persistentInfringementEventRecordsMatchTime(){
+        MatchDiscipline discipline=new MatchDiscipline();
+        discipline.recordFoul("home_05",10f);
+        discipline.recordFoul("home_05",20f);
+        assertEquals(MatchDiscipline.Outcome.CAUTION,discipline.recordFoul("home_05",30f));
+        MatchDiscipline.CardEvent event=discipline.snapshotEvents().get(0);
+        assertEquals(MatchDiscipline.Reason.PERSISTENT_INFRINGEMENT,event.reason);
+        assertEquals(30f,event.elapsedSeconds,0.001f);
+    }
+
     @Test public void directRedDismissesWithoutYellow(){
         MatchDiscipline discipline=new MatchDiscipline();
         assertEquals(MatchDiscipline.Outcome.DISMISSED,discipline.issueRed("home_03"));
