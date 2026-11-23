@@ -87,3 +87,11 @@ La referencia FIFA describe el nivel y la dirección de calidad deseados; no aut
 - Las porterías ahora muestran una cuadrícula de red en el fondo, techo y laterales, no solo el marco.
 - Las redes son todavía líneas estáticas; falta deformación/animación de red al recibir un gol y colisión física precisa con postes y travesaño.
 - CI #142 falló por una secuencia de escape literal en una declaración de FutbolNovaGame.java. Se corrigió en un commit posterior y se está solicitando una validación nueva antes de dar por compilado el lote.
+
+
+## Progreso de implementación — zoom contextual de cámara (2026-11-23)
+
+- BroadcastCamera ahora amplía suavemente el campo de visión durante transiciones rápidas del balón: parte de 49 grados y aumenta progresivamente hasta un máximo de 57 grados.
+- El zoom se suaviza con la misma respuesta temporal del seguimiento para evitar cambios bruscos; velocidad y delta se limitan y se validan antes de usarse.
+- Se añadieron pruebas unitarias para comprobar que el campo de visión se amplía progresivamente y respeta su límite.
+- La cámara sigue siendo una primera versión de retransmisión: todavía faltan selección de plano según contexto, seguimiento de posesión, repetición y ajustes de usuario.
