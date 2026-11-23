@@ -153,7 +153,8 @@ public final class MatchSimulation {
         return false;
     }
     public PlayerState getControlledPlayer() {
-        return players.size()==22?players.get(controlledPlayerIndex):null;
+        return players.size()==22&&controlledPlayerIndex>=0&&controlledPlayerIndex<players.size()
+                ?players.get(controlledPlayerIndex):null;
     }
 
     /** Cycles through the ten outfield players on the home team; the goalkeeper is AI-controlled. */
@@ -283,7 +284,7 @@ public final class MatchSimulation {
     /** Assigns a nearby opposing attacker to its closest defensive-role player. */
     public static TacticalTarget calculateDefensiveMarkTarget(PlayerState defender,
             List<PlayerState> lineup,boolean homeAttacksNegativeZ) {
-        if(defender==null||lineup==null||!isDefensiveRole(defender.role))
+        if(defender==null||!defender.active||lineup==null||!isDefensiveRole(defender.role))
             return new TacticalTarget(defender==null?0f:defender.homeX,
                     defender==null?0f:defender.homeZ);
         float attackSign=defender.homeTeam?(homeAttacksNegativeZ?-1f:1f)
@@ -291,11 +292,11 @@ public final class MatchSimulation {
         PlayerState assigned=null;
         float assignedDistance=Float.MAX_VALUE;
         for(PlayerState opponent:lineup){
-            if(opponent.homeTeam==defender.homeTeam||"GK".equals(opponent.role))continue;
+            if(!opponent.active||opponent.homeTeam==defender.homeTeam||"GK".equals(opponent.role))continue;
             float defenderDistance=distance(defender.x,defender.z,opponent.x,opponent.z);
             boolean closestMarker=true;
             for(PlayerState teammate:lineup){
-                if(teammate.homeTeam!=defender.homeTeam||!isDefensiveRole(teammate.role)
+                if(!teammate.active||teammate.homeTeam!=defender.homeTeam||!isDefensiveRole(teammate.role)
                         ||teammate==defender)continue;
                 if(distance(teammate.x,teammate.z,opponent.x,opponent.z)<defenderDistance){
                     closestMarker=false;break;
@@ -321,7 +322,7 @@ public final class MatchSimulation {
     /** Holds a goal-side cover lane when no opponent is assigned to this defender. */
     public static TacticalTarget calculateDefensiveCoverTarget(PlayerState defender,
             List<PlayerState> lineup,float ballX,float ballZ,boolean homeAttacksNegativeZ) {
-        if(defender==null||lineup==null||!isDefensiveRole(defender.role)
+        if(defender==null||!defender.active||lineup==null||!isDefensiveRole(defender.role)
                 ||!Float.isFinite(ballX)||!Float.isFinite(ballZ))
             return new TacticalTarget(defender==null?0f:defender.homeX,
                     defender==null?0f:defender.homeZ);
@@ -330,7 +331,7 @@ public final class MatchSimulation {
         float nearestDistance=Float.MAX_VALUE;
         PlayerState nearestDefender=null;
         for(PlayerState teammate:lineup){
-            if(teammate.homeTeam!=defender.homeTeam||!isDefensiveRole(teammate.role))continue;
+            if(!teammate.active||teammate.homeTeam!=defender.homeTeam||!isDefensiveRole(teammate.role))continue;
             float d=distance(teammate.x,teammate.z,ballX,ballZ);
             if(d<nearestDistance){nearestDistance=d;nearestDefender=teammate;}
         }
