@@ -1,0 +1,162 @@
+package com.novanexus.futbolnova;
+
+import com.badlogic.gdx.math.Vector3;
+import org.junit.Test;
+import java.util.List;
+import static org.junit.Assert.*;
+
+public final class MatchGameplayTest {
+ @Test public void possessionRequiresSlowLowBallNearPlayer(){
+  MatchSimulation s=new MatchSimulation();assertTrue(s.start("home","away"));
+  MatchSimulation.PlayerState p=s.getPlayers().get(9);
+  assertEquals(9,MatchGameplay.acquirePossession(s.getPlayers(),p.x,0.55f,p.z,2f));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(s.getPlayers(),p.x,2f,p.z,1f));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(s.getPlayers(),p.x,0.55f,p.z,5f));
+ }
+ @Test public void dismissedPlayersCannotAcquireBallOrReceivePasses(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState receiver=players.get(10);receiver.x=8f;receiver.z=-10f;
+  assertTrue(simulation.dismissPlayer(receiver.playerId));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(players,receiver.x,0.55f,receiver.z,0f));
+  MatchGameplay.PassTargetDecision decision=MatchGameplay.findForwardPassDecision(players,9,0f,-20f,true,true);
+  assertNotEquals(10,decision.receiverIndex);
+ }
+ @Test public void findsForwardPassTargetForBothAttackDirections(){
+  MatchSimulation s=new MatchSimulation();s.start("home","away");List<MatchSimulation.PlayerState> p=s.getPlayers();
+  int home=MatchGameplay.findForwardPassTarget(p,7,p.get(7).x,p.get(7).z,true);
+  int away=MatchGameplay.findForwardPassTarget(p,18,p.get(18).x,p.get(18).z,false);
+  assertTrue(home<11&&home>=0);assertTrue(away>=11);
+ }
+ @Test public void passScoringPrefersSpaceAndRewardsAttackingRoles(){
+  float open=MatchGameplay.scorePassOption(8f,12f,10f,"ST");
+  float marked=MatchGameplay.scorePassOption(8f,12f,1f,"ST");
+  float midfielder=MatchGameplay.scorePassOption(8f,12f,10f,"CM");
+  assertTrue(open>marked);
+  assertTrue(open>midfielder);
+  assertTrue(Float.isInfinite(MatchGameplay.scorePassOption(Float.NaN,2f,3f,"ST")));
+ }
+ @Test public void passLaneRejectsOpponentInPassingCorridor(){
+  MatchSimulation s=new MatchSimulation();s.start("home","away");List<MatchSimulation.PlayerState> p=s.getPlayers();
+  MatchSimulation.PlayerState passer=p.get(9),receiver=p.get(8),blocker=p.get(18);
+  blocker.x=(passer.x+receiver.x)*0.5f;blocker.z=(passer.z+receiver.z)*0.5f;
+  assertFalse(MatchGameplay.isPassLaneClear(p,passer.x,passer.z,receiver.x,receiver.z,true,9,8));
+ }
+ @Test public void passAndShotProduceForwardVelocity(){
+  Vector3 pass=MatchGameplay.passVelocity(0,0,0,-10);
+  Vector3 shot=MatchGameplay.shotVelocity(true,1.5f);
+  assertTrue(pass.z<0);assertTrue(shot.z<0);assertTrue(shot.y>0);
+  assertTrue(pass.len()>10f);
+ }
+
+ @Test public void shotAndClearanceReverseDirectionAfterHalfTime(){
+  Vector3 firstShot=MatchGameplay.shotVelocity(true,0f,true);
+  Vector3 secondShot=MatchGameplay.shotVelocity(true,0f,false);
+  Vector3 firstClearance=MatchGameplay.clearanceVelocity(true,0f,true);
+  Vector3 secondClearance=MatchGameplay.clearanceVelocity(true,0f,false);
+  assertTrue(firstShot.z<0f);assertTrue(secondShot.z>0f);
+  assertTrue(firstClearance.z<0f);assertTrue(secondClearance.z>0f);
+ }
+
+ @Test public void penaltyShotTargetsFarSideAndReversesAttackDirection(){
+  Vector3 keeperRight=MatchGameplay.penaltyShotVelocity(1.8f,true,true);
+  Vector3 keeperLeft=MatchGameplay.penaltyShotVelocity(-1.8f,true,true);
+  Vector3 secondHalf=MatchGameplay.penaltyShotVelocity(1.8f,true,false);
+  assertTrue(keeperRight.x<0f);assertTrue(keeperLeft.x>0f);
+  assertTrue(keeperRight.z<0f);assertTrue(secondHalf.z>0f);
+  assertTrue(keeperRight.y>0f);
+  assertEquals(0f,MatchGameplay.penaltyShotVelocity(Float.NaN,true,true).x,0.0001f);
+ }
+
+ @Test public void aiShootsTowardFarPostAndAdjustsForPressure(){
+  float keeperRight=MatchGameplay.chooseAiShotAimX(0f,2f,5f);
+  float keeperLeft=MatchGameplay.chooseAiShotAimX(0f,-2f,5f);
+  assertTrue(keeperRight<0f);assertTrue(keeperLeft>0f);
+  float pressured=MatchGameplay.chooseAiShotAimX(0f,2f,1.2f);
+  assertTrue(pressured<keeperRight);
+  assertTrue(Math.abs(pressured)<=3.1f);
+  assertEquals(0f,MatchGameplay.chooseAiShotAimX(Float.NaN,0f,2f),0.0001f);
+ }
+ @Test public void goalkeeperOnlyAttemptsReachableShotsMovingTowardItsOwnGoal(){
+  assertTrue(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,1.2f,48f,12f,1f));
+  assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,1.2f,48f,-12f,1f));
+  assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,4f,48f,12f,1f));
+  assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,5f,1.2f,48f,12f,1f));
+ }
+
+ @Test public void goalkeeperPredictsReachableShotAtTheGoalPlane(){
+  float time=MatchGameplay.goalkeeperInterceptTime(0f,49f,0.2f,1.2f,45f,0.2f,4f,10f,1f);
+  assertTrue(time>0f&&time<=1.2f);
+  float reverse=MatchGameplay.goalkeeperInterceptTime(0f,-49f,-0.2f,1.2f,-45f,-0.2f,4f,-10f,-1f);
+  assertTrue(reverse>0f&&reverse<=1.2f);
+ }
+ @Test public void goalkeeperRejectsShotsOutsidePostsOrAboveCrossbar(){
+  assertEquals(-1f,MatchGameplay.goalkeeperInterceptTime(0f,49f,3.8f,1.2f,45f,0f,4f,10f,1f),0.0001f);
+  assertEquals(-1f,MatchGameplay.goalkeeperInterceptTime(0f,49f,0f,3.2f,45f,0f,5f,10f,1f),0.0001f);
+  assertEquals(-1f,MatchGameplay.goalkeeperInterceptTime(0f,49f,0f,1.2f,45f,0f,0f,-10f,1f),0.0001f);
+ }
+ @Test public void cpuShootsOnlyFromTheAttackingFinalThirdAndCentralLane(){
+  assertTrue(MatchGameplay.shouldAiShoot(40f,4f));
+  assertFalse(MatchGameplay.shouldAiShoot(25f,4f));
+  assertFalse(MatchGameplay.shouldAiShoot(40f,18f));
+  assertFalse(MatchGameplay.shouldAiShoot(Float.NaN,0f));
+ }
+
+ @Test public void flagsOffsideReceiverWhenNoOnsideForwardOptionExists(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState passer=players.get(7),receiver=players.get(9);
+  passer.x=0f;passer.z=0f;receiver.x=0f;receiver.z=-15f;
+  for(int i=0;i<players.size();i++){
+   MatchSimulation.PlayerState player=players.get(i);
+   if(i<11&&i!=7&&i!=9){player.x=28f;player.z=0f;}
+   if(i>=11){player.x=25f;player.z=(i%2==0)?-10f:-12f;}
+  }
+  MatchGameplay.PassTargetDecision decision=MatchGameplay.findForwardPassDecision(players,7,0f,0f,true,true);
+  assertEquals(9,decision.receiverIndex);assertTrue(decision.offside);
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.findForwardPassTarget(players,7,0f,0f,true,true));
+  simulation.switchEnds();
+  passer=players.get(7);receiver=players.get(9);
+  passer.x=0f;passer.z=0f;receiver.x=0f;receiver.z=15f;
+  for(int i=0;i<players.size();i++){
+   MatchSimulation.PlayerState player=players.get(i);
+   if(i<11&&i!=7&&i!=9){player.x=28f;player.z=0f;}
+   if(i>=11){player.x=25f;player.z=(i%2==0)?10f:12f;}
+  }
+  MatchGameplay.PassTargetDecision secondHalf=MatchGameplay.findForwardPassDecision(players,7,0f,0f,true,false);
+  assertEquals(9,secondHalf.receiverIndex);assertTrue(secondHalf.offside);
+ }
+
+ @Test public void cpuCarriesIntoSpaceButReleasesUnderPressureOrNearGoal(){
+  assertTrue(MatchGameplay.shouldAiCarryBall(12f,7f));
+  assertFalse(MatchGameplay.shouldAiCarryBall(34f,7f));
+  assertFalse(MatchGameplay.shouldAiCarryBall(20f,3f));
+  assertFalse(MatchGameplay.shouldAiCarryBall(Float.NaN,8f));
+ }
+
+ @Test public void aiCarrierChoosesAForwardLaneAwayFromDefenders(){
+  MatchSimulation simulation=new MatchSimulation();
+  assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState carrier=players.get(9);
+  carrier.x=0f;carrier.z=-16f;
+  for(int i=11;i<players.size();i++){
+   players.get(i).x=0f;players.get(i).z=-21f;
+  }
+  Vector3 target=MatchGameplay.chooseAiCarryTarget(players,9,true);
+  assertTrue(target.z<carrier.z);
+  assertTrue(Math.abs(target.x)>1f);
+  assertTrue(Math.abs(target.x)<=MatchSimulation.FIELD_HALF_WIDTH-2f);
+ }
+
+ @Test public void aiCarrierUsesReversedAttackingDirectionAfterHalfTime(){
+  MatchSimulation simulation=new MatchSimulation();
+  assertTrue(simulation.start("home","away"));
+  simulation.switchEnds();
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState carrier=players.get(9);
+  carrier.x=0f;carrier.z=16f;
+  Vector3 target=MatchGameplay.chooseAiCarryTarget(players,9,false);
+  assertTrue(target.z>carrier.z);
+ }
+}
