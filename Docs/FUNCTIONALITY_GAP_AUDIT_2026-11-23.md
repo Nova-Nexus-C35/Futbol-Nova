@@ -225,3 +225,11 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Los pases de la IA y las entradas exitosas de los defensores de CPU también alimentan los contadores del equipo correspondiente.
 - Se añadió una prueba unitaria para las condiciones de tiro de la IA.
 - Pendiente: elección manual del ejecutor de saques, centros, regates, paredes y variación táctica; el comportamiento de tiro CPU es una regla geométrica inicial, no una IA avanzada.
+
+### Estado consolidado de implementación y validación (2026-11-23)
+
+- Ya están integrados en la rama: ciclo de reloj con dos tiempos y descanso; selector de equipos con plantillas cargadas; identidades/nombres de jugadores del catálogo; cambio de futbolista; controles táctiles con punteros independientes; intervención geométrica inicial del portero; registro básico de estadísticas/eventos; reinicios de falta directa/penalti; saque inicial automático; y disparos de CPU en zona ofensiva.
+- La ejecución #102 (commit anterior a la última tanda de saque inicial/tiros CPU) fue cancelada por una actualización posterior; no se considera prueba aprobada.
+- El commit actual de código es `0f3117849c8a124d65868e236ed03567f21ececb`. Debe ejecutarse y completarse CI para este estado antes de declarar validada la compilación.
+- Sigue sin demostrarse una partida completa en el teléfono físico. La CI no puede certificar la experiencia multitáctil, el rendimiento térmico, el equilibrio del juego ni la calidad visual.
+- Pendientes de implementación: árbitro/ventaja/tarjetas; fuera de juego sancionado durante juego vivo; colisiones jugador-balón y postes; portero con animaciones y predicción; centros/regates/conducción y decisiones tácticas amplias; banquillo/sustituciones; estadísticas individuales y resumen postpartido; guardados/historial; gráficos/audio de producción; plantillas completas para todas las divisiones; release firmado y aceptación física Android.
