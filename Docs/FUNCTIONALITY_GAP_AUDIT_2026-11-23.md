@@ -273,3 +273,13 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - La conducción aprovecha el movimiento del poseedor que ya realiza MatchSimulation, por lo que no crea un segundo sistema de movimiento ni duplica el estado del balón.
 - Se añadieron pruebas para espacio libre, cercanía a portería, presión rival y datos no finitos.
 - Limitación: esto constituye conducción básica en espacio, no un sistema de regates técnicos, fintas, protección corporal, cambio de ritmo o selección avanzada de carriles.
+
+
+### Requisito confirmado: objetivo 3D con calidad aspiracional FIFA moderna (2026-11-23)
+
+- El propietario confirma que Fútbol Nova debe funcionar como un juego de fútbol 3D cuya presentación y jugabilidad aspiren a los juegos FIFA modernos. No es aceptable como meta final un juego 2D ni un escenario 3D compuesto solo por figuras geométricas básicas.
+- Se creó `Docs/VISUAL_TARGET_MODERN_3D_FOOTBALL.md` con los criterios de campo/estadio, modelos articulados, animación, cámara de retransmisión, materiales/iluminación, balón, HUD, audio, simulación, controles, rendimiento y aceptación en Android.
+- Estado real: existe una escena 3D libGDX inicial con campo procedural, gradas geométricas, porterías, futbolistas low-poly, balón esférico, iluminación básica y cámara que sigue al balón. No se debe confundir con calidad gráfica moderna terminada.
+- Prioridad técnica: consolidar cámara de retransmisión y arquitectura separada de simulación/render/animación; luego introducir modelos riggeados y animaciones originales o licenciadas, estadio y materiales detallados, redes, audio y optimización ARM64. Mantener fallback procedural hasta validar cada recurso nuevo.
+- La referencia a FIFA expresa nivel aspiracional y no autoriza copiar recursos, marcas, código, interfaz, música, modelos o material protegido. Verificar licencias y atribución de todo recurso externo.
+- No se cambiará silenciosamente el runtime actual Java 17/libGDX 1.14.2. Una migración de motor necesitaría una decisión explícita. No declarar equivalencia visual con FIFA ni finalización sin evaluación en dispositivo físico.
