@@ -13,6 +13,15 @@ public final class MatchGameplayTest {
   assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(s.getPlayers(),p.x,2f,p.z,1f));
   assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(s.getPlayers(),p.x,0.55f,p.z,5f));
  }
+ @Test public void dismissedPlayersCannotAcquireBallOrReceivePasses(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState receiver=players.get(10);receiver.x=8f;receiver.z=-10f;
+  assertTrue(simulation.dismissPlayer(receiver.playerId));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(players,receiver.x,0.55f,receiver.z,0f));
+  MatchGameplay.PassTargetDecision decision=MatchGameplay.findForwardPassDecision(players,9,0f,-20f,true,true);
+  assertNotEquals(10,decision.receiverIndex);
+ }
  @Test public void findsForwardPassTargetForBothAttackDirections(){
   MatchSimulation s=new MatchSimulation();s.start("home","away");List<MatchSimulation.PlayerState> p=s.getPlayers();
   int home=MatchGameplay.findForwardPassTarget(p,7,p.get(7).x,p.get(7).z,true);
