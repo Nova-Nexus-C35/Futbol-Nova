@@ -115,6 +115,12 @@ public final class MatchGameplay {
                 &&goalProgress>=34f&&goalProgress<=52.5f&&Math.abs(lateralPosition)<=15f;
     }
 
+    /** CPU carries the ball into space while still outside shooting range and not under pressure. */
+    public static boolean shouldAiCarryBall(float goalProgress,float nearestOpponentDistance) {
+        return Float.isFinite(goalProgress)&&Float.isFinite(nearestOpponentDistance)
+                &&goalProgress>=0f&&goalProgress<34f&&nearestOpponentDistance>=4.5f;
+    }
+
     /** True when a keeper can reach a low or mid-height shot travelling toward their own goal. */
     public static boolean canGoalkeeperAttemptSave(float keeperX,float keeperZ,
             float ballX,float ballY,float ballZ,float velocityZ,float ownGoalDirection) {
