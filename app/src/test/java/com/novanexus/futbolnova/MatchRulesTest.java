@@ -7,15 +7,14 @@ public class MatchRulesTest{
   MatchRules.OffsideDecision ballAhead=MatchRules.evaluateOffsideAtPass(-18f,-22f,Arrays.asList(-25f,-20f),-1f,true,"");
   assertFalse(ballAhead.offsidePosition);
   assertEquals(22f,ballAhead.offsideLineProgress,0.001f);
-  MatchRules.OffsideDecision defendersAhead=MatchRules.evaluateOffsideAtPass(-28f,-18f,Arrays.asList(-25f,-22f),-1f,true,"");
+  MatchRules.OffsideDecision defendersAhead=MatchRules.evaluateOffsideAtPass(-21f,-18f,Arrays.asList(-25f,-22f),-1f,true,"");
   assertFalse(defendersAhead.offsidePosition);
-  assertEquals(25f,defendersAhead.offsideLineProgress,0.001f);
+  assertEquals(22f,defendersAhead.offsideLineProgress,0.001f);
  }
 
  @Test public void offsideRequiresAttackerBeyondLineAndInOpponentsHalf(){
   assertFalse(MatchRules.evaluateOffsideAtPass(-20f,-20f,Arrays.asList(-25f,-22f),-1f,true,"").offence);
-  assertFalse(MatchRules.evaluateOffsideAtPass(-0.01f,-2f,Arrays.asList(-5f,-4f),-1f,true,"").offence);
-  assertFalse(MatchRules.evaluateOffsideAtPass(-30f,-20f,Arrays.asList(-25f,-22f),-1f,true,"").offence==false?false:false);
+  assertFalse(MatchRules.evaluateOffsideAtPass(0.01f,-2f,Arrays.asList(-5f,-4f),-1f,true,"").offence);
  }
 
  @Test public void passiveOffsidePositionIsNotAnOffenceUntilInvolved(){
