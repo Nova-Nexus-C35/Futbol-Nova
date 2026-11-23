@@ -196,7 +196,7 @@ public final class MatchSimulation {
         }
         int nearest=nearestTeammateToBall(p.homeTeam,ballX,ballZ);
         if (nearest==index && distance(p.homeX,p.homeZ,ballX,ballZ)<29f) {
-            float attackSign=p.homeTeam?-1f:1f;
+            float attackSign=p.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
             targetX=ballX; targetZ=ballZ+attackSign*1.25f;
         }
         p.targetX=clamp(targetX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f);
