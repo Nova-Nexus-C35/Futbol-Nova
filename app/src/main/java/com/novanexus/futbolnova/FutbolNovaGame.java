@@ -191,21 +191,46 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         drawHud();
     }
 
+    private final boolean[] pointerWasTouched = new boolean[20];
+    private int movementPointer = -1;
+
+    /**
+     * Independent pointer tracking allows the left movement stick and a right-side
+     * action button to be used at the same time on Android multi-touch screens.
+     */
     private void updateTouchControls(float delta){
-        if(Gdx.input.isTouched()){
-            float x=Gdx.input.getX(),y=Gdx.input.getY(),width=Gdx.graphics.getWidth(),height=Gdx.graphics.getHeight();
-            if(x<width*0.58f){
-                float horizontal=(x-width*0.27f)/(width*0.27f),vertical=(height*0.50f-y)/(height*0.50f);
-                Vector3 movement=new Vector3(horizontal,0f,-vertical);if(movement.len2()>1f)movement.nor();
-                controlledPosition.mulAdd(movement,10f*delta);
-                controlledPosition.x=Math.max(-FIELD_HALF_WIDTH+2f,Math.min(FIELD_HALF_WIDTH-2f,controlledPosition.x));
-                controlledPosition.z=Math.max(-FIELD_HALF_LENGTH+2f,Math.min(FIELD_HALF_LENGTH-2f,controlledPosition.z));
+        int width=Gdx.graphics.getWidth(),height=Gdx.graphics.getHeight();
+        if(width<=0||height<=0)return;
+
+        boolean movementStillDown=false;
+        for(int pointer=0;pointer<pointerWasTouched.length;pointer++){
+            boolean touched=Gdx.input.isTouched(pointer);
+            if(!touched){
+                pointerWasTouched[pointer]=false;
+                continue;
             }
+            float x=Gdx.input.getX(pointer),y=Gdx.input.getY(pointer);
+            if(x<width*0.58f){
+                if(movementPointer<0||movementPointer==pointer){
+                    movementPointer=pointer;
+                    movementStillDown=true;
+                    float radius=Math.max(1f,width*0.22f);
+                    float horizontal=(x-width*0.28f)/radius;
+                    float vertical=(height*0.50f-y)/radius;
+                    Vector3 movement=new Vector3(horizontal,0f,vertical);
+                    if(movement.len2()>1f)movement.nor();
+                    controlledPosition.mulAdd(movement,10f*delta);
+                    controlledPosition.x=Math.max(-FIELD_HALF_WIDTH+2f,Math.min(FIELD_HALF_WIDTH-2f,controlledPosition.x));
+                    controlledPosition.z=Math.max(-FIELD_HALF_LENGTH+2f,Math.min(FIELD_HALF_LENGTH-2f,controlledPosition.z));
+                }
+            }else if(!pointerWasTouched[pointer]){
+                if(y<height*0.34f)performShot();
+                else if(y<height*0.68f)performPass();
+                else performTackle();
+            }
+            pointerWasTouched[pointer]=true;
         }
-        if(Gdx.input.justTouched()&&Gdx.input.getX()>Gdx.graphics.getWidth()*0.60f){
-            float y=Gdx.input.getY(),h=Gdx.graphics.getHeight();
-            if(y<h*0.34f)performShot();else if(y<h*0.68f)performPass();else performTackle();
-        }
+        if(!movementStillDown)movementPointer=-1;
     }
 
     private void performShot(){
