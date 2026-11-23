@@ -60,3 +60,15 @@ Se amplió la búsqueda a repositorios públicos encontrados en GitHub. Se regis
 5. Tratar la licencia AGPL de TouchLines y GPL de Player12 como restricciones reales: no copiar ni mezclar código sin evaluación legal y cumplimiento explícito.
 
 La búsqueda se repetirá al iniciar cada subsistema relevante. Toda futura integración deberá tener una ficha con origen, commit/versión, licencia del archivo concreto, dependencias, atribución, compatibilidad Android ARM64 y pruebas.
+
+
+## Investigación adicional: porteros y motores 3D (2026-11-23)
+
+- [Adem-maker600/football-3d-game](https://github.com/Adem-maker600/football-3d-game) — juego 3v3 en Java/OpenGL con física de balón, IA y cámara dinámica; el README declara MIT. Sirve como ejemplo pequeño para comparar organización de física/cámara, pero usa LWJGL/Maven y no es una base de integración Android/libGDX.
+- [erengaygusuz/fotbiler-football](https://github.com/erengaygusuz/fotbiler-football) — motor 3D de fútbol con IA táctica, árbitro, offside, jugadas a balón parado, replay y estadísticas; GitHub identifica Apache-2.0 y lenguaje C++. Referencia de arquitectura y matriz de funcionalidades; no portar código C++ al runtime Java/libGDX sin un módulo JNI deliberado y pruebas Android.
+- [telgarin01/last-save-reborn](https://github.com/telgarin01/last-save-reborn) — simulador 3D centrado en porteros, penaltis y modo carrera. No se verificó licencia en esta revisión; solo observación conceptual, sin copiar código ni assets.
+- [Chenguku/Reactive-Goalkeeper](https://github.com/Chenguku/Reactive-Goalkeeper) — predicción de trayectoria y decisión de estirada con presupuesto de reacción; su README describe un pipeline Python/OpenCV y plataformas macOS/QNX. No es una dependencia adecuada para Android/libGDX; inspira únicamente el principio de predecir trayectoria y decidir dentro de una ventana temporal.
+
+### Implementación propia inspirada en el principio de predicción
+
+Se añadió en MatchGameplay una función Java independiente que estima el tiempo hasta el plano de intervención del portero, proyecta X/Y usando la gravedad compartida con BallFlightModel y rechaza trayectorias fuera de los postes, por encima del larguero, fuera del alcance lateral o que no se dirigen a la portería. FutbolNovaGame usa esa predicción para resolver la parada cerca del plano de gol. No se copió código de los repositorios estudiados.
