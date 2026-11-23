@@ -68,5 +68,15 @@ public final class MatchGameplayTest {
   MatchGameplay.PassTargetDecision decision=MatchGameplay.findForwardPassDecision(players,7,0f,0f,true,true);
   assertEquals(9,decision.receiverIndex);assertTrue(decision.offside);
   assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.findForwardPassTarget(players,7,0f,0f,true,true));
+  simulation.switchEnds();
+  passer=players.get(7);receiver=players.get(9);
+  passer.x=0f;passer.z=0f;receiver.x=0f;receiver.z=15f;
+  for(int i=0;i<players.size();i++){
+   MatchSimulation.PlayerState player=players.get(i);
+   if(i<11&&i!=7&&i!=9){player.x=28f;player.z=0f;}
+   if(i>=11){player.x=25f;player.z=(i%2==0)?10f:12f;}
+  }
+  MatchGameplay.PassTargetDecision secondHalf=MatchGameplay.findForwardPassDecision(players,7,0f,0f,true,false);
+  assertEquals(9,secondHalf.receiverIndex);assertTrue(secondHalf.offside);
  }
 }
