@@ -171,3 +171,11 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Pendiente: selector de clubes/plantillas en interfaz, y completar las plantillas ausentes de Primera/Segunda sin fabricar datos. Esta implementación no acredita todavía una prueba en dispositivo.
 
 - En el paso al segundo tiempo se invierten los extremos, se actualiza la posición del futbolista seleccionado, se repone el balón en el centro y el saque inicial se orienta según el nuevo sentido de ataque. Las reglas de gol y las velocidades de tiro/despeje reciben la orientación actual.
+
+
+### Implementación: selección de equipos y nuevo amistoso (2026-11-23)
+
+- En la pantalla previa al saque inicial, la franja superior izquierda recorre los equipos con plantilla disponible como local; la zona central recorre el visitante; la derecha inicia el encuentro. No permite seleccionar el mismo club en ambos lados.
+- El marcador muestra los nombres de los dos clubes. Durante el partido se muestra el nombre del jugador activo.
+- Tras el pitido final, la zona superior izquierda reinicia marcador, reloj, balón, posesión, enfriamientos y alineaciones para un nuevo amistoso.
+- Añadido reset explícito de MatchState y prueba unitaria. El catálogo seleccionable se limita a los 20 grupos de plantilla disponibles en el JSON actual.
