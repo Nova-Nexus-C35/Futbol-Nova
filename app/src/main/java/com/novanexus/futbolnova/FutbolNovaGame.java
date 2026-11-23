@@ -34,6 +34,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private final MatchState matchState = new MatchState();
     private final MatchStatistics matchStatistics = new MatchStatistics();
+    private final MatchDiscipline matchDiscipline = new MatchDiscipline();
     private final MatchClock matchClock = new MatchClock();
     private final MatchSimulation matchSimulation = new MatchSimulation();
     private List<OriginalProjectData.TeamRoster> playableRosters = new ArrayList<>();
@@ -211,7 +212,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         for(int i=0;i<lineup.size()&&i<playerVisuals.size();i++){
             MatchSimulation.PlayerState state=lineup.get(i);
             float yaw=(float)Math.atan2(-state.forwardX,-state.forwardZ);
-            playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
+            if(state.active)playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
         }
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -227,7 +228,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         modelBatch.begin(camera);
         modelBatch.render(fieldInstance,environment);
         for(ModelInstance structure:environmentModels)modelBatch.render(structure,environment);
-        for(PlayerVisual player:playerVisuals)player.render(modelBatch,environment);
+        for(int i=0;i<playerVisuals.size()&&i<matchSimulation.getPlayers().size();i++)
+            if(matchSimulation.getPlayers().get(i).active)playerVisuals.get(i).render(modelBatch,environment);
         modelBatch.render(ballInstance,environment);
         modelBatch.end();
 
@@ -342,13 +344,42 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void resetMatch(){
-        matchClock.reset();matchState.reset();matchStatistics.reset();
+        matchClock.reset();matchState.reset();matchStatistics.reset();matchDiscipline.reset();
         if(teamSelection!=null)rebuildSelectedLineups();
         ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
         possessionOwnerIndex=MatchGameplay.NO_OWNER;pendingOffsideReceiver=MatchGameplay.NO_OWNER;aiKickClock=0.9f;tackleCooldown=0f;
         restartClock=0f;pendingRestart=MatchRules.Restart.IN_PLAY;kickoffRestart=false;
         for(int i=0;i<aiTackleCooldowns.length;i++)aiTackleCooldowns[i]=0f;
     }
+
+    public MatchDiscipline.Outcome issueYellowCard(String playerId){
+        MatchDiscipline.Outcome outcome=matchDiscipline.issueYellow(playerId);
+        if(outcome==MatchDiscipline.Outcome.DISMISSED)applyDismissal(playerId);
+        return outcome;
+    }
+
+    public MatchDiscipline.Outcome issueRedCard(String playerId){
+        MatchDiscipline.Outcome outcome=matchDiscipline.issueRed(playerId);
+        if(outcome==MatchDiscipline.Outcome.DISMISSED)applyDismissal(playerId);
+        return outcome;
+    }
+
+    private void applyDismissal(String playerId){
+        for(int i=0;i<matchSimulation.getPlayers().size();i++){
+            MatchSimulation.PlayerState player=matchSimulation.getPlayers().get(i);
+            if(player.playerId.equals(playerId)&&matchSimulation.dismissPlayer(playerId)){
+                if(possessionOwnerIndex==i)possessionOwnerIndex=MatchGameplay.NO_OWNER;
+                if(pendingOffsideReceiver==i)pendingOffsideReceiver=MatchGameplay.NO_OWNER;
+                if(i==9||i==10||i==matchSimulation.getControlledPlayerIndex()){
+                    MatchSimulation.PlayerState replacement=matchSimulation.getControlledPlayer();
+                    if(replacement!=null)controlledPosition.set(replacement.x,0f,replacement.z);
+                }
+                return;
+            }
+        }
+    }
+
+    public MatchDiscipline getMatchDiscipline(){return matchDiscipline;}
 
     private void performShot(){
         if(possessionOwnerIndex!=matchSimulation.getControlledPlayerIndex())return;
@@ -524,7 +555,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         MatchSimulation.PlayerState currentOwner=lineup.get(possessionOwnerIndex);
         int nearestDefender=MatchGameplay.NO_OWNER;float nearestDistance=1.7f;
         for(int i=0;i<lineup.size();i++){
-            if(i==possessionOwnerIndex||lineup.get(i).homeTeam==currentOwner.homeTeam||aiTackleCooldowns[i]>0f)continue;
+            if(i==possessionOwnerIndex||!lineup.get(i).active||lineup.get(i).homeTeam==currentOwner.homeTeam||aiTackleCooldowns[i]>0f)continue;
             MatchSimulation.PlayerState defender=lineup.get(i);
             float dx=defender.x-currentOwner.x,dz=defender.z-currentOwner.z;
             float d=(float)Math.sqrt(dx*dx+dz*dz);
@@ -554,7 +585,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         float nearestOpponentDistance=Float.MAX_VALUE;
         float goalkeeperX=0f;
         for(MatchSimulation.PlayerState candidate:lineup){
-            if(candidate.homeTeam==owner.homeTeam)continue;
+            if(!candidate.active||candidate.homeTeam==owner.homeTeam)continue;
             float dx=candidate.x-owner.x,dz=candidate.z-owner.z;
             nearestOpponentDistance=Math.min(nearestOpponentDistance,(float)Math.sqrt(dx*dx+dz*dz));
             if("GK".equals(candidate.role))goalkeeperX=candidate.x;
