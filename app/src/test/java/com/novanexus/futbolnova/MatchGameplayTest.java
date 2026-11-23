@@ -48,6 +48,17 @@ public final class MatchGameplayTest {
   assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,5f,1.2f,48f,12f,1f));
  }
 
+ @Test public void goalkeeperPredictsReachableShotAtTheGoalPlane(){
+  float time=MatchGameplay.goalkeeperInterceptTime(0f,49f,0.2f,1.2f,45f,0.2f,4f,10f,1f);
+  assertTrue(time>0f&&time<=1.2f);
+  float reverse=MatchGameplay.goalkeeperInterceptTime(0f,-49f,-0.2f,1.2f,-45f,-0.2f,4f,-10f,-1f);
+  assertTrue(reverse>0f&&reverse<=1.2f);
+ }
+ @Test public void goalkeeperRejectsShotsOutsidePostsOrAboveCrossbar(){
+  assertEquals(-1f,MatchGameplay.goalkeeperInterceptTime(0f,49f,3.8f,1.2f,45f,0f,4f,10f,1f),0.0001f);
+  assertEquals(-1f,MatchGameplay.goalkeeperInterceptTime(0f,49f,0f,3.2f,45f,0f,5f,10f,1f),0.0001f);
+  assertEquals(-1f,MatchGameplay.goalkeeperInterceptTime(0f,49f,0f,1.2f,45f,0f,0f,-10f,1f),0.0001f);
+ }
  @Test public void cpuShootsOnlyFromTheAttackingFinalThirdAndCentralLane(){
   assertTrue(MatchGameplay.shouldAiShoot(40f,4f));
   assertFalse(MatchGameplay.shouldAiShoot(25f,4f));
