@@ -138,3 +138,13 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 2. Hacer que el jugador visual y el estado simulado usen una única fuente de posición para evitar desincronización del futbolista controlado.
 3. Implementar selección del jugador controlado y actualización de posesión/control sin depender del índice fijo del delantero.
 4. Añadir pruebas de integración del ciclo de partido y controles/reglas; después continuar con porteros, colisiones, árbitro y equipos reales.
+
+### Implementación: integración del reloj y flujo de partido (2026-11-23)
+
+- Integrada `MatchClock` en `FutbolNovaGame`: el partido comienza explícitamente desde PRE_MATCH, cambia a HALF_TIME al terminar el primer período, requiere una acción explícita para iniciar el segundo y pasa a FULL_TIME al finalizarlo.
+- La simulación del balón, jugadores y decisiones de juego queda detenida cuando el partido está antes del saque inicial, en descanso, pausado o finalizado; el render 3D continúa activo.
+- Controles táctiles de la franja superior: izquierda para iniciar/continuar desde descanso; derecha para pausar/reanudar. El HUD comunica las fases y acciones disponibles.
+- Escala arcade declarada: 30 segundos de partido por segundo real. Cada parte reglamentaria de 45 minutos dura aproximadamente 90 segundos reales; partido completo aproximadamente 3 minutos, sin contar pausas. Es una constante de configuración, no tiempo real reglamentario.
+- Verificación de escritura: `FutbolNovaGame.java` releído desde GitHub después de la escritura; blob SHA `ac27615bce6eec262490a31324ad7ca898ff7dad`.
+- CI de la tanda anterior: run #55, job `android`, conclusión `success`. Esta ejecución no valida todavía la nueva integración; el nuevo run debe completarse antes de marcarla como compilada.
+- Pendiente de prueba física: comprobar detección de toques en la franja superior, pause/resume, descanso y final en Android 9 ARM64, además de multitáctil simultáneo. No afirmar aceptación táctil hasta probar en dispositivo.
