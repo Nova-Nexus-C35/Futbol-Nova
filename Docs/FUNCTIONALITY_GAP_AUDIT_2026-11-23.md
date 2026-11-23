@@ -169,3 +169,5 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se añadieron pruebas para el parseo de identidades/atributos y para crear el partido desde dos plantillas.
 - Se corrigió además la posición inicial del control para usar el índice dinámico seleccionado y no el delantero fijo original.
 - Pendiente: selector de clubes/plantillas en interfaz, y completar las plantillas ausentes de Primera/Segunda sin fabricar datos. Esta implementación no acredita todavía una prueba en dispositivo.
+
+- En el paso al segundo tiempo se invierten los extremos, se actualiza la posición del futbolista seleccionado, se repone el balón en el centro y el saque inicial se orienta según el nuevo sentido de ataque. Las reglas de gol y las velocidades de tiro/despeje reciben la orientación actual.
