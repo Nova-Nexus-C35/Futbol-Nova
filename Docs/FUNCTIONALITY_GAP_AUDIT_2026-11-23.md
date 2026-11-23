@@ -411,3 +411,11 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - FutbolNovaGame conecta esta selección con la velocidad de tiro existente; no se modifica el modelo físico del balón ni la acción del jugador humano.
 - MatchGameplayTest cubre portero a izquierda/derecha, ajuste por presión, límites del arco y entrada no finita.
 - Limitación: aún no calcula probabilidad de gol/xG ni considera altura del portero, postura, pierna dominante, ángulo real de tiro, bloqueos animados o técnica del jugador. Es una mejora heurística verificable, no una IA de tiro de nivel profesional.
+
+
+### Incremento de IA: selección contextual de pase (2026-11-23)
+
+- La puntuación de cada receptor legal considera progreso hacia delante, distancia del pase, espacio respecto al defensor más cercano y rol ofensivo.
+- Se mantiene la comprobación de carril despejado y la preferencia por receptores en posición reglamentaria; la nueva puntuación solo ordena las opciones que superan esos filtros.
+- Se añadieron pruebas para comprobar que el receptor libre supera al marcado y que los roles de ataque reciben una bonificación moderada.
+- Limitación: la decisión todavía usa posiciones instantáneas; no predice la trayectoria futura del receptor ni calcula riesgo de intercepción en el tiempo, presión coordinada, pie hábil o velocidad individual.
