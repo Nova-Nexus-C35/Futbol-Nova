@@ -556,19 +556,22 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         ballVelocity.setZero();ballSpin.setZero();lastTouchHome=owner.homeTeam;
         if(possessionOwnerIndex==matchSimulation.getControlledPlayerIndex())return;
         float goalProgress=owner.z*ownerAttackSign;
+        float nearestOpponentDistance=Float.MAX_VALUE;
+        float goalkeeperX=0f;
+        for(MatchSimulation.PlayerState candidate:lineup){
+            if(candidate.homeTeam==owner.homeTeam)continue;
+            float dx=candidate.x-owner.x,dz=candidate.z-owner.z;
+            nearestOpponentDistance=Math.min(nearestOpponentDistance,(float)Math.sqrt(dx*dx+dz*dz));
+            if("GK".equals(candidate.role))goalkeeperX=candidate.x;
+        }
         if(MatchGameplay.shouldAiShoot(goalProgress,owner.x)){
-            ballVelocity.set(MatchGameplay.shotVelocity(owner.homeTeam,-owner.x*0.22f,
+            float aimX=MatchGameplay.chooseAiShotAimX(owner.x,goalkeeperX,nearestOpponentDistance);
+            ballVelocity.set(MatchGameplay.shotVelocity(owner.homeTeam,aimX,
                     matchSimulation.homeAttacksNegativeZ()));
             ballSpin.set(0f,owner.homeTeam?18f:-18f,0f);
             matchStatistics.recordShot(owner.playerId,owner.homeTeam);
             possessionOwnerIndex=MatchGameplay.NO_OWNER;aiKickClock=1.3f;
             return;
-        }
-        float nearestOpponentDistance=Float.MAX_VALUE;
-        for(MatchSimulation.PlayerState candidate:lineup){
-            if(candidate.homeTeam==owner.homeTeam)continue;
-            float dx=candidate.x-owner.x,dz=candidate.z-owner.z;
-            nearestOpponentDistance=Math.min(nearestOpponentDistance,(float)Math.sqrt(dx*dx+dz*dz));
         }
         aiKickClock=Math.max(0f,aiKickClock-delta);
         if(MatchGameplay.shouldAiCarryBall(goalProgress,nearestOpponentDistance)&&aiKickClock>0f){
