@@ -242,3 +242,11 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se añadieron pruebas para poste, larguero y contacto jugador-balón, incluyendo la conservación del control de balones lentos.
 - Limitación: es una aproximación de cuerpos esféricos y segmentos; no equivale todavía a un sistema físico completo con articulaciones, redes deformables ni animaciones de impacto.
 - Archivos de colisión, pruebas y runtime fueron releídos desde GitHub tras la escritura. La validación CI del último commit aún está pendiente.
+
+
+### Implementación: sanción de fuera de juego en recepción (2026-11-23)
+
+- La selección de pase ahora conserva una decisión explícita del receptor: prefiere opciones en posición legal y, si no existe ninguna opción legal viable, puede elegir la mejor opción adelantada y marcarla como fuera de juego.
+- Si ese jugador participa recibiendo el pase, el juego detiene el balón y concede un tiro libre indirecto automático al rival desde la posición de la infracción.
+- Se registra el fuera de juego por equipo y se añade al historial acotado de eventos. Si el balón lo intercepta otro jugador o sale del campo, se cancela la infracción pendiente.
+- Se añadieron pruebas de decisión de pase y del contador de fuera de juego. La regla sigue siendo una aproximación: no cubre todas las situaciones de interferencia, rebotes ni excepciones complejas de reglamento.
