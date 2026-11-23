@@ -5,8 +5,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 
 /**
- * Elevated broadcast-style 3D camera. It follows the live ball with damped motion,
- * keeps the play inside the pitch view and raises slightly during fast transitions.
+ * Elevated broadcast-style 3D camera with damped ball tracking and transition zoom.
  */
 public final class BroadcastCamera {
     private static final float SIDE_OFFSET = 56f;
@@ -17,12 +16,14 @@ public final class BroadcastCamera {
     private final Vector3 desiredPosition = new Vector3();
     private final Vector3 requestedFocus = new Vector3();
     private final Vector3 desiredTarget = new Vector3();
-    private boolean initialized;\n    private float currentFieldOfView = 49f;
+    private boolean initialized;
+    private float currentFieldOfView = 49f;
 
     public void reset(PerspectiveCamera camera, Vector3 focus) {
         smoothedFocus.set(focus.x, 0f, focus.z);
         initialized = true;
-        camera.fieldOfView = 49f;
+        currentFieldOfView = 49f;
+        camera.fieldOfView = currentFieldOfView;
         apply(camera, 0f);
     }
 
@@ -38,6 +39,9 @@ public final class BroadcastCamera {
                 MathUtils.clamp(focus.x, -34f, 34f), 0f,
                 MathUtils.clamp(focus.z, -52.5f, 52.5f));
         smoothedFocus.lerp(requestedFocus, alpha);
+        float targetFieldOfView = 49f + Math.min(8f, safeSpeed * 0.22f);
+        currentFieldOfView += (targetFieldOfView - currentFieldOfView) * alpha;
+        camera.fieldOfView = currentFieldOfView;
         apply(camera, safeSpeed);
     }
 
