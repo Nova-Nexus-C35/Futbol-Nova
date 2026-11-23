@@ -157,3 +157,4 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se conectaron las acciones de tiro, pase y entrada al índice dinámico del jugador controlado.
 - El sector superior central del HUD cambia el futbolista; la zona superior izquierda conserva inicio/continuación y la derecha pausa/reanudación.
 - Se añadió prueba unitaria del ciclo y de la exclusión del portero. Pendiente comprobar usabilidad y multitáctil en Android físico.
+- Corrección posterior a la revisión: tiro, pase y entrada usan ahora el índice dinámico seleccionado también para identificar al pasador y asignar la posesión tras una entrada exitosa. Se releyó `FutbolNovaGame.java` desde GitHub y se confirmó que la única referencia al índice inicial fijo restante se utiliza exclusivamente para colocar el jugador seleccionado inicial al crear los modelos.
