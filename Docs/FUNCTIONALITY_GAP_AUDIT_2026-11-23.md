@@ -233,3 +233,12 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - El commit actual de código es `0f3117849c8a124d65868e236ed03567f21ececb`. Debe ejecutarse y completarse CI para este estado antes de declarar validada la compilación.
 - Sigue sin demostrarse una partida completa en el teléfono físico. La CI no puede certificar la experiencia multitáctil, el rendimiento térmico, el equilibrio del juego ni la calidad visual.
 - Pendientes de implementación: árbitro/ventaja/tarjetas; fuera de juego sancionado durante juego vivo; colisiones jugador-balón y postes; portero con animaciones y predicción; centros/regates/conducción y decisiones tácticas amplias; banquillo/sustituciones; estadísticas individuales y resumen postpartido; guardados/historial; gráficos/audio de producción; plantillas completas para todas las divisiones; release firmado y aceptación física Android.
+
+### Implementación: colisiones de balón con jugadores, postes y larguero (2026-11-23)
+
+- Se añadió `BallCollisionModel` para responder al contacto rápido del balón con los cuerpos de los futbolistas y para colisiones geométricas con los dos postes y el larguero.
+- Los contactos de baja velocidad no se desvían por el modelo corporal para permitir que el sistema de posesión capture el balón; los contactos rápidos se reflejan con amortiguación.
+- Las colisiones del marco corrigen la posición del balón y aplican rebote antes de evaluar si cruzó completamente la línea de gol.
+- Se añadieron pruebas para poste, larguero y contacto jugador-balón, incluyendo la conservación del control de balones lentos.
+- Limitación: es una aproximación de cuerpos esféricos y segmentos; no equivale todavía a un sistema físico completo con articulaciones, redes deformables ni animaciones de impacto.
+- Archivos de colisión, pruebas y runtime fueron releídos desde GitHub tras la escritura. La validación CI del último commit aún está pendiente.
