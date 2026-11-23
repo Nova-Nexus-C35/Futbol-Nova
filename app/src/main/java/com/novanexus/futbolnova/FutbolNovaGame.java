@@ -274,6 +274,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             case HALF_TIME:
                 matchClock.startSecondHalf();
                 matchSimulation.switchEnds();
+                MatchSimulation.PlayerState selectedAfterSwitch=matchSimulation.getControlledPlayer();
+                if(selectedAfterSwitch!=null)controlledPosition.set(selectedAfterSwitch.x,0f,selectedAfterSwitch.z);
                 ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
                 possessionOwnerIndex=MatchGameplay.NO_OWNER;restartAwardedHome=false;
                 kickoffRestart=true;pendingRestart=MatchRules.Restart.IN_PLAY;restartClock=1.4f;
