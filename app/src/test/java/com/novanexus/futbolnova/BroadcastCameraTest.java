@@ -2,10 +2,16 @@ package com.novanexus.futbolnova;
 
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.GdxNativesLoader;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public final class BroadcastCameraTest {
+    @BeforeClass public static void loadLibGdxDesktopNatives() {
+        GdxNativesLoader.load();
+    }
+
     @Test public void resetCreatesElevatedThreeQuarterBroadcastView() {
         BroadcastCamera controller = new BroadcastCamera();
         PerspectiveCamera camera = new PerspectiveCamera(55f, 1920f, 1080f);
