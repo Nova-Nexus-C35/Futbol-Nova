@@ -19,6 +19,14 @@ public final class MatchGameplayTest {
   int away=MatchGameplay.findForwardPassTarget(p,18,p.get(18).x,p.get(18).z,false);
   assertTrue(home<11&&home>=0);assertTrue(away>=11);
  }
+ @Test public void passScoringPrefersSpaceAndRewardsAttackingRoles(){
+  float open=MatchGameplay.scorePassOption(8f,12f,10f,"ST");
+  float marked=MatchGameplay.scorePassOption(8f,12f,1f,"ST");
+  float midfielder=MatchGameplay.scorePassOption(8f,12f,10f,"CM");
+  assertTrue(open>marked);
+  assertTrue(open>midfielder);
+  assertTrue(Float.isInfinite(MatchGameplay.scorePassOption(Float.NaN,2f,3f,"ST")));
+ }
  @Test public void passLaneRejectsOpponentInPassingCorridor(){
   MatchSimulation s=new MatchSimulation();s.start("home","away");List<MatchSimulation.PlayerState> p=s.getPlayers();
   MatchSimulation.PlayerState passer=p.get(9),receiver=p.get(8),blocker=p.get(18);
