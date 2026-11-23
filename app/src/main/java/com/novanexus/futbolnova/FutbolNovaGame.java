@@ -502,8 +502,14 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                     ballVelocity.set(0f,6.2f,attackSign*22f);
                 else if(pendingRestart==MatchRules.Restart.FREE_KICK)
                     ballVelocity.set(0f,4.5f,attackSign*15f);
-                else if(pendingRestart==MatchRules.Restart.PENALTY)
-                    ballVelocity.set(0f,2.5f,attackSign*28f);
+                else if(pendingRestart==MatchRules.Restart.PENALTY) {
+                    List<MatchSimulation.PlayerState> penaltyLineup=matchSimulation.getPlayers();
+                    int goalkeeperIndex=restartAwardedHome?11:0;
+                    float goalkeeperX=penaltyLineup.size()>goalkeeperIndex
+                            ?penaltyLineup.get(goalkeeperIndex).x:Float.NaN;
+                    ballVelocity.set(MatchGameplay.penaltyShotVelocity(
+                            goalkeeperX,restartAwardedHome,matchSimulation.homeAttacksNegativeZ()));
+                }
                 lastTouchHome=restartAwardedHome;
                 pendingRestart=MatchRules.Restart.IN_PLAY;
                 kickoffRestart=false;
