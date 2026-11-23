@@ -567,3 +567,9 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - La escritura externa está protegida: si Android deniega o no ofrece el almacenamiento externo de la aplicación, el historial interno permanece guardado y se registra el error de exportación; no se informa falsamente de que el archivo se creó.
 - Se añadieron pruebas unitarias para contenido de cada sección, tarjetas y escape de caracteres CSV.
 - Alcance: exportación automática al terminar el partido, sin selector de carpeta ni diálogo de compartir. En Android moderno los archivos quedan en el directorio externo específico de la app (normalmente `Android/data/<paquete>/files/FutbolNova/Actas`), cuya visibilidad depende del administrador de archivos del dispositivo. No se ha comprobado el acceso desde el teléfono físico.
+
+### Corrección de cierre de clase en pruebas CSV (2026-11-23)
+
+- CI #249 (`45290692033`) detectó que `MatchReportTest.java` terminaba sin la llave de cierre de la clase, por lo que Java fallaba con `reached end of file while parsing`.
+- Se añade únicamente la llave de cierre que faltaba; no se cambia el comportamiento del exportador.
+- La nueva validación CI de esta corrección queda pendiente. No se declara APK ni pruebas aprobadas hasta que el nuevo run termine correctamente.

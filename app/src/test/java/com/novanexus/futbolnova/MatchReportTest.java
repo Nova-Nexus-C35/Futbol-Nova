@@ -94,3 +94,4 @@ public class MatchReportTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void csvExportRejectsNullReport() { MatchReportExporter.toCsv(null); }
+}
