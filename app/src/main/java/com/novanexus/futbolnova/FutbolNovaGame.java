@@ -133,14 +133,23 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         Model bootModel=builder.createBox(0.18f,0.12f,0.34f,boots,attributes);
         for(Model model:new Model[]{homeTorso,awayTorso,homeShortModel,awayShortModel,headModel,hairModel,homeArm,awayArm,legModel,bootModel})own(model);
 
-        if(!matchSimulation.start("nova_home","nova_away"))throw new IllegalStateException("Could not initialize original 4-3-3 lineups");
+        boolean canonicalLineupsLoaded=false;
+        try {
+            List<OriginalProjectData.TeamRoster> rosters=OriginalProjectData.loadPlayableRosters();
+            canonicalLineupsLoaded=rosters.size()>=2&&matchSimulation.start(rosters.get(0),rosters.get(1));
+            if(canonicalLineupsLoaded)Gdx.app.log("FutbolNova","Playable squads: "+matchSimulation.getHomeTeamName()+" vs "+matchSimulation.getAwayTeamName());
+        } catch(RuntimeException error) {
+            Gdx.app.error("FutbolNova","Canonical player rosters unavailable; using placeholder teams",error);
+        }
+        if(!canonicalLineupsLoaded&&!matchSimulation.start("nova_home","nova_away"))
+            throw new IllegalStateException("Could not initialize match lineups");
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
         for(int i=0;i<lineup.size();i++){
             MatchSimulation.PlayerState state=lineup.get(i);
             playerVisuals.add(new PlayerVisual(state.homeTeam?homeTorso:awayTorso,
                     state.homeTeam?homeShortModel:awayShortModel,headModel,hairModel,
                     state.homeTeam?homeArm:awayArm,legModel,bootModel,state.shirtNumber));
-            if(i==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)controlledPosition.set(state.x,0f,state.z);
+            if(i==matchSimulation.getControlledPlayerIndex())controlledPosition.set(state.x,0f,state.z);
         }
         Model ball=builder.createSphere(1.1f,1.1f,1.1f,16,16,new Material(ColorAttribute.createDiffuse(Color.WHITE)),attributes);
         own(ball);ballInstance=new ModelInstance(ball);
@@ -441,8 +450,13 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         float matchSeconds=matchClock.getTotalElapsedSeconds();
         int matchMinute=(int)(matchSeconds/60f);
         String clock=String.format(java.util.Locale.US,"%02d:%02d",matchMinute,(int)(matchSeconds%60f));
-        font.draw(spriteBatch, "FUTBOL NOVA  |  " + matchState.getHomeGoals() + " - "
-                + matchState.getAwayGoals() + "  |  " + clock, 18f, Gdx.graphics.getHeight() - 18f);
+        font.draw(spriteBatch, matchSimulation.getHomeTeamName()+"  "+matchState.getHomeGoals()
+                +" - "+matchState.getAwayGoals()+"  "+matchSimulation.getAwayTeamName()+"  |  "+clock,
+                18f,Gdx.graphics.getHeight()-18f);
+        MatchSimulation.PlayerState activePlayer=matchSimulation.getControlledPlayer();
+        if(activePlayer!=null)font.draw(spriteBatch,"JUGADOR: "+activePlayer.playerName
+                +"  #"+activePlayer.shirtNumber+"  "+activePlayer.role,
+                18f,Gdx.graphics.getHeight()-70f);
         font.draw(spriteBatch, "IZQUIERDA: MOVER   DERECHA: ARRIBA TIRO | CENTRO PASE | ABAJO ROBO", 18f, 28f);
         String phaseText;
         switch(matchClock.getPhase()){
