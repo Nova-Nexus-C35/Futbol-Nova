@@ -103,3 +103,12 @@ La referencia FIFA describe el nivel y la dirección de calidad deseados; no aut
 - PlayerVisual ahora articula brazos y piernas alrededor de pivotes aproximados de hombros y caderas, en vez de girar cada pieza sobre su propio centro; los pies acompañan el ciclo y el torso/cabeza absorben un pequeño movimiento vertical.
 - Se añadieron pruebas unitarias para reposo, alternancia y límites de amplitud, además de entradas no finitas.
 - Alcance real: es una animación procedural de locomoción para las mallas low-poly actuales. No sustituye modelos esqueléticos, clips de animación profesionales ni acciones específicas (pase, tiro, cabezazo, barrida, caída, celebración o atajada); esas siguen en la hoja de ruta.
+
+
+## Progreso de implementación — articulación procedural de futbolistas (2026-11-23)
+
+- PlayerVisual ahora calcula una oscilación de carrera y un pequeño movimiento vertical del torso/cabeza según la velocidad, mediante PlayerAnimation.
+- Brazos y piernas se colocan usando pivotes aproximados de hombros y caderas, en lugar de rotar cada pieza únicamente sobre su propio centro; botas acompañan la fase de pierna.
+- PlayerAnimation mantiene funciones deterministas y limita la amplitud de zancada; entradas no finitas vuelven a una pose estable.
+- Se añadieron pruebas de reposo, alternancia positiva/negativa de zancada, amplitud máxima y entradas inválidas.
+- Limitación: siguen siendo mallas low-poly separadas y animación procedural básica. No hay esqueleto/skin, clips capturados, cinemática inversa, contacto pie-balón sincronizado ni animaciones de pase/tiro/caída/portero. No se considera animación de calidad moderna terminada.
