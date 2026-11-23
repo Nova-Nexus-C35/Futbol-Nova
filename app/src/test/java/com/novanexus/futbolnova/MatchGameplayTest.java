@@ -40,4 +40,11 @@ public final class MatchGameplayTest {
   assertTrue(firstShot.z<0f);assertTrue(secondShot.z>0f);
   assertTrue(firstClearance.z<0f);assertTrue(secondClearance.z>0f);
  }
+
+ @Test public void goalkeeperOnlyAttemptsReachableShotsMovingTowardItsOwnGoal(){
+  assertTrue(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,1.2f,48f,12f,1f));
+  assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,1.2f,48f,-12f,1f));
+  assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,4f,48f,12f,1f));
+  assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,5f,1.2f,48f,12f,1f));
+ }
 }
