@@ -402,3 +402,12 @@ Se añadió un cálculo de objetivos sin balón según rol y fase estimada:
 - El jugador más cercano al balón de cada equipo conserva la tarea de presión/ataque directo.
 
 Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva, límites del campo y cambio de dirección tras el descanso. El cálculo de fase aún es una estimación por proximidad de los jugadores al balón, no una máquina de posesión autoritativa. Falta evaluar en partidos completos y ajustar velocidades/distancias.
+
+
+### Incremento de IA: selección de poste para el tiro (2026-11-23)
+
+- La IA identifica la posición horizontal del portero rival y selecciona el lado contrario como objetivo del disparo, en vez de dirigir siempre el balón al centro o a un punto fijo.
+- Cuando hay un defensor muy próximo, amplía moderadamente el objetivo hacia el poste lejano, manteniendo el punto de mira dentro del ancho reglamentario de la portería.
+- FutbolNovaGame conecta esta selección con la velocidad de tiro existente; no se modifica el modelo físico del balón ni la acción del jugador humano.
+- MatchGameplayTest cubre portero a izquierda/derecha, ajuste por presión, límites del arco y entrada no finita.
+- Limitación: aún no calcula probabilidad de gol/xG ni considera altura del portero, postura, pierna dominante, ángulo real de tiro, bloqueos animados o técnica del jugador. Es una mejora heurística verificable, no una IA de tiro de nivel profesional.
