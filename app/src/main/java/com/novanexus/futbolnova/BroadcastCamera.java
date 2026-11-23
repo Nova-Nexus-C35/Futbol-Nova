@@ -14,7 +14,7 @@ public final class BroadcastCamera {
     private static final float BASE_TRAILING_DISTANCE = 23f;
     private static final float FOLLOW_RESPONSE = 3.8f;
     private final Vector3 smoothedFocus = new Vector3();
-    private final Vector3 desiredPosition = new Vector3();
+    private final Vector3 desiredPosition = new Vector3();\n    private final Vector3 requestedFocus = new Vector3();
     private final Vector3 desiredTarget = new Vector3();
     private boolean initialized;
 
@@ -32,9 +32,10 @@ public final class BroadcastCamera {
         }
         float safeDelta = Float.isFinite(delta) ? MathUtils.clamp(delta, 0f, 0.1f) : 0f;
         float alpha = 1f - (float)Math.exp(-FOLLOW_RESPONSE * safeDelta);
-        smoothedFocus.lerp(new Vector3(
+        requestedFocus.set(
                 MathUtils.clamp(focus.x, -34f, 34f), 0f,
-                MathUtils.clamp(focus.z, -52.5f, 52.5f)), alpha);
+                MathUtils.clamp(focus.z, -52.5f, 52.5f));
+        smoothedFocus.lerp(requestedFocus, alpha);
         apply(camera, MathUtils.clamp(ballSpeed, 0f, 35f));
     }
 
