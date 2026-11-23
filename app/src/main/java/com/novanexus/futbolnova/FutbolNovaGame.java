@@ -320,7 +320,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private void performShot(){
         if(possessionOwnerIndex!=matchSimulation.getControlledPlayerIndex())return;
-        ballPosition.set(controlledPosition.x,BALL_RADIUS,controlledPosition.z-0.62f);
+        float attackSign=matchSimulation.homeAttacksNegativeZ()?-1f:1f;
+        ballPosition.set(controlledPosition.x,BALL_RADIUS,controlledPosition.z+attackSign*0.62f);
         ballVelocity.set(MatchGameplay.shotVelocity(true,-ballPosition.x*0.22f,matchSimulation.homeAttacksNegativeZ()));ballSpin.set(0f,18f,0f);
         possessionOwnerIndex=MatchGameplay.NO_OWNER;lastTouchHome=true;
     }
