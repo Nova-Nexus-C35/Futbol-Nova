@@ -15,6 +15,7 @@ public final class MatchGameplay {
         int best=NO_OWNER; float bestDistance=1.15f;
         for(int i=0;i<players.size();i++){
             MatchSimulation.PlayerState p=players.get(i);
+            if(!p.active)continue;
             float d=distance(p.x,p.z,ballX,ballZ);
             if(d<=bestDistance){bestDistance=d;best=i;}
         }
@@ -43,18 +44,18 @@ public final class MatchGameplay {
     /** Prefers onside receivers; if every viable forward option is offside, returns the best flagged option. */
     public static PassTargetDecision findForwardPassDecision(List<MatchSimulation.PlayerState> players,
             int passerIndex,float originX,float originZ,boolean homeTeam,boolean homeAttacksNegativeZ) {
-        if(players==null||passerIndex<0||passerIndex>=players.size())
+        if(players==null||passerIndex<0||passerIndex>=players.size()||!players.get(passerIndex).active)
             return new PassTargetDecision(NO_OWNER,false);
         float attackSign=homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
         List<Float> defenders=new ArrayList<>();
-        for(MatchSimulation.PlayerState player:players)if(player.homeTeam!=homeTeam)defenders.add(player.z);
+        for(MatchSimulation.PlayerState player:players)if(player.active&&player.homeTeam!=homeTeam)defenders.add(player.z);
         int bestOnside=NO_OWNER,bestAny=NO_OWNER;
         float bestOnsideScore=Float.NEGATIVE_INFINITY,bestAnyScore=Float.NEGATIVE_INFINITY;
         boolean bestAnyOffside=false;
         for(int i=0;i<players.size();i++){
             if(i==passerIndex)continue;
             MatchSimulation.PlayerState player=players.get(i);
-            if(player.homeTeam!=homeTeam||"GK".equals(player.role))continue;
+            if(!player.active||player.homeTeam!=homeTeam||"GK".equals(player.role))continue;
             float distance=distance(originX,originZ,player.x,player.z);
             float gain=(player.z-originZ)*attackSign;
             if(distance<3f||distance>19f||gain<1f)continue;
@@ -88,7 +89,7 @@ public final class MatchGameplay {
             float x,float z,boolean homeTeam) {
         float nearest=Float.MAX_VALUE;
         for(MatchSimulation.PlayerState player:players) {
-            if(player.homeTeam==homeTeam)continue;
+            if(!player.active||player.homeTeam==homeTeam)continue;
             nearest=Math.min(nearest,distance(x,z,player.x,player.z));
         }
         return nearest==Float.MAX_VALUE?0f:nearest;
@@ -101,7 +102,7 @@ public final class MatchGameplay {
         for(int i=0;i<players.size();i++){
             if(i==passerIndex||i==receiverIndex) continue;
             MatchSimulation.PlayerState p=players.get(i);
-            if(p.homeTeam==passingHome) continue;
+            if(!p.active||p.homeTeam==passingHome) continue;
             float t=clamp(((p.x-x1)*sx+(p.z-z1)*sz)/length2,0f,1f);
             float dx=p.x-(x1+sx*t), dz=p.z-(z1+sz*t);
             if(dx*dx+dz*dz<1.15f*1.15f) return false;
@@ -154,7 +155,7 @@ public final class MatchGameplay {
      */
     public static Vector3 chooseAiCarryTarget(List<MatchSimulation.PlayerState> players,
             int ownerIndex,boolean homeAttacksNegativeZ) {
-        if(players==null||ownerIndex<0||ownerIndex>=players.size())return new Vector3();
+        if(players==null||ownerIndex<0||ownerIndex>=players.size()||!players.get(ownerIndex).active)return new Vector3();
         MatchSimulation.PlayerState owner=players.get(ownerIndex);
         float attackSign=owner.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
         float targetZ=clamp(owner.z+attackSign*5.5f,
@@ -166,7 +167,7 @@ public final class MatchGameplay {
                     -MatchSimulation.FIELD_HALF_WIDTH+2f,MatchSimulation.FIELD_HALF_WIDTH-2f);
             float nearestOpponent=Float.MAX_VALUE;
             for(MatchSimulation.PlayerState candidate:players){
-                if(candidate.homeTeam==owner.homeTeam)continue;
+                if(!candidate.active||candidate.homeTeam==owner.homeTeam)continue;
                 float dx=candidate.x-candidateX,dz=candidate.z-targetZ;
                 nearestOpponent=Math.min(nearestOpponent,(float)Math.sqrt(dx*dx+dz*dz));
             }
