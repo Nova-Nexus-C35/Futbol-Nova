@@ -283,3 +283,11 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Prioridad técnica: consolidar cámara de retransmisión y arquitectura separada de simulación/render/animación; luego introducir modelos riggeados y animaciones originales o licenciadas, estadio y materiales detallados, redes, audio y optimización ARM64. Mantener fallback procedural hasta validar cada recurso nuevo.
 - La referencia a FIFA expresa nivel aspiracional y no autoriza copiar recursos, marcas, código, interfaz, música, modelos o material protegido. Verificar licencias y atribución de todo recurso externo.
 - No se cambiará silenciosamente el runtime actual Java 17/libGDX 1.14.2. Una migración de motor necesitaría una decisión explícita. No declarar equivalencia visual con FIFA ni finalización sin evaluación en dispositivo físico.
+
+
+### Implementación: primera cámara de retransmisión 3D (2026-11-23)
+
+- Se creó BroadcastCamera como controlador separado del render principal: vista elevada en tres cuartos desde la banda, enfoque suavizado del balón, encuadre limitado al campo y elevación moderada según velocidad del balón.
+- Se integró en FutbolNovaGame y reemplazó el seguimiento de cámara previo. El resto de geometría, jugadores y estadio sigue siendo el prototipo procedural descrito anteriormente.
+- Se añadieron pruebas unitarias de encuadre, suavizado, límites y protección ante delta no finito. Se corrigió la implementación antes de registrar el avance y se releerán los archivos para verificarlo.
+- No equivale aún a la cámara completa de un FIFA moderno: faltan cortes por contexto, seguimiento de posesión, zoom y planos configurables, repetición de goles y pruebas visuales en dispositivo.
