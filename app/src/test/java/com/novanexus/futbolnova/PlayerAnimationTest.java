@@ -11,10 +11,13 @@ public final class PlayerAnimationTest {
 
     @Test public void gaitAlternatesAndIsBoundedAtRunSpeed() {
         float first=PlayerAnimation.gaitSwing(5.5f,0f,0f);
-        float opposite=PlayerAnimation.gaitSwing(5.5f,(float)Math.PI/9f,0f);
+        float forward=PlayerAnimation.gaitSwing(5.5f,(float)Math.PI/18f,0f);
+        float backward=PlayerAnimation.gaitSwing(5.5f,(float)Math.PI/6f,0f);
         assertEquals(0f,first,0.0001f);
-        assertEquals(0f,opposite,0.0001f);
-        assertTrue(Math.abs(PlayerAnimation.gaitSwing(5.5f,(float)Math.PI/18f,0f))<=0.48f);
+        assertTrue(forward>0f);
+        assertTrue(backward<0f);
+        assertTrue(Math.abs(forward)<=0.48f);
+        assertTrue(Math.abs(backward)<=0.48f);
     }
 
     @Test public void invalidInputsFallBackToStableIdlePose() {
