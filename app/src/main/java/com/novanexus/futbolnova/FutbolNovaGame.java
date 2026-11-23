@@ -259,6 +259,10 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             if(y<height*0.16f){
                 matchActionDown=true;
                 if(!matchActionPointerDown)handleMatchAction(x,y,width,height);
+            }else if(!matchClock.canAcceptGameplayInput()){
+                // Do not let movement or action touches mutate a paused/pre/post-match.
+                pointerWasTouched[pointer]=true;
+                continue;
             }else if(x<width*0.58f){
                 if(movementPointer<0||movementPointer==pointer){
                     movementPointer=pointer;
