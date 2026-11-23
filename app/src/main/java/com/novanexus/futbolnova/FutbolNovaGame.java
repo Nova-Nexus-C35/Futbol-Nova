@@ -564,18 +564,22 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             possessionOwnerIndex=MatchGameplay.NO_OWNER;aiKickClock=1.3f;
             return;
         }
-        aiKickClock-=delta;if(aiKickClock>0f)return;
         float nearestOpponentDistance=Float.MAX_VALUE;
         for(MatchSimulation.PlayerState candidate:lineup){
             if(candidate.homeTeam==owner.homeTeam)continue;
             float dx=candidate.x-owner.x,dz=candidate.z-owner.z;
             nearestOpponentDistance=Math.min(nearestOpponentDistance,(float)Math.sqrt(dx*dx+dz*dz));
         }
-        if(MatchGameplay.shouldAiCarryBall(goalProgress,nearestOpponentDistance)){
-            // The possession owner advances with the ball; re-evaluate pressure before choosing a pass.
-            aiKickClock=0.45f;
+        aiKickClock=Math.max(0f,aiKickClock-delta);
+        if(MatchGameplay.shouldAiCarryBall(goalProgress,nearestOpponentDistance)&&aiKickClock>0f){
+            // Keep updating a safe forward target so the simulation moves the carrier with the ball.
+            Vector3 carryTarget=MatchGameplay.chooseAiCarryTarget(
+                    lineup,possessionOwnerIndex,matchSimulation.homeAttacksNegativeZ());
+            owner.targetX=carryTarget.x;
+            owner.targetZ=carryTarget.z;
             return;
         }
+        if(aiKickClock>0f)return;
         MatchGameplay.PassTargetDecision passDecision=MatchGameplay.findForwardPassDecision(
                 lineup,possessionOwnerIndex,owner.x,owner.z,owner.homeTeam,matchSimulation.homeAttacksNegativeZ());
         int receiver=passDecision.receiverIndex;
