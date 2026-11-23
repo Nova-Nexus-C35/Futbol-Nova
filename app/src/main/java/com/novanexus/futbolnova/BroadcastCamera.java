@@ -17,7 +17,7 @@ public final class BroadcastCamera {
     private final Vector3 desiredPosition = new Vector3();
     private final Vector3 requestedFocus = new Vector3();
     private final Vector3 desiredTarget = new Vector3();
-    private boolean initialized;
+    private boolean initialized;\n    private float currentFieldOfView = 49f;
 
     public void reset(PerspectiveCamera camera, Vector3 focus) {
         smoothedFocus.set(focus.x, 0f, focus.z);
