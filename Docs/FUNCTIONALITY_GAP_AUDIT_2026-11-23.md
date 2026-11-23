@@ -391,3 +391,14 @@ Se implementó selección de carril de conducción para el portador controlado p
 ### Repositorios adicionales consultados
 
 Se revisaron League-Soccer (C++/Apache-2.0), MESSI (JAX/Python, referencia de investigación), FootballEngine (F# WIP), android-3D-engine (Android/OpenGL ES, licencia pendiente de verificación) y 3D-Soccer-Game-Engine (Three.js/MIT). Ninguno se incorporó como dependencia ni se copiaron assets/código. Ver Docs/OPEN_SOURCE_RESEARCH.md para decisiones y compatibilidad.
+
+
+### Incremento posterior: estructura colectiva sensible al rol
+
+Se añadió un cálculo de objetivos sin balón según rol y fase estimada:
+- En ataque, el delantero ataca profundidad, los extremos conservan amplitud, los mediocampistas se escalonan para ofrecer apoyo y los defensas avanzan de forma más conservadora.
+- En defensa, las posiciones se compactan hacia el balón sin salir de los límites del terreno.
+- La dirección de avance cambia correctamente al invertir los campos en el descanso.
+- El jugador más cercano al balón de cada equipo conserva la tarea de presión/ataque directo.
+
+Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva, límites del campo y cambio de dirección tras el descanso. El cálculo de fase aún es una estimación por proximidad de los jugadores al balón, no una máquina de posesión autoritativa. Falta evaluar en partidos completos y ajustar velocidades/distancias.
