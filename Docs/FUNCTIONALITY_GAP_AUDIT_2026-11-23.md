@@ -317,3 +317,11 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se releyeron desde GitHub BroadcastCamera.java, BroadcastCameraTest.java y FutbolNovaGame.java después de escribirlos. Se comprobó que no quedó la secuencia literal de escape que causó el error Java anterior.
 - CI #142 falló por un carácter de escape literal en una versión previa de FutbolNovaGame.java; ese archivo fue corregido posteriormente. Las ejecuciones #146–#148 se cancelaron por nuevos commits antes de completar las pruebas. CI #149 y la validación del commit final siguen pendientes; no se declara compilación aprobada hasta que una ejecución posterior al último cambio termine con éxito.
 - La cámara 3D, césped por franjas, gradas escalonadas, marcas del campo y redes geométricas constituyen mejoras del prototipo procedural. No hay todavía futbolistas con rig/skin de calidad moderna, público realista, redes deformables, iluminación/sombras de producción ni aceptación visual en Android físico.
+
+
+### Implementación: locomoción procedural articulada de futbolistas (2026-11-23)
+
+- PlayerAnimation calcula balanceo alterno de brazos/piernas y movimiento vertical leve según la velocidad de cada futbolista, con resultados deterministas y protección ante entradas no finitas.
+- PlayerVisual ahora calcula centros de extremidades desde pivotes aproximados de hombros y caderas y rota cada pieza alrededor de esos pivotes, mejorando la lectura de carrera respecto al giro sobre el centro de cada pieza.
+- Se añadieron pruebas unitarias de pose de reposo, alternancia, límites de amplitud y entradas inválidas.
+- Limitación: sigue siendo locomoción procedural sobre modelos low-poly compartidos. No hay todavía esqueleto/skin, clips de animación de calidad moderna ni animaciones específicas de balón, tiros, pases, saltos, barridas, caídas, celebraciones o atajadas.
