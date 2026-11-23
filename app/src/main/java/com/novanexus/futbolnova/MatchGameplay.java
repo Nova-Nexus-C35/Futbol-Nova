@@ -89,6 +89,17 @@ public final class MatchGameplay {
         return new Vector3(side*0.32f,0.42f,attackSign).nor().scl(18f);
     }
 
+    /** True when a keeper can reach a low or mid-height shot travelling toward their own goal. */
+    public static boolean canGoalkeeperAttemptSave(float keeperX,float keeperZ,
+            float ballX,float ballY,float ballZ,float velocityZ,float ownGoalDirection) {
+        if (!Float.isFinite(keeperX)||!Float.isFinite(keeperZ)||!Float.isFinite(ballX)
+                ||!Float.isFinite(ballY)||!Float.isFinite(ballZ)||!Float.isFinite(velocityZ)
+                ||!Float.isFinite(ownGoalDirection)||Math.abs(ownGoalDirection)<0.5f) return false;
+        if (velocityZ*ownGoalDirection<=0.35f||ballY<0f||ballY>3.2f) return false;
+        float dx=ballX-keeperX,dz=ballZ-keeperZ;
+        return dx*dx+dz*dz<=2.4f*2.4f;
+    }
+
     public static MatchSimulation.TackleResult tackle(MatchSimulation.PlayerState attacker,
             MatchSimulation.PlayerState target,float reach) {
         if(attacker==null||target==null) return null;
