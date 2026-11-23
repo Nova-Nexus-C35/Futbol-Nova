@@ -539,3 +539,13 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - CI #242 (`45287535405`) detectó una expectativa incorrecta en `MatchRulesTest`: cuando la lista de defensores existe pero todos sus elementos son nulos o no finitos, el evaluador devuelve `insufficient_defenders`, no `insufficient_data` (que se reserva para coordenadas/dirección/lista ausentes o inválidas).
 - Se corrigió únicamente la expectativa del test; no se alteró la regla de fuera de juego.
 - Nueva validación CI pendiente. No se declara compilación ni APK hasta que el nuevo run termine correctamente.
+
+
+### Sustituciones táctiles del equipo visitante (2026-11-23)
+
+- El selector de sustituciones ahora puede operar sobre el equipo local o visitante, usando los banquillos reales cargados desde sus plantillas.
+- En pausa o descanso, la esquina inferior izquierda del campo cambia el equipo seleccionado cuando dispone de suplentes y ventana válida.
+- La selección de titular, suplente, confirmación, límites de cinco cambios y tres ventanas consulta el estado del equipo elegido.
+- En el descanso se permite cambiar a cualquiera de los dos equipos antes de iniciar la segunda parte; si ambos banquillos están vacíos, se continúa directamente.
+- No se alteran los límites ni las reglas del backend de sustituciones.
+- Validación automatizada de esta interfaz pendiente en CI; no se declara prueba táctil física.

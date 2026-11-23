@@ -74,6 +74,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private boolean kickoffRestart;
     private boolean lastTouchHome = true;
     private boolean substitutionMode;
+    private boolean substitutionHomeTeam = true;
     private int substitutionOutgoingIndex = -1;
     private int substitutionIncomingIndex;
     private int substitutionWindow = 1;
@@ -269,7 +270,9 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 matchActionDown=true;
                 if(!matchActionPointerDown)handleMatchAction(x,y,width,height);
             }else if(substitutionMode&&!matchClock.canAcceptGameplayInput()){
-                if(x<width*0.58f)substitutionMode=false;
+                if(y>height*0.78f&&x<width*0.30f&&!pointerWasTouched[pointer]){
+                    toggleSubstitutionTeam();
+                }else if(x<width*0.58f)substitutionMode=false;
                 else{
                     substitutionMode=false;
                     if(matchClock.getPhase()==MatchClock.Phase.HALF_TIME)startSecondHalf();
@@ -339,7 +342,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             return;
         }
         if(phase==MatchClock.Phase.HALF_TIME){
-            if(matchSimulation.getBenchPlayers(true).isEmpty())startSecondHalf();
+            if(matchSimulation.getBenchPlayers(true).isEmpty()
+                    &&matchSimulation.getBenchPlayers(false).isEmpty())startSecondHalf();
             else openSubstitutionMode();
         }else if(phase==MatchClock.Phase.FULL_TIME){
             resetMatch();
@@ -361,56 +365,71 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private void openSubstitutionMode(){
         if(matchClock.getPhase()!=MatchClock.Phase.HALF_TIME&&!matchClock.isPaused())return;
-        if(matchSimulation.getBenchPlayers(true).isEmpty())return;
+        substitutionHomeTeam=true;
+        if(matchSimulation.getBenchPlayers(true).isEmpty()
+                &&!matchSimulation.getBenchPlayers(false).isEmpty())substitutionHomeTeam=false;
+        if(matchSimulation.getBenchPlayers(substitutionHomeTeam).isEmpty())return;
         if(matchClock.getPhase()!=MatchClock.Phase.HALF_TIME
-                &&matchSimulation.getSubstitutionWindowsUsed(true)>=3)return;
+                &&matchSimulation.getSubstitutionWindowsUsed(substitutionHomeTeam)>=3)return;
         substitutionMode=true;
-        substitutionWindow=Math.min(3,matchSimulation.getSubstitutionWindowsUsed(true)+1);
-        substitutionOutgoingIndex=matchSimulation.getControlledPlayerIndex();
-        if(substitutionOutgoingIndex<1||substitutionOutgoingIndex>=11
-                ||!matchSimulation.getPlayers().get(substitutionOutgoingIndex).active)
-            substitutionOutgoingIndex=findNextActiveHomePlayer(-1);
+        substitutionWindow=Math.min(3,matchSimulation.getSubstitutionWindowsUsed(substitutionHomeTeam)+1);
+        substitutionOutgoingIndex=findNextActivePlayer(substitutionHomeTeam,-1);
         substitutionIncomingIndex=0;
     }
 
-    private int findNextActiveHomePlayer(int fromIndex){
+    private int findNextActivePlayer(boolean homeTeam,int fromIndex){
         List<MatchSimulation.PlayerState> players=matchSimulation.getPlayers();
-        int base=fromIndex>=1?fromIndex-1:9;
-        for(int offset=1;offset<=10;offset++){
-            int candidate=1+((base+offset)%10);
+        int first=homeTeam?1:12;
+        int last=homeTeam?10:21;
+        int base=fromIndex>=first&&fromIndex<=last?fromIndex:first-1;
+        for(int offset=1;offset<=last-first+1;offset++){
+            int candidate=first+((base-first+offset)%(last-first+1));
             if(players.get(candidate).active)return candidate;
         }
         return -1;
     }
 
+    private void toggleSubstitutionTeam(){
+        boolean otherTeam=!substitutionHomeTeam;
+        if(matchSimulation.getBenchPlayers(otherTeam).isEmpty())return;
+        if(matchClock.getPhase()!=MatchClock.Phase.HALF_TIME
+                &&matchSimulation.getSubstitutionWindowsUsed(otherTeam)>=3)return;
+        substitutionHomeTeam=otherTeam;
+        substitutionWindow=Math.min(3,matchSimulation.getSubstitutionWindowsUsed(otherTeam)+1);
+        substitutionOutgoingIndex=findNextActivePlayer(substitutionHomeTeam,-1);
+        substitutionIncomingIndex=0;
+    }
+
     private void cycleSubstitutionOutgoing(){
-        substitutionOutgoingIndex=findNextActiveHomePlayer(substitutionOutgoingIndex);
+        substitutionOutgoingIndex=findNextActivePlayer(substitutionHomeTeam,substitutionOutgoingIndex);
     }
 
     private void cycleSubstitutionIncoming(){
-        List<OriginalProjectData.PlayerRecord> bench=matchSimulation.getBenchPlayers(true);
+        List<OriginalProjectData.PlayerRecord> bench=matchSimulation.getBenchPlayers(substitutionHomeTeam);
         if(!bench.isEmpty())substitutionIncomingIndex=(substitutionIncomingIndex+1)%bench.size();
     }
 
     private void applySelectedSubstitution(){
-        List<OriginalProjectData.PlayerRecord> bench=matchSimulation.getBenchPlayers(true);
+        List<OriginalProjectData.PlayerRecord> bench=matchSimulation.getBenchPlayers(substitutionHomeTeam);
         List<MatchSimulation.PlayerState> players=matchSimulation.getPlayers();
-        if(substitutionOutgoingIndex<1||substitutionOutgoingIndex>=11
+        int first=substitutionHomeTeam?1:12;
+        int last=substitutionHomeTeam?10:21;
+        if(substitutionOutgoingIndex<first||substitutionOutgoingIndex>last
                 ||substitutionIncomingIndex<0||substitutionIncomingIndex>=bench.size())return;
         MatchSimulation.PlayerState outgoing=players.get(substitutionOutgoingIndex);
         String incomingId=bench.get(substitutionIncomingIndex).id;
         int window=matchClock.getPhase()==MatchClock.Phase.HALF_TIME?0:substitutionWindow;
         boolean halfTime=matchClock.getPhase()==MatchClock.Phase.HALF_TIME;
-        if(!matchSimulation.substitutePlayer(true,outgoing.playerId,incomingId,window,halfTime))return;
+        if(!matchSimulation.substitutePlayer(substitutionHomeTeam,outgoing.playerId,incomingId,window,halfTime))return;
         if(possessionOwnerIndex==substitutionOutgoingIndex){
             possessionOwnerIndex=MatchGameplay.NO_OWNER;
             ballVelocity.setZero();ballSpin.setZero();
         }
-        if(matchSimulation.getControlledPlayerIndex()==substitutionOutgoingIndex){
+        if(substitutionHomeTeam&&matchSimulation.getControlledPlayerIndex()==substitutionOutgoingIndex){
             MatchSimulation.PlayerState replacement=matchSimulation.getControlledPlayer();
             if(replacement!=null)controlledPosition.set(replacement.x,0f,replacement.z);
         }
-        substitutionOutgoingIndex=findNextActiveHomePlayer(substitutionOutgoingIndex);
+        substitutionOutgoingIndex=findNextActivePlayer(substitutionHomeTeam,substitutionOutgoingIndex);
         substitutionIncomingIndex=0;
     }
 
@@ -888,14 +907,17 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         }
         if(!phaseText.isEmpty())font.draw(spriteBatch,phaseText,18f,Gdx.graphics.getHeight()*0.56f);
         if(substitutionMode){
-            List<OriginalProjectData.PlayerRecord> bench=matchSimulation.getBenchPlayers(true);
-            String outgoingName=substitutionOutgoingIndex>=1&&substitutionOutgoingIndex<11
+            List<OriginalProjectData.PlayerRecord> bench=matchSimulation.getBenchPlayers(substitutionHomeTeam);
+            int firstOutgoing=substitutionHomeTeam?1:12;
+            int lastOutgoing=substitutionHomeTeam?10:21;
+            String teamLabel=substitutionHomeTeam?"LOCAL":"VISITANTE";
+            String outgoingName=substitutionOutgoingIndex>=firstOutgoing&&substitutionOutgoingIndex<=lastOutgoing
                     ?matchSimulation.getPlayers().get(substitutionOutgoingIndex).playerName:"—";
             String incomingName=substitutionIncomingIndex>=0&&substitutionIncomingIndex<bench.size()
                     ?bench.get(substitutionIncomingIndex).name:"—";
-            font.draw(spriteBatch,"CAMBIOS | IZQ: TITULAR ("+outgoingName+") | CENTRO: SUPLENTE ("+incomingName+") | DER: CONFIRMAR",
+            font.draw(spriteBatch,"CAMBIOS "+teamLabel+" | IZQ: TITULAR ("+outgoingName+") | CENTRO: SUPLENTE ("+incomingName+") | DER: CONFIRMAR",
                     18f,Gdx.graphics.getHeight()*0.48f);
-            font.draw(spriteBatch,"TOCA CAMPO IZQ: CERRAR | CAMPO DER: CERRAR Y CONTINUAR | CAMBIOS "+matchSimulation.getSubstitutionsUsed(true)+"/5",
+            font.draw(spriteBatch,"ESQUINA INFERIOR IZQ: CAMBIAR EQUIPO | CAMPO IZQ: CERRAR | CAMPO DER: CONTINUAR | CAMBIOS "+matchSimulation.getSubstitutionsUsed(substitutionHomeTeam)+"/5",
                     18f,Gdx.graphics.getHeight()*0.44f);
         }else if(matchClock.isPaused()||matchClock.getPhase()==MatchClock.Phase.HALF_TIME){
             font.draw(spriteBatch,"ARRIBA IZQ: BANQUILLO / CAMBIOS",18f,Gdx.graphics.getHeight()*0.48f);
