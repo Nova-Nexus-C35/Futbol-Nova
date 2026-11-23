@@ -559,3 +559,11 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Head de la rama al iniciar este incremento: 2b56854f40dfb56e852a9c78d4d3eb231802a4bb. La modificación siguiente queda pendiente de su propia CI; no confundir la validación #245 con esta nueva tanda.
 - Siguen pendientes los contadores de posesión, tiros a puerta, precisión de pase, regates y duelos, porque el runtime no los registra de forma suficiente para reportarlos sin inventar datos.
 - Esta auditoría amplía el registro de avances: sus secciones históricas describen el estado en el momento en que se escribieron y no deben tomarse como una descripción actual completa. La fuente vigente para el estado más reciente es el último registro fechado y el historial de commits/CI de la rama.
+
+### Exportación local de actas en CSV y JSON (2026-11-23)
+
+- Al guardarse el acta de tiempo completo, además del historial local de hasta 20 partidos, el juego intenta escribir un archivo JSON y otro CSV por partido en la carpeta externa específica de la aplicación: `FutbolNova/Actas/`.
+- El CSV contiene marcador y metadatos, estadísticas por equipo, totales por jugador, los eventos conservados en la cronología y las tarjetas registradas. Los campos de texto aplican escape CSV para comas, comillas y saltos de línea.
+- La escritura externa está protegida: si Android deniega o no ofrece el almacenamiento externo de la aplicación, el historial interno permanece guardado y se registra el error de exportación; no se informa falsamente de que el archivo se creó.
+- Se añadieron pruebas unitarias para contenido de cada sección, tarjetas y escape de caracteres CSV.
+- Alcance: exportación automática al terminar el partido, sin selector de carpeta ni diálogo de compartir. En Android moderno los archivos quedan en el directorio externo específico de la app (normalmente `Android/data/<paquete>/files/FutbolNova/Actas`), cuya visibilidad depende del administrador de archivos del dispositivo. No se ha comprobado el acceso desde el teléfono físico.

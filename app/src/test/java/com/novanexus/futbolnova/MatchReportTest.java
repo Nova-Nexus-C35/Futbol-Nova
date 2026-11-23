@@ -69,3 +69,29 @@ public class MatchReportTest {
         assertNull(MatchReport.fromJson("{invalid"));
     }
 }
+
+    @Test public void csvExportContainsMatchTeamPlayerEventsAndCards() {
+        MatchStatistics stats=new MatchStatistics();
+        stats.recordShot("home_09",true); stats.recordGoal("home_09",true);
+        stats.recordFoul("away_04",false);
+        MatchDiscipline discipline=new MatchDiscipline();
+        discipline.issueYellow("away_04",MatchDiscipline.Reason.PERSISTENT_INFRINGEMENT,1530f);
+        MatchReport report=MatchReport.capture("Cuba","Visitante",1,0,2700f,stats,discipline);
+        String csv=MatchReportExporter.toCsv(report);
+        assertTrue(csv.contains("MATCH,match_id,home_team,away_team,home_goals"));
+        assertTrue(csv.contains("MATCH,"+report.matchId+",Cuba,Visitante,1,0,2700.0"));
+        assertTrue(csv.contains("TEAM,HOME,Cuba,1,0,0,0,0,0"));
+        assertTrue(csv.contains("PLAYER,home_09,1,0,0,0,0,1,0"));
+        assertTrue(csv.contains("EVENT,GOAL,true,home_09"));
+        assertTrue(csv.contains("CARD,away_04,YELLOW,PERSISTENT_INFRINGEMENT,1530.0,false"));
+    }
+
+    @Test public void csvExportEscapesCommasQuotesAndLineBreaks() {
+        MatchReport report=new MatchReport();
+        report.homeTeam="Club, \"Azul\"\\nNorte";
+        String csv=MatchReportExporter.toCsv(report);
+        assertTrue(csv.contains("\"Club, \"\"Azul\"\"\\r\\nNorte\""));
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void csvExportRejectsNullReport() { MatchReportExporter.toCsv(null); }

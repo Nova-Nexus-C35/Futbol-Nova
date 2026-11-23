@@ -504,6 +504,16 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 matchSimulation.getAwayTeamName(),matchState.getHomeGoals(),matchState.getAwayGoals(),
                 matchClock.getTotalElapsedSeconds(),matchStatistics,matchDiscipline);
         MatchReportStore.save(Gdx.app.getPreferences("futbol_nova_match_reports"),report);
+        try {
+            String exportDirectory="FutbolNova/Actas";
+            Gdx.files.external(exportDirectory).mkdirs();
+            String baseName="partido_"+report.matchId;
+            Gdx.files.external(exportDirectory+"/"+baseName+".json").writeString(report.toJson(),false,"UTF-8");
+            Gdx.files.external(exportDirectory+"/"+baseName+".csv").writeString(MatchReportExporter.toCsv(report),false,"UTF-8");
+            Gdx.app.log("FutbolNova","Exported match report to external app files: "+baseName);
+        } catch(RuntimeException exportError) {
+            Gdx.app.error("FutbolNova","Local report saved, but external CSV/JSON export failed",exportError);
+        }
         matchReportSaved=true;
         Gdx.app.log("FutbolNova","Saved completed match report: "+report.matchId);
     }
