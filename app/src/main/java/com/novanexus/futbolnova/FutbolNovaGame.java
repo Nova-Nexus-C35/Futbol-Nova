@@ -277,7 +277,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void performPass(){
         if(possessionOwnerIndex!=matchSimulation.getControlledPlayerIndex())return;
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
-        int receiver=MatchGameplay.findForwardPassTarget(lineup,MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX,controlledPosition.x,controlledPosition.z,true);
+        int receiver=MatchGameplay.findForwardPassTarget(lineup,matchSimulation.getControlledPlayerIndex(),controlledPosition.x,controlledPosition.z,true);
         ballPosition.set(controlledPosition.x,BALL_RADIUS,controlledPosition.z-0.62f);
         if(receiver==MatchGameplay.NO_OWNER)ballVelocity.set(MatchGameplay.clearanceVelocity(true,controlledPosition.x));
         else{MatchSimulation.PlayerState target=lineup.get(receiver);ballVelocity.set(MatchGameplay.passVelocity(controlledPosition.x,controlledPosition.z,target.x,target.z));}
@@ -285,12 +285,12 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void performTackle(){
-        if(tackleCooldown>0f||possessionOwnerIndex<0||possessionOwnerIndex==MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX)return;
+        if(tackleCooldown>0f||possessionOwnerIndex<0||possessionOwnerIndex==matchSimulation.getControlledPlayerIndex())return;
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
         MatchSimulation.PlayerState attacker=lineup.get(matchSimulation.getControlledPlayerIndex()),target=lineup.get(possessionOwnerIndex);
         if(target.homeTeam)return;
         MatchSimulation.TackleResult result=MatchGameplay.tackle(attacker,target,1.7f);tackleCooldown=0.75f;
-        if(result!=null&&result.success){possessionOwnerIndex=MatchSimulation.CONTROLLED_HOME_PLAYER_INDEX;lastTouchHome=true;}
+        if(result!=null&&result.success){possessionOwnerIndex=matchSimulation.getControlledPlayerIndex();lastTouchHome=true;}
         else if(result!=null&&result.foul){possessionOwnerIndex=MatchGameplay.NO_OWNER;ballVelocity.set(0f,2f,3f);lastTouchHome=true;}
     }
 
