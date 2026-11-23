@@ -92,3 +92,18 @@ Se añadió una selección de carril de conducción para el portador IA: evalúa
 2. Añadir apoyo y desmarque de compañeros con límites de ocupación de espacio; separar fase ofensiva y defensiva.
 3. Validar cada decisión con escenarios deterministas y pruebas de invariantes, no solo con capturas del render.
 4. Evitar dependencias JAX/F#/C++/JS dentro del runtime Android. Portar únicamente algoritmos originales tras revisión técnica y legal.
+
+
+## Revisión adicional de IA colectiva y disciplina de licencias — 2026-11-23
+
+- [Nano-233/football-kaleidoscope](https://github.com/Nano-233/football-kaleidoscope) — simulador sintético de partidos en Python con licencia MIT. Su documentación de motor separa decisiones del portador (pase, conducción, tiro, despeje) del movimiento sin balón (estructura, marcaje, presión, desmarques y apoyos), y resuelve balones sueltos por llegada física. Referencia útil para separar responsabilidades y validar decisiones geométricas; no se integra porque el runtime es Python/NumPy/SciPy, no Java/libGDX.
+- [chike2510/touchline](https://github.com/chike2510/touchline) — tipos de dominio TypeScript para atributos técnicos, mentales y físicos, roles, perfiles tácticos y árbitro (incluye intensidad y ventaja). La API de GitHub no declara licencia para el repositorio en esta revisión; por tanto, no copiar ni portar su código. Se toma solo como lista de conceptos que Fútbol Nova debe modelar mediante diseño propio.
+- [osagberg/FinalWhistle-Original](https://github.com/osagberg/FinalWhistle-Original) — auditorías de fidelidad futbolística que identifican vacíos como forma, fatiga, lesiones, sustituciones y arbitraje. Su LICENSE declara “All Rights Reserved” y prohíbe reutilizar/copiar el código sin permiso escrito. Se excluye de toda reutilización; solo se registra el riesgo/temas pendientes a nivel de alto nivel.
+
+### Incremento propio de IA colectiva
+
+Se sustituyó el movimiento de apoyo genérico por un objetivo sin balón sensible al rol y a la fase estimada del equipo: el delantero busca profundidad, los extremos conservan amplitud, mediocampistas ofrecen líneas de apoyo y la defensa compacta su bloque hacia la posición del balón. El jugador más cercano de cada equipo mantiene la responsabilidad de presionar/atacar el balón. La dirección se adapta al cambio de campo del descanso. Implementación Java original; no se copió código de los proyectos consultados.
+
+### Límites
+
+La posesión colectiva se estima comparando la distancia del jugador propio y rival más cercanos al balón; no es todavía un estado de posesión autoritativo. Faltan asignación de marcas individuales, coberturas coordinadas, líneas defensivas basadas en amenazas, atributos/rasgos individuales y decisiones probabilísticas de pase/regate/tiro. Las pruebas cubren geometría de forma y sentido de ataque, no validación de comportamiento visual en dispositivo.
