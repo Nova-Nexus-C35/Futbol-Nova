@@ -35,4 +35,19 @@ public class MatchStatisticsTest {
         stats.reset();
         assertEquals(0,stats.getOffsides(true));
     }
+
+    @Test public void tracksIndividualPlayersBeyondTheBoundedEventWindow(){
+        MatchStatistics stats=new MatchStatistics();
+        for(int i=0;i<300;i++)stats.recordShot("player-7",true);
+        stats.recordPassAttempt("player-7",true);
+        stats.recordTackle("player-9",false);
+        assertEquals(300,stats.getPlayerCounters("player-7").getShots());
+        assertEquals(1,stats.getPlayerCounters("player-7").getPasses());
+        assertEquals(1,stats.getPlayerCounters("player-9").getTackles());
+        assertEquals(256,stats.getEvents().size());
+        assertEquals("player-7",stats.getEvents().get(255).playerId);
+        stats.reset();
+        assertNull(stats.getPlayerCounters("player-7"));
+        assertTrue(stats.getPlayers().isEmpty());
+    }
 }
