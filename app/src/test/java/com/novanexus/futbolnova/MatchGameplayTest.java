@@ -31,4 +31,13 @@ public final class MatchGameplayTest {
   assertTrue(pass.z<0);assertTrue(shot.z<0);assertTrue(shot.y>0);
   assertTrue(pass.len()>10f);
  }
+
+ @Test public void shotAndClearanceReverseDirectionAfterHalfTime(){
+  Vector3 firstShot=MatchGameplay.shotVelocity(true,0f,true);
+  Vector3 secondShot=MatchGameplay.shotVelocity(true,0f,false);
+  Vector3 firstClearance=MatchGameplay.clearanceVelocity(true,0f,true);
+  Vector3 secondClearance=MatchGameplay.clearanceVelocity(true,0f,false);
+  assertTrue(firstShot.z<0f);assertTrue(secondShot.z>0f);
+  assertTrue(firstClearance.z<0f);assertTrue(secondClearance.z>0f);
+ }
 }
