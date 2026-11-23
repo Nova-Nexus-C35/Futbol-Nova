@@ -270,7 +270,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             if(x<width*0.72f){cycleAwayRoster();return;}
             if(matchClock.start()){
                 ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
-                possessionOwnerIndex=MatchGameplay.NO_OWNER;restartAwardedHome=true;
+                possessionOwnerIndex=MatchGameplay.NO_OWNER;pendingOffsideReceiver=MatchGameplay.NO_OWNER;restartAwardedHome=true;
                 kickoffRestart=true;pendingRestart=MatchRules.Restart.IN_PLAY;
                 restartClock=1.4f;lastTouchHome=true;
             }
@@ -294,7 +294,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             MatchSimulation.PlayerState selectedAfterSwitch=matchSimulation.getControlledPlayer();
             if(selectedAfterSwitch!=null)controlledPosition.set(selectedAfterSwitch.x,0f,selectedAfterSwitch.z);
             ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
-            possessionOwnerIndex=MatchGameplay.NO_OWNER;restartAwardedHome=false;
+            possessionOwnerIndex=MatchGameplay.NO_OWNER;pendingOffsideReceiver=MatchGameplay.NO_OWNER;restartAwardedHome=false;
             kickoffRestart=true;pendingRestart=MatchRules.Restart.IN_PLAY;restartClock=1.4f;
         }else if(phase==MatchClock.Phase.FULL_TIME){
             resetMatch();
@@ -439,6 +439,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             ballPosition.set(keeper.x,Math.min(1.25f,Math.max(BALL_RADIUS,ballPosition.y)),
                     keeper.z-ownGoalDirection*1.05f);
             ballSpin.setZero();
+            pendingOffsideReceiver=MatchGameplay.NO_OWNER;
             lastTouchHome=keeper.homeTeam;
             matchStatistics.recordSave(keeper.homeTeam);
             if(speed<9f){
@@ -609,7 +610,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         font.draw(spriteBatch,"TIROS "+matchStatistics.getShots(true)+"-"+matchStatistics.getShots(false)
                 +"  PASES "+matchStatistics.getPasses(true)+"-"+matchStatistics.getPasses(false)
                 +"  ENTRADAS "+matchStatistics.getTackles(true)+"-"+matchStatistics.getTackles(false)
-                +"  PARADAS "+matchStatistics.getSaves(true)+"-"+matchStatistics.getSaves(false),
+                +"  PARADAS "+matchStatistics.getSaves(true)+"-"+matchStatistics.getSaves(false)
+                +"  FUERAS DE JUEGO "+matchStatistics.getOffsides(true)+"-"+matchStatistics.getOffsides(false),
                 18f,52f);
         String phaseText;
         switch(matchClock.getPhase()){
