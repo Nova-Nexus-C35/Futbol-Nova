@@ -104,13 +104,33 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         Model field = builder.createBox(68f,0.35f,105f,new Material(ColorAttribute.createDiffuse(new Color(0.10f,0.42f,0.19f,1f))),attributes);
         own(field); fieldInstance=new ModelInstance(field); fieldInstance.transform.setToTranslation(0f,-0.22f,0f);
+        Material turfLight=new Material(ColorAttribute.createDiffuse(new Color(0.115f,0.46f,0.21f,1f)));
+        Material turfDark=new Material(ColorAttribute.createDiffuse(new Color(0.09f,0.39f,0.17f,1f)));
+        Model turfStripeLight=builder.createBox(67.8f,0.03f,9.55f,turfLight,attributes);
+        Model turfStripeDark=builder.createBox(67.8f,0.03f,9.55f,turfDark,attributes);
+        own(turfStripeLight);own(turfStripeDark);
+        for(int stripe=0;stripe<11;stripe++){
+            Model stripeModel=(stripe%2==0)?turfStripeLight:turfStripeDark;
+            addEnvironment(stripeModel,0f,-0.0275f,-47.5f+stripe*9.5f);
+        }
 
-        Material standMat=new Material(ColorAttribute.createDiffuse(new Color(0.055f,0.075f,0.095f,1f)));
-        Model longStand=builder.createBox(9f,8f,112f,standMat,attributes);
-        Model endStand=builder.createBox(88f,8f,9f,standMat,attributes);
-        own(longStand);own(endStand);
-        addEnvironment(longStand,-41.5f,3.8f,0f);addEnvironment(longStand,41.5f,3.8f,0f);
-        addEnvironment(endStand,0f,3.8f,-58f);addEnvironment(endStand,0f,3.8f,58f);
+        Material standMat=new Material(ColorAttribute.createDiffuse(new Color(0.045f,0.065f,0.085f,1f)));
+        Material standAccent=new Material(ColorAttribute.createDiffuse(new Color(0.075f,0.095f,0.12f,1f)));
+        Model longStand=builder.createBox(1.45f,0.9f,112f,standMat,attributes);
+        Model longStandAccent=builder.createBox(1.45f,0.9f,112f,standAccent,attributes);
+        Model endStand=builder.createBox(88f,0.9f,1.45f,standMat,attributes);
+        Model endStandAccent=builder.createBox(88f,0.9f,1.45f,standAccent,attributes);
+        own(longStand);own(longStandAccent);own(endStand);own(endStandAccent);
+        for(int tier=0;tier<6;tier++){
+            float offset=tier*1.25f;
+            float elevation=0.45f+tier*0.78f;
+            Model sideModel=(tier%2==0)?longStand:longStandAccent;
+            Model endModel=(tier%2==0)?endStand:endStandAccent;
+            addEnvironment(sideModel,-36.8f-offset,elevation,0f);
+            addEnvironment(sideModel,36.8f+offset,elevation,0f);
+            addEnvironment(endModel,0f,elevation,-54.8f-offset);
+            addEnvironment(endModel,0f,elevation,54.8f+offset);
+        }
 
         Material white=new Material(ColorAttribute.createDiffuse(Color.WHITE));
         Model post=builder.createBox(0.14f,2.44f,0.14f,white,attributes);
