@@ -47,6 +47,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final Vector3 controlledPosition = new Vector3();
     private final Vector3 cameraFollowPosition = new Vector3();
     private final Vector3 cameraLookTarget = new Vector3();
+    private final Vector3 touchMovement = new Vector3();
     private final float[] aiTackleCooldowns = new float[22];
 
     private PerspectiveCamera camera;
@@ -265,9 +266,9 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                     float radius=Math.max(1f,width*0.22f);
                     float horizontal=(x-width*0.28f)/radius;
                     float vertical=(height*0.50f-y)/radius;
-                    Vector3 movement=new Vector3(horizontal,0f,-vertical);
-                    if(movement.len2()>1f)movement.nor();
-                    controlledPosition.mulAdd(movement,10f*delta);
+                    touchMovement.set(horizontal,0f,-vertical);
+                    if(touchMovement.len2()>1f)touchMovement.nor();
+                    controlledPosition.mulAdd(touchMovement,10f*delta);
                     controlledPosition.x=Math.max(-FIELD_HALF_WIDTH+2f,Math.min(FIELD_HALF_WIDTH-2f,controlledPosition.x));
                     controlledPosition.z=Math.max(-FIELD_HALF_LENGTH+2f,Math.min(FIELD_HALF_LENGTH-2f,controlledPosition.z));
                 }
