@@ -435,3 +435,10 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - La posición se limita a los márgenes jugables del campo y se recalcula con el ciclo de decisiones tácticas existente.
 - Se añadió una prueba para verificar el desplazamiento hacia el balón, la orientación de cobertura y los límites de movimiento.
 - Limitación: es cobertura espacial heurística; todavía no existe coordinación de permutas, coberturas dinámicas ante desmarques, defensa de centros, línea de fuera de juego colectiva ni evaluación de equilibrio entre líneas en partidos completos.
+
+### Incremento de ejecución de penaltis: selección del lado opuesto al portero (2026-11-23)
+
+- La ejecución automática simplificada del penalti ahora observa la posición lateral actual del guardameta rival y dirige el disparo hacia el lado contrario, dentro de la anchura de la portería.
+- La velocidad mantiene elevación inicial y respeta el sentido de ataque del equipo, incluido el cambio de campo tras el descanso.
+- La decisión se aisló en MatchGameplay.penaltyShotVelocity() y se añadieron pruebas para portero a izquierda/derecha, dirección de ambos tiempos y entrada no finita.
+- Limitación: el penalti sigue siendo una resolución automática, no una ejecución interactiva con carrera, elección de potencia/colocación, movimiento anticipado del portero, infracciones de jugadores, rebotes ni repetición reglamentaria. No equivale a un sistema completo de penaltis.
