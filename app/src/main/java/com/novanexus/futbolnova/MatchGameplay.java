@@ -61,12 +61,37 @@ public final class MatchGameplay {
             if(!isPassLaneClear(players,originX,originZ,player.x,player.z,homeTeam,passerIndex,i))continue;
             MatchRules.OffsideDecision offside=MatchRules.evaluateOffsideAtPass(
                     player.z,originZ,defenders,attackSign,true,"");
-            float score=gain*1.4f-distance*0.35f;
+            float nearestDefender=nearestOpponentDistance(players,player.x,player.z,homeTeam);
+            float score=scorePassOption(gain,distance,nearestDefender,player.role);
             if(score>bestAnyScore){bestAnyScore=score;bestAny=i;bestAnyOffside=offside.offence;}
             if(!offside.offence&&score>bestOnsideScore){bestOnsideScore=score;bestOnside=i;}
         }
         if(bestOnside!=NO_OWNER)return new PassTargetDecision(bestOnside,false);
         return new PassTargetDecision(bestAny,bestAny!=NO_OWNER&&bestAnyOffside);
+    }
+
+    /** Scores a pass by forward progress, travel cost, receiver space and role suitability. */
+    public static float scorePassOption(float forwardGain,float passDistance,
+            float nearestDefenderDistance,String receiverRole) {
+        if(!Float.isFinite(forwardGain)||!Float.isFinite(passDistance)
+                ||!Float.isFinite(nearestDefenderDistance)||forwardGain<0f
+                ||passDistance<0f||nearestDefenderDistance<0f)return Float.NEGATIVE_INFINITY;
+        float spaceBonus=Math.min(nearestDefenderDistance,12f)*0.28f;
+        float roleBonus=0f;
+        if("ST".equals(receiverRole))roleBonus=0.65f;
+        else if("LW".equals(receiverRole)||"RW".equals(receiverRole))roleBonus=0.45f;
+        else if("AM".equals(receiverRole))roleBonus=0.3f;
+        return forwardGain*1.4f-passDistance*0.35f+spaceBonus+roleBonus;
+    }
+
+    private static float nearestOpponentDistance(List<MatchSimulation.PlayerState> players,
+            float x,float z,boolean homeTeam) {
+        float nearest=Float.MAX_VALUE;
+        for(MatchSimulation.PlayerState player:players) {
+            if(player.homeTeam==homeTeam)continue;
+            nearest=Math.min(nearest,distance(x,z,player.x,player.z));
+        }
+        return nearest==Float.MAX_VALUE?0f:nearest;
     }
 
     public static boolean isPassLaneClear(List<MatchSimulation.PlayerState> players,
