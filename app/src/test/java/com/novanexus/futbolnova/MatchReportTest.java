@@ -88,9 +88,9 @@ public class MatchReportTest {
 
     @Test public void csvExportEscapesCommasQuotesAndLineBreaks() {
         MatchReport report=new MatchReport();
-        report.homeTeam="Club, \"Azul\"\\nNorte";
+        report.homeTeam="Club, \"Azul\"\nNorte";
         String csv=MatchReportExporter.toCsv(report);
-        assertTrue(csv.contains("\"Club, \"\"Azul\"\"\\r\\nNorte\""));
+        assertTrue(csv.contains("\"Club, \"\"Azul\"\"\nNorte\""));
     }
 
     @Test(expected=IllegalArgumentException.class)
