@@ -47,6 +47,20 @@ public final class MatchSimulationTest {
                 0f,0f,0f,-1f,0f,-2f,0f,1f,1.7f);
         assertFalse(out.inRange);
     }
+
+    @Test public void cyclesControlAcrossOutfieldPlayersWithoutSelectingGoalkeeper() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        assertEquals(9,simulation.getControlledPlayerIndex());
+        assertEquals(10,simulation.cycleControlledPlayer());
+        assertEquals("RW",simulation.getControlledPlayer().role);
+        assertEquals(1,simulation.cycleControlledPlayer());
+        assertEquals("LB",simulation.getControlledPlayer().role);
+        for(int i=0;i<20;i++)simulation.cycleControlledPlayer();
+        assertNotEquals(0,simulation.getControlledPlayerIndex());
+        assertTrue(simulation.getControlledPlayerIndex()<=10);
+    }
+
     private static float distance(float x1,float z1,float x2,float z2){
         float dx=x1-x2,dz=z1-z2;return (float)Math.sqrt(dx*dx+dz*dz);
     }
