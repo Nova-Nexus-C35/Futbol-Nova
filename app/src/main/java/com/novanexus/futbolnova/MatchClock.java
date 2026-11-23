@@ -76,6 +76,11 @@ public final class MatchClock {
         return phase == Phase.FIRST_HALF || phase == Phase.SECOND_HALF;
     }
 
+    /** True only while live gameplay input may change the match state. */
+    public boolean canAcceptGameplayInput() {
+        return isPlaying() && !paused;
+    }
+
     public boolean isPaused() { return paused; }
     public Phase getPhase() { return phase; }
     public float getElapsedInHalfSeconds() { return elapsedInHalf; }
