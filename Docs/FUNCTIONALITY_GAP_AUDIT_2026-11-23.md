@@ -216,3 +216,12 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Los tiros libres y penaltis ejecutan una reanudación automática orientada hacia la portería rival; los penaltis colocan el balón en el punto de 11 m.
 - Se añadieron pruebas para faltas dentro/fuera de ambas áreas y para la inversión de campos.
 - Limitación: aún no hay árbitro visible, barrera, elección del lanzador, animación, tarjetas ni ventaja; la ejecución automática es provisional y requiere ajuste de jugabilidad.
+
+
+### Implementación: saque inicial funcional y decisiones ofensivas de la IA (2026-11-23)
+
+- El primer toque de iniciar partido ahora prepara el balón en el centro y ejecuta el saque inicial automático a favor del equipo local; antes el balón podía permanecer inmóvil en el círculo central.
+- La IA ya intenta disparar cuando un poseedor llega a la zona ofensiva final con un ángulo central razonable. Los tiros de la CPU se registran en las estadísticas.
+- Los pases de la IA y las entradas exitosas de los defensores de CPU también alimentan los contadores del equipo correspondiente.
+- Se añadió una prueba unitaria para las condiciones de tiro de la IA.
+- Pendiente: elección manual del ejecutor de saques, centros, regates, paredes y variación táctica; el comportamiento de tiro CPU es una regla geométrica inicial, no una IA avanzada.

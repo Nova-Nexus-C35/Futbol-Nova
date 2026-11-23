@@ -267,7 +267,12 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(phase==MatchClock.Phase.PRE_MATCH){
             if(x<width*0.32f){cycleHomeRoster();return;}
             if(x<width*0.72f){cycleAwayRoster();return;}
-            matchClock.start();
+            if(matchClock.start()){
+                ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
+                possessionOwnerIndex=MatchGameplay.NO_OWNER;restartAwardedHome=true;
+                kickoffRestart=true;pendingRestart=MatchRules.Restart.IN_PLAY;
+                restartClock=1.4f;lastTouchHome=true;
+            }
             return;
         }
         if(x>=width*0.72f){
@@ -475,6 +480,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             MatchSimulation.TackleResult tackle=MatchGameplay.tackle(lineup.get(nearestDefender),currentOwner,1.7f);
             aiTackleCooldowns[nearestDefender]=1.35f;
             if(tackle!=null&&tackle.success){
+                matchStatistics.recordTackle(nearestDefender<11);
                 possessionOwnerIndex=nearestDefender;
                 currentOwner=lineup.get(possessionOwnerIndex);
                 aiKickClock=1.0f;
@@ -490,10 +496,20 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         ballPosition.set(owner.x,BALL_RADIUS,owner.z+ownerAttackSign*0.62f);
         ballVelocity.setZero();ballSpin.setZero();lastTouchHome=owner.homeTeam;
         if(possessionOwnerIndex==matchSimulation.getControlledPlayerIndex())return;
+        float goalProgress=owner.z*ownerAttackSign;
+        if(MatchGameplay.shouldAiShoot(goalProgress,owner.x)){
+            ballVelocity.set(MatchGameplay.shotVelocity(owner.homeTeam,-owner.x*0.22f,
+                    matchSimulation.homeAttacksNegativeZ()));
+            ballSpin.set(0f,owner.homeTeam?18f:-18f,0f);
+            matchStatistics.recordShot(owner.homeTeam);
+            possessionOwnerIndex=MatchGameplay.NO_OWNER;aiKickClock=1.3f;
+            return;
+        }
         aiKickClock-=delta;if(aiKickClock>0f)return;
         int receiver=MatchGameplay.findForwardPassTarget(lineup,possessionOwnerIndex,owner.x,owner.z,owner.homeTeam,matchSimulation.homeAttacksNegativeZ());
         if(receiver!=MatchGameplay.NO_OWNER){
             MatchSimulation.PlayerState target=lineup.get(receiver);
+            matchStatistics.recordPassAttempt(owner.homeTeam);
             ballVelocity.set(MatchGameplay.passVelocity(owner.x,owner.z,target.x,target.z));
         }else ballVelocity.set(MatchGameplay.clearanceVelocity(owner.homeTeam,owner.x,matchSimulation.homeAttacksNegativeZ()));
         possessionOwnerIndex=MatchGameplay.NO_OWNER;aiKickClock=1.15f;

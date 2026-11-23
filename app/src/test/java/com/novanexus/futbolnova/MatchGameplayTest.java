@@ -47,4 +47,11 @@ public final class MatchGameplayTest {
   assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,0.5f,4f,48f,12f,1f));
   assertFalse(MatchGameplay.canGoalkeeperAttemptSave(0f,49f,5f,1.2f,48f,12f,1f));
  }
+
+ @Test public void cpuShootsOnlyFromTheAttackingFinalThirdAndCentralLane(){
+  assertTrue(MatchGameplay.shouldAiShoot(40f,4f));
+  assertFalse(MatchGameplay.shouldAiShoot(25f,4f));
+  assertFalse(MatchGameplay.shouldAiShoot(40f,18f));
+  assertFalse(MatchGameplay.shouldAiShoot(Float.NaN,0f));
+ }
 }

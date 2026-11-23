@@ -90,6 +90,12 @@ public final class MatchGameplay {
     }
 
     /** True when a keeper can reach a low or mid-height shot travelling toward their own goal. */
+    /** Keeps CPU shot attempts in a plausible central lane of the attacking final third. */
+    public static boolean shouldAiShoot(float goalProgress,float lateralPosition) {
+        return Float.isFinite(goalProgress)&&Float.isFinite(lateralPosition)
+                &&goalProgress>=34f&&goalProgress<=52.5f&&Math.abs(lateralPosition)<=15f;
+    }
+
     public static boolean canGoalkeeperAttemptSave(float keeperX,float keeperZ,
             float ballX,float ballY,float ballZ,float velocityZ,float ownGoalDirection) {
         if (!Float.isFinite(keeperX)||!Float.isFinite(keeperZ)||!Float.isFinite(ballX)
