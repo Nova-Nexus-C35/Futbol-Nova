@@ -83,4 +83,19 @@ public final class MatchSimulationTest {
         assertEquals("B Player 0",simulation.getPlayers().get(11).playerName);
         assertEquals("A9",simulation.getControlledPlayer().playerId);
     }
+
+    @Test public void halfTimeSwitchesEndsAndAttackingDirection() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        float homeZ=simulation.getPlayers().get(0).z;
+        float awayZ=simulation.getPlayers().get(11).z;
+        assertTrue(simulation.homeAttacksNegativeZ());
+        simulation.switchEnds();
+        assertFalse(simulation.homeAttacksNegativeZ());
+        assertEquals(-homeZ,simulation.getPlayers().get(0).z,0.001f);
+        assertEquals(-awayZ,simulation.getPlayers().get(11).z,0.001f);
+        simulation.switchEnds();
+        assertTrue(simulation.homeAttacksNegativeZ());
+        assertEquals(homeZ,simulation.getPlayers().get(0).z,0.001f);
+    }
 }
