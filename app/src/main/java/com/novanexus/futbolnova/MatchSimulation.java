@@ -24,6 +24,7 @@ public final class MatchSimulation {
         public final boolean homeTeam;
         public final int shirtNumber;
         public float homeX, homeZ;
+        public boolean active = true;
         public float x, z, targetX, targetZ, stamina = 100f, speed, movementSpeed, forwardX, forwardZ = -1f;
 
         private PlayerState(String playerId, String playerName, String teamId, String role,
@@ -131,6 +132,26 @@ public final class MatchSimulation {
 
     public List<PlayerState> getPlayers() { return Collections.unmodifiableList(players); }
     public int getControlledPlayerIndex() { return controlledPlayerIndex; }
+    public int getActivePlayerCount(boolean homeTeam) {
+        int count=0; for(PlayerState player:players) if(player.homeTeam==homeTeam&&player.active) count++;
+        return count;
+    }
+    /** Removes a dismissed player from all simulation participation without shifting stable lineup indices. */
+    public boolean dismissPlayer(String playerId) {
+        if(playerId==null||playerId.trim().isEmpty())return false;
+        for(int i=0;i<players.size();i++){
+            PlayerState player=players.get(i);
+            if(!player.playerId.equals(playerId)||!player.active)return false;
+            player.active=false;player.movementSpeed=0f;player.targetX=player.x;player.targetZ=player.z;
+            if(i==controlledPlayerIndex){
+                controlledPlayerIndex=-1;
+                for(int candidate=1;candidate<PLAYERS_PER_TEAM;candidate++)
+                    if(players.get(candidate).active){controlledPlayerIndex=candidate;break;}
+            }
+            return true;
+        }
+        return false;
+    }
     public PlayerState getControlledPlayer() {
         return players.size()==22?players.get(controlledPlayerIndex):null;
     }
@@ -146,6 +167,7 @@ public final class MatchSimulation {
         if (players.size()!=22 || !Float.isFinite(deltaSeconds) || deltaSeconds<=0f) return;
         float delta=Math.min(deltaSeconds,0.05f);
         PlayerState controlled=getControlledPlayer();
+        if(controlled==null||!controlled.active)return;
         float previousX=controlled.x, previousZ=controlled.z;
         controlled.x=clamp(controlledX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f);
         controlled.z=clamp(controlledZ,-FIELD_HALF_LENGTH+2f,FIELD_HALF_LENGTH-2f);
@@ -160,12 +182,13 @@ public final class MatchSimulation {
             decisionClock+=AI_DECISION_INTERVAL;
             if (decisionClock<=0f) decisionClock=AI_DECISION_INTERVAL;
             for (int i=0;i<players.size();i++)
-                if (i!=controlledPlayerIndex) chooseTarget(i,ballX,ballZ);
+                if (i!=controlledPlayerIndex&&players.get(i).active) chooseTarget(i,ballX,ballZ);
         }
 
         for (int i=0;i<players.size();i++) {
             if (i==controlledPlayerIndex) continue;
             PlayerState player=players.get(i);
+            if(!player.active)continue;
             float dx=player.targetX-player.x, dz=player.targetZ-player.z;
             float distance=(float)Math.sqrt(dx*dx+dz*dz);
             if (distance>0.0001f) {
@@ -325,7 +348,7 @@ public final class MatchSimulation {
     private int nearestTeammateToBall(boolean home,float ballX,float ballZ) {
         int nearest=-1; float best=Float.MAX_VALUE;
         for(int i=0;i<players.size();i++) {
-            PlayerState p=players.get(i); if(p.homeTeam!=home) continue;
+            PlayerState p=players.get(i); if(p.homeTeam!=home||!p.active) continue;
             float d=distance(p.x,p.z,ballX,ballZ);
             if(d<best){best=d;nearest=i;}
         }
@@ -338,6 +361,7 @@ public final class MatchSimulation {
         for(int j=0;j<players.size();j++) {
             if(j==index) continue;
             PlayerState other=players.get(j);
+            if(!other.active)continue;
             float dx=source.x-other.x,dz=source.z-other.z;
             float d=(float)Math.sqrt(dx*dx+dz*dz);
             if(d>0.001f&&d<0.85f) {
