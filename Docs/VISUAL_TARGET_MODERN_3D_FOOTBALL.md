@@ -62,3 +62,12 @@ La referencia FIFA describe el nivel y la dirección de calidad deseados; no aut
 - No existen todavía modelos de futbolistas de calidad moderna, esqueletos/animaciones completas, estadio detallado, césped/materiales avanzados, público, sombras de producción, audio, repeticiones ni cámara de retransmisión completa.
 - El código y la auditoría deben seguir distinguiendo prototipo 3D existente de la meta visual FIFA-moderna confirmada.
 - Restricción técnica actual: desarrollo Java 17/libGDX 1.14.2, Android ARM64 y minSdk 28. Cualquier migración de motor requiere decisión explícita del propietario; no se cambiará silenciosamente el runtime.
+
+
+## Progreso de implementación — cámara de retransmisión 3D (2026-11-23)
+
+- Se añadió BroadcastCamera, una cámara elevada en tres cuartos desde la banda, con seguimiento suavizado del balón y encuadre de la jugada.
+- La altura aumenta moderadamente durante transiciones rápidas; el punto de enfoque se limita a las dimensiones reglamentarias del campo y se protege frente a deltas/velocidades no finitos.
+- FutbolNovaGame usa ahora este controlador en el render del partido, sustituyendo el seguimiento anterior más rígido.
+- Se añadieron pruebas para perspectiva elevada, seguimiento y límites de campo, y protección frente a delta inválido.
+- Esta es una primera cámara de retransmisión funcional, no un sistema completo de cámaras FIFA: faltan cambios de plano por contexto, seguimiento de posesión, zoom dinámico horizontal, repeticiones y opciones configurables.
