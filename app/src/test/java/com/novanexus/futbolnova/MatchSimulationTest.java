@@ -64,4 +64,23 @@ public final class MatchSimulationTest {
     private static float distance(float x1,float z1,float x2,float z2){
         float dx=x1-x2,dz=z1-z2;return (float)Math.sqrt(dx*dx+dz*dz);
     }
+
+    @Test public void initializesMatchFromCanonicalTeamRosters() {
+        java.util.List<OriginalProjectData.PlayerRecord> squadA=new java.util.ArrayList<>();
+        java.util.List<OriginalProjectData.PlayerRecord> squadB=new java.util.ArrayList<>();
+        String[] positions={"POR","LI","DFC","DFC","LD","MCD","MC","MCO","EI","DC","ED"};
+        for(int i=0;i<positions.length;i++){
+            squadA.add(new OriginalProjectData.PlayerRecord("A"+i,"A Player "+i,positions[i],70,new float[]{80f,75f}));
+            squadB.add(new OriginalProjectData.PlayerRecord("B"+i,"B Player "+i,positions[i],65,new float[]{65f,60f}));
+        }
+        OriginalProjectData.TeamRoster home=new OriginalProjectData.TeamRoster("A","Santiago FC","league",3,squadA);
+        OriginalProjectData.TeamRoster away=new OriginalProjectData.TeamRoster("B","Habana FC","league",3,squadB);
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start(home,away));
+        assertEquals("Santiago FC",simulation.getHomeTeamName());
+        assertEquals("Habana FC",simulation.getAwayTeamName());
+        assertEquals("A Player 9",simulation.getPlayers().get(9).playerName);
+        assertEquals("B Player 0",simulation.getPlayers().get(11).playerName);
+        assertEquals("A9",simulation.getControlledPlayer().playerId);
+    }
 }
