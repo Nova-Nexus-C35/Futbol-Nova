@@ -478,3 +478,12 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Se añadieron cinco pruebas unitarias para primera amarilla, segunda amarilla, roja directa, identificadores inválidos, instantáneas y reinicio.
 - Estado: lógica de registro y reglas de acumulación implementadas y verificadas en GitHub.
 - Pendiente de integración en el flujo de faltas/árbitro y de consecuencias en el campo: no se asignan tarjetas automáticamente por criterio arbitral, no se retiran jugadores del posicionamiento ni se ajusta el número de jugadores, y no hay HUD de tarjetas. No debe presentarse como reglamento disciplinario completo.
+
+
+### Acta disciplinaria del partido: historial cronológico de tarjetas (2026-11-23)
+
+- MatchDiscipline conserva ahora un historial cronológico e inmutable de cada tarjeta emitida: futbolista, tipo de tarjeta, motivo arbitral, tiempo transcurrido del partido y si la acción produjo expulsión.
+- Se distinguen motivos explícitos para persistencia de infracciones, decisión arbitral genérica, juego brusco grave, conducta violenta, impedir una ocasión manifiesta, disenso y otros. Los motivos de gravedad son decisiones explícitas que debe suministrar el árbitro/juego; no se infieren automáticamente de la detección actual de una entrada.
+- Los flujos de falta registran el tiempo del partido y la amonestación por persistencia se etiqueta como tal. Los métodos públicos de decisión arbitral permiten emitir amarilla o roja con motivo explícito y conservan compatibilidad con las llamadas anteriores.
+- El historial es únicamente en memoria durante el partido. Todavía no se guarda en disco, no genera informe exportable y se pierde al reiniciar el encuentro; no debe confundirse con persistencia de actas.
+- Pruebas añadidas para orden cronológico, motivos, tiempos, expulsión y protección de la instantánea inmutable.
