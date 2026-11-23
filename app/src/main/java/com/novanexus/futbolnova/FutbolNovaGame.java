@@ -29,8 +29,11 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private static final float FIELD_HALF_WIDTH = 34f;
     private static final float FIELD_HALF_LENGTH = 52.5f;
     private static final float BALL_RADIUS = 0.55f;
+    /** 30 match-seconds per real second: a complete 90-minute match lasts about 3 minutes. */
+    private static final float MATCH_TIME_SCALE = 30f;
 
     private final MatchState matchState = new MatchState();
+    private final MatchClock matchClock = new MatchClock();
     private final MatchSimulation matchSimulation = new MatchSimulation();
     private final List<Model> ownedModels = new ArrayList<>();
     private final List<PlayerVisual> playerVisuals = new ArrayList<>();
@@ -154,13 +157,17 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     @Override
     public void render() {
         float delta = Math.min(Gdx.graphics.getDeltaTime(), 0.05f);
-        matchState.update(delta);
         updateTouchControls(delta);
-        updateBall(delta);
-        matchSimulation.update(delta, ballPosition.x, ballPosition.z,
-                controlledPosition.x, controlledPosition.z);
+        boolean matchRunning = matchClock.isPlaying() && !matchClock.isPaused();
+        if (matchRunning) {
+            matchClock.update(delta * MATCH_TIME_SCALE);
+            matchState.update(delta);
+            updateBall(delta);
+            matchSimulation.update(delta, ballPosition.x, ballPosition.z,
+                    controlledPosition.x, controlledPosition.z);
+            updateGameplay(delta);
+        }
         List<MatchSimulation.PlayerState> lineup = matchSimulation.getPlayers();
-        updateGameplay(delta);
         animationClock+=delta;
         for(int i=0;i<lineup.size()&&i<playerVisuals.size();i++){
             MatchSimulation.PlayerState state=lineup.get(i);
@@ -193,6 +200,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private final boolean[] pointerWasTouched = new boolean[20];
     private int movementPointer = -1;
+    private boolean matchActionPointerDown;
 
     /**
      * Independent pointer tracking allows the left movement stick and a right-side
@@ -203,6 +211,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(width<=0||height<=0)return;
 
         boolean movementStillDown=false;
+        boolean matchActionDown=false;
         for(int pointer=0;pointer<pointerWasTouched.length;pointer++){
             boolean touched=Gdx.input.isTouched(pointer);
             if(!touched){
@@ -210,7 +219,10 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 continue;
             }
             float x=Gdx.input.getX(pointer),y=Gdx.input.getY(pointer);
-            if(x<width*0.58f){
+            if(y<height*0.16f){
+                matchActionDown=true;
+                if(!matchActionPointerDown)handleMatchAction(x,y,width,height);
+            }else if(x<width*0.58f){
                 if(movementPointer<0||movementPointer==pointer){
                     movementPointer=pointer;
                     movementStillDown=true;
@@ -231,6 +243,22 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             pointerWasTouched[pointer]=true;
         }
         if(!movementStillDown)movementPointer=-1;
+        matchActionPointerDown=matchActionDown;
+    }
+
+    /** Top HUD strip: kickoff/continue at left, pause/resume at right. */
+    private void handleMatchAction(float x,float y,int width,int height){
+        if(x>=width*0.72f){
+            if(matchClock.isPlaying()){
+                if(matchClock.isPaused())matchClock.resume(); else matchClock.pause();
+            }
+            return;
+        }
+        switch(matchClock.getPhase()){
+            case PRE_MATCH: matchClock.start(); break;
+            case HALF_TIME: matchClock.startSecondHalf(); break;
+            default: break;
+        }
     }
 
     private void performShot(){
@@ -404,12 +432,21 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private void drawHud() {
         spriteBatch.begin();
-        String clock = String.format(java.util.Locale.US, "%02d:%02d",
-                (int) (matchState.getElapsedSeconds() / 60f),
-                (int) (matchState.getElapsedSeconds() % 60f));
+        float matchSeconds=matchClock.getTotalElapsedSeconds();
+        int matchMinute=(int)(matchSeconds/60f);
+        String clock=String.format(java.util.Locale.US,"%02d:%02d",matchMinute,(int)(matchSeconds%60f));
         font.draw(spriteBatch, "FUTBOL NOVA  |  " + matchState.getHomeGoals() + " - "
                 + matchState.getAwayGoals() + "  |  " + clock, 18f, Gdx.graphics.getHeight() - 18f);
         font.draw(spriteBatch, "IZQUIERDA: MOVER   DERECHA: ARRIBA TIRO | CENTRO PASE | ABAJO ROBO", 18f, 28f);
+        String phaseText;
+        switch(matchClock.getPhase()){
+            case PRE_MATCH: phaseText="TOCA LA FRANJA SUPERIOR IZQUIERDA PARA COMENZAR"; break;
+            case HALF_TIME: phaseText="DESCANSO - TOCA ARRIBA A LA IZQUIERDA PARA 2º TIEMPO"; break;
+            case FULL_TIME: phaseText="FINAL DEL PARTIDO"; break;
+            default: phaseText=matchClock.isPaused()?"PARTIDO PAUSADO - TOCA ARRIBA A LA DERECHA PARA SEGUIR":"";
+        }
+        if(!phaseText.isEmpty())font.draw(spriteBatch,phaseText,18f,Gdx.graphics.getHeight()*0.56f);
+        font.draw(spriteBatch,"ARRIBA DERECHA: PAUSA / CONTINUAR",18f,Gdx.graphics.getHeight()-48f);
         spriteBatch.end();
     }
 
