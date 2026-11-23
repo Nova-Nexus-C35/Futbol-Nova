@@ -45,6 +45,7 @@ public final class BallCollisionModel {
         if(position==null||velocity==null||players==null||position.y>1.85f
                 ||velocity.x*velocity.x+velocity.z*velocity.z<16f)return false;
         for(MatchSimulation.PlayerState player:players){
+            if(!player.active)continue;
             float dx=position.x-player.x,dz=position.z-player.z;
             float distance2=dx*dx+dz*dz;
             if(distance2>=PLAYER_CONTACT_RADIUS*PLAYER_CONTACT_RADIUS)continue;
