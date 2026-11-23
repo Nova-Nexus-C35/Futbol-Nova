@@ -427,3 +427,11 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - La presión del compañero más cercano al balón conserva prioridad sobre el objetivo de marcaje, y los jugadores sin amenaza asignada mantienen la estructura defensiva de zona.
 - Se añadió una prueba que comprueba la asignación al central más cercano, la colocación entre atacante y portería y los límites del campo.
 - Limitación: es marcaje heurístico individual; todavía faltan coberturas coordinadas, permutas entre defensores, defensa de centros, línea de fuera de juego sincronizada y validación estadística en partidos completos.
+
+### Incremento de IA defensiva: cobertura de zona (2026-11-23)
+
+- Cuando un defensor de rol defensivo no tiene una amenaza individual asignada, calcula una posición de cobertura desplazada hacia el balón, pero conservando una posición de lado de portería.
+- El defensor más cercano a la pelota conserva la prioridad de presión; los demás ajustan su carril con una interpolación moderada y un límite de desplazamiento de 11 m.
+- La posición se limita a los márgenes jugables del campo y se recalcula con el ciclo de decisiones tácticas existente.
+- Se añadió una prueba para verificar el desplazamiento hacia el balón, la orientación de cobertura y los límites de movimiento.
+- Limitación: es cobertura espacial heurística; todavía no existe coordinación de permutas, coberturas dinámicas ante desmarques, defensa de centros, línea de fuera de juego colectiva ni evaluación de equilibrio entre líneas en partidos completos.
