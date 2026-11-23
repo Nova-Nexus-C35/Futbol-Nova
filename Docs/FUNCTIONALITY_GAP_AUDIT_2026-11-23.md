@@ -4,7 +4,7 @@
 
 - Repositorio activo: `Nova-Nexus-C35/Futbol-Nova`.
 - Rama auditada: `rebuild/libgdx-android-2026-11-22`.
-- Commit auditado: `d8ef652158ef9190744304dc26d73931506dd75c`.
+- Último commit registrado en esta auditoría: `bf3de0481a2d967cc4b3cb785140bdc4f7937d34` (rama de desarrollo).
 - Stack vigente: Java 17, libGDX 1.14.2, Android ARM64, minSdk 28, funcionamiento offline-first.
 - La fuente Godot/GDScript queda preservada en Nova-Workspace como referencia histórica. No continuar añadiendo funciones al runtime Godot ni reactivar Unity: el desarrollo activo es Java/libGDX.
 - `main` del repositorio de implementación permanece intacta.
@@ -532,3 +532,10 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Las excepciones de saque de puerta, saque de banda y córner se comparan sin distinguir mayúsculas/minúsculas.
 - Se amplió OffsideDecision para exponer la línea efectiva y se añadieron pruebas de línea definida por balón/defensa, mitad propia, posición pasiva, ambos sentidos de ataque, datos inválidos y excepciones.
 - Límite que permanece: el juego solo sanciona al receptor marcado si ese mismo jugador obtiene la posesión/toca el balón. No detecta aún interferencia con un adversario, obstrucción de visión del portero, disputa por el balón, rebotes deliberados ni otras formas de participación activa. Tampoco incluye VAR ni árbitro visual.
+
+
+### Corrección de prueba de datos defensivos inválidos (2026-11-23)
+
+- CI #242 (`45287535405`) detectó una expectativa incorrecta en `MatchRulesTest`: cuando la lista de defensores existe pero todos sus elementos son nulos o no finitos, el evaluador devuelve `insufficient_defenders`, no `insufficient_data` (que se reserva para coordenadas/dirección/lista ausentes o inválidas).
+- Se corrigió únicamente la expectativa del test; no se alteró la regla de fuera de juego.
+- Nueva validación CI pendiente. No se declara compilación ni APK hasta que el nuevo run termine correctamente.

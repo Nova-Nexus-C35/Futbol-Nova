@@ -26,7 +26,7 @@ public class MatchRulesTest{
 
  @Test public void offsideEvaluationIgnoresInvalidDefendersAndHandlesBothDirections(){
   MatchRules.OffsideDecision invalid=MatchRules.evaluateOffsideAtPass(-30f,-20f,Arrays.asList(null,Float.NaN,Float.POSITIVE_INFINITY),-1f,true,"");
-  assertEquals("insufficient_data",invalid.reason);
+  assertEquals("insufficient_defenders",invalid.reason);
   MatchRules.OffsideDecision reversed=MatchRules.evaluateOffsideAtPass(30f,20f,Arrays.asList(25f,22f),1f,true,"");
   assertTrue(reversed.offence);
   MatchRules.OffsideDecision invalidCoordinate=MatchRules.evaluateOffsideAtPass(Float.NaN,0f,Arrays.asList(1f,2f),1f,true,"");
