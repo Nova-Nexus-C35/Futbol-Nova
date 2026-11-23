@@ -17,5 +17,6 @@ public final class MatchState {
     public int getHomeGoals() { return homeGoals; }
     public int getAwayGoals() { return awayGoals; }
     public float getElapsedSeconds() { return elapsedSeconds; }
+    public void reset() { homeGoals=0; awayGoals=0; elapsedSeconds=0f; paused=false; }
     public boolean isPaused() { return paused; }
 }
