@@ -20,4 +20,12 @@ public class MatchStateTest {
         assertEquals(2, state.getHomeGoals());
         assertEquals(1, state.getAwayGoals());
     }
+
+    @Test public void resetClearsScoreAndElapsedTime() {
+        MatchState state=new MatchState();
+        state.addGoal(true);state.addGoal(false);state.update(12f);
+        state.reset();
+        assertEquals(0,state.getHomeGoals());assertEquals(0,state.getAwayGoals());
+        assertEquals(0f,state.getElapsedSeconds(),0.0001f);assertFalse(state.isPaused());
+    }
 }
