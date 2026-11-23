@@ -495,3 +495,12 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - El almacén local conserva hasta 20 actas en las preferencias de Android; la más reciente ocupa la primera posición. El guardado se hace una sola vez por partido y se fuerza también antes de reiniciar un encuentro terminado o cerrar la aplicación en tiempo completo.
 - El modelo de acta es independiente de Android y se serializa a JSON, con pruebas de ida y vuelta para el marcador, estadísticas y eventos disciplinarios. El HUD indica cuántas actas locales se han guardado.
 - El almacenamiento es local al dispositivo y no equivale a sincronización en la nube ni a exportación PDF/CSV. No se guarda el estado de un partido que aún está en juego si el proceso se cierra inesperadamente; la persistencia de progreso en mitad del encuentro queda pendiente.
+
+
+### Incremento: sustituciones y banquillo (2026-11-23)
+
+- Al iniciar un partido desde plantillas canónicas, los futbolistas que no entran en el once titular quedan registrados como banquillo disponible de cada equipo; no se inventan suplentes cuando la plantilla no los contiene.
+- MatchSimulation permite sustituir un jugador activo por uno de esos suplentes, manteniendo 22 posiciones de simulación estables para las referencias del balón, controles y modelos visuales. El suplente hereda la posición táctica y el dorsal del puesto sustituido; conserva su identidad y atributos de jugador.
+- Se aplican límites de cinco sustituciones por equipo y tres ventanas durante el juego. Una sustitución en el descanso no consume ventana. Se rechazan IDs desconocidos, suplentes ya utilizados, jugadores del equipo contrario, titulares inactivos/expulsados y ventanas fuera de rango.
+- Se añadieron pruebas para banquillo, sustitución efectiva, conservación del índice/rol, límites de sustituciones/ventanas, excepción del descanso y rechazos.
+- Alcance actual: el motor ya puede efectuar sustituciones por API y mantiene el banquillo de ambas plantillas. Aún falta la interfaz para elegir suplente y jugador saliente, la presentación del banquillo en HUD, el flujo de interrupción arbitral y la prueba visual en Android. Por tanto, no se declara terminada la experiencia de sustituciones ni el reglamento completo.

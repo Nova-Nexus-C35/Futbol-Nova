@@ -43,11 +43,17 @@ public final class MatchSimulation {
     private int controlledPlayerIndex = CONTROLLED_HOME_PLAYER_INDEX;
     private String homeTeamName = "home", awayTeamName = "away";
     private boolean homeAttacksNegativeZ = true;
+    private final List<OriginalProjectData.PlayerRecord> homeBench = new ArrayList<>();
+    private final List<OriginalProjectData.PlayerRecord> awayBench = new ArrayList<>();
+    private final Set<Integer> homeSubstitutionWindows = new HashSet<>();
+    private final Set<Integer> awaySubstitutionWindows = new HashSet<>();
+    private int homeSubstitutionsUsed, awaySubstitutionsUsed;
 
     public boolean start(String homeTeamId, String awayTeamId) {
         if (homeTeamId==null || awayTeamId==null || homeTeamId.trim().isEmpty()
                 || awayTeamId.trim().isEmpty() || homeTeamId.equals(awayTeamId)) return false;
         homeTeamName=homeTeamId; awayTeamName=awayTeamId; homeAttacksNegativeZ=true;
+        resetSubstitutionState();
         players.clear();
         controlledPlayerIndex = CONTROLLED_HOME_PLAYER_INDEX;
         for (int side=0; side<2; side++) {
@@ -72,11 +78,88 @@ public final class MatchSimulation {
         List<OriginalProjectData.PlayerRecord> awayXI=selectStartingEleven(away);
         if(homeXI.size()!=PLAYERS_PER_TEAM||awayXI.size()!=PLAYERS_PER_TEAM)return false;
         players.clear(); controlledPlayerIndex=CONTROLLED_HOME_PLAYER_INDEX;
+        resetSubstitutionState();
         homeTeamName=home.clubName;awayTeamName=away.clubName;homeAttacksNegativeZ=true;
         appendRoster(home,homeXI,true);
         appendRoster(away,awayXI,false);
+        populateBench(home,homeXI,homeBench);
+        populateBench(away,awayXI,awayBench);
         decisionClock=AI_DECISION_INTERVAL;
         return validateLineups(players);
+    }
+
+    private void resetSubstitutionState() {
+        homeBench.clear(); awayBench.clear();
+        homeSubstitutionWindows.clear(); awaySubstitutionWindows.clear();
+        homeSubstitutionsUsed=0; awaySubstitutionsUsed=0;
+    }
+
+    private void populateBench(OriginalProjectData.TeamRoster team,
+            List<OriginalProjectData.PlayerRecord> startingEleven,
+            List<OriginalProjectData.PlayerRecord> bench) {
+        Set<String> starters=new HashSet<>();
+        for(OriginalProjectData.PlayerRecord player:startingEleven)starters.add(player.id);
+        for(OriginalProjectData.PlayerRecord player:team.players)
+            if(!starters.contains(player.id))bench.add(player);
+    }
+
+    /** Returns the unused substitutes for one side in original roster order. */
+    public List<OriginalProjectData.PlayerRecord> getBenchPlayers(boolean homeTeam) {
+        return Collections.unmodifiableList(homeTeam?homeBench:awayBench);
+    }
+
+    public int getSubstitutionsUsed(boolean homeTeam) {
+        return homeTeam?homeSubstitutionsUsed:awaySubstitutionsUsed;
+    }
+
+    public int getSubstitutionWindowsUsed(boolean homeTeam) {
+        return homeTeam?homeSubstitutionWindows.size():awaySubstitutionWindows.size();
+    }
+
+    /**
+     * Replaces an active player with an unused squad member while retaining the
+     * 22 stable simulation slots. A normal stoppage must use window 1..3;
+     * half-time substitutions do not consume one of those windows.
+     */
+    public boolean substitutePlayer(boolean homeTeam,String outgoingPlayerId,
+            String incomingPlayerId,int stoppageWindow,boolean halfTime) {
+        if(players.size()!=22||outgoingPlayerId==null||incomingPlayerId==null
+                ||outgoingPlayerId.trim().isEmpty()||incomingPlayerId.trim().isEmpty()
+                ||outgoingPlayerId.equals(incomingPlayerId))return false;
+        List<OriginalProjectData.PlayerRecord> bench=homeTeam?homeBench:awayBench;
+        Set<Integer> windows=homeTeam?homeSubstitutionWindows:awaySubstitutionWindows;
+        int used=homeTeam?homeSubstitutionsUsed:awaySubstitutionsUsed;
+        if(bench.isEmpty()||used>=5)return false;
+        if(!halfTime&&(stoppageWindow<1||stoppageWindow>3
+                ||(!windows.contains(stoppageWindow)&&windows.size()>=3)))return false;
+
+        int outgoingIndex=-1;
+        PlayerState outgoing=null;
+        for(int i=0;i<players.size();i++){
+            PlayerState candidate=players.get(i);
+            if(candidate.playerId.equals(outgoingPlayerId)){
+                outgoingIndex=i;outgoing=candidate;break;
+            }
+        }
+        if(outgoing==null||!outgoing.active||outgoing.homeTeam!=homeTeam)return false;
+        OriginalProjectData.PlayerRecord incoming=null;
+        for(OriginalProjectData.PlayerRecord candidate:bench)
+            if(candidate.id.equals(incomingPlayerId)){incoming=candidate;break;}
+        if(incoming==null)return false;
+
+        float pace=(incoming.attribute(0)+incoming.attribute(1))*0.5f;
+        PlayerState replacement=new PlayerState(incoming.id,incoming.name,outgoing.teamId,
+                outgoing.role,incoming.overall,homeTeam,outgoing.shirtNumber,
+                outgoing.x,outgoing.z,pace);
+        replacement.homeX=outgoing.homeX;
+        replacement.homeZ=outgoing.homeZ;
+        replacement.forwardX=outgoing.forwardX;
+        replacement.forwardZ=outgoing.forwardZ;
+        players.set(outgoingIndex,replacement);
+        bench.remove(incoming);
+        if(homeTeam)homeSubstitutionsUsed++;else awaySubstitutionsUsed++;
+        if(!halfTime)windows.add(stoppageWindow);
+        return true;
     }
 
     private void appendRoster(OriginalProjectData.TeamRoster team,

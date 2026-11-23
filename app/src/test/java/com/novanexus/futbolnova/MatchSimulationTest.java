@@ -74,6 +74,76 @@ public final class MatchSimulationTest {
         assertFalse(simulation.dismissPlayer(id));
     }
 
+    @Test public void canonicalSquadKeepsUnusedPlayersOnBenchAndAllowsLegalSubstitution() {
+        java.util.List<OriginalProjectData.PlayerRecord> homeSquad=new java.util.ArrayList<>();
+        java.util.List<OriginalProjectData.PlayerRecord> awaySquad=new java.util.ArrayList<>();
+        for(int i=0;i<14;i++){
+            String position=i==0?"POR":(i<3?"DFC":(i<5?"LI":"MC"));
+            homeSquad.add(new OriginalProjectData.PlayerRecord("H"+i,"Home "+i,position,70+i,new float[]{70f,75f}));
+            awaySquad.add(new OriginalProjectData.PlayerRecord("A"+i,"Away "+i,position,65+i,new float[]{65f,70f}));
+        }
+        OriginalProjectData.TeamRoster home=new OriginalProjectData.TeamRoster("H","Home FC","league",1,homeSquad);
+        OriginalProjectData.TeamRoster away=new OriginalProjectData.TeamRoster("A","Away FC","league",1,awaySquad);
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start(home,away));
+        assertEquals(3,simulation.getBenchPlayers(true).size());
+        assertEquals(3,simulation.getBenchPlayers(false).size());
+        MatchSimulation.PlayerState outgoing=simulation.getPlayers().get(9);
+        String outgoingId=outgoing.playerId;
+        assertTrue(simulation.substitutePlayer(true,outgoingId,"H13",1,false));
+        MatchSimulation.PlayerState replacement=simulation.getPlayers().get(9);
+        assertEquals("H13",replacement.playerId);
+        assertEquals("Home 13",replacement.playerName);
+        assertEquals(outgoing.role,replacement.role);
+        assertEquals(22,simulation.getPlayers().size());
+        assertEquals(11,simulation.getActivePlayerCount(true));
+        assertEquals(2,simulation.getBenchPlayers(true).size());
+        assertEquals(1,simulation.getSubstitutionsUsed(true));
+        assertEquals(1,simulation.getSubstitutionWindowsUsed(true));
+    }
+
+    @Test public void substitutionsEnforceFivePlayersThreeWindowsAndHalftimeException() {
+        java.util.List<OriginalProjectData.PlayerRecord> homeSquad=new java.util.ArrayList<>();
+        java.util.List<OriginalProjectData.PlayerRecord> awaySquad=new java.util.ArrayList<>();
+        for(int i=0;i<17;i++){
+            String position=i==0?"POR":"MC";
+            homeSquad.add(new OriginalProjectData.PlayerRecord("H"+i,"Home "+i,position,60+i,new float[]{60f,60f}));
+            awaySquad.add(new OriginalProjectData.PlayerRecord("A"+i,"Away "+i,position,60+i,new float[]{60f,60f}));
+        }
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start(
+                new OriginalProjectData.TeamRoster("H","Home","L",1,homeSquad),
+                new OriginalProjectData.TeamRoster("A","Away","L",1,awaySquad)));
+        assertFalse(simulation.substitutePlayer(true,"H9","H16",4,false));
+        assertTrue(simulation.substitutePlayer(true,"H9","H16",1,false));
+        assertTrue(simulation.substitutePlayer(true,"H10","H15",1,false));
+        assertTrue(simulation.substitutePlayer(true,"H11","H14",2,false));
+        assertTrue(simulation.substitutePlayer(true,"H12","H13",3,false));
+        assertTrue(simulation.substitutePlayer(true,"H8","H12",0,true));
+        assertEquals(5,simulation.getSubstitutionsUsed(true));
+        assertEquals(3,simulation.getSubstitutionWindowsUsed(true));
+        assertFalse(simulation.substitutePlayer(true,"H7","H8",0,true));
+    }
+
+    @Test public void substitutionsRejectWrongTeamDismissedOutgoingAndNonBenchIncoming() {
+        java.util.List<OriginalProjectData.PlayerRecord> homeSquad=new java.util.ArrayList<>();
+        java.util.List<OriginalProjectData.PlayerRecord> awaySquad=new java.util.ArrayList<>();
+        for(int i=0;i<13;i++){
+            String position=i==0?"POR":"MC";
+            homeSquad.add(new OriginalProjectData.PlayerRecord("H"+i,"Home "+i,position,70,new float[]{70f}));
+            awaySquad.add(new OriginalProjectData.PlayerRecord("A"+i,"Away "+i,position,70,new float[]{70f}));
+        }
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start(
+                new OriginalProjectData.TeamRoster("H","Home","L",1,homeSquad),
+                new OriginalProjectData.TeamRoster("A","Away","L",1,awaySquad)));
+        assertFalse(simulation.substitutePlayer(true,"A9","H12",1,false));
+        assertFalse(simulation.substitutePlayer(true,"H9","A12",1,false));
+        assertTrue(simulation.dismissPlayer("H9"));
+        assertFalse(simulation.substitutePlayer(true,"H9","H12",1,false));
+        assertFalse(simulation.substitutePlayer(true,"H10","H10",1,false));
+    }
+
     private static float distance(float x1,float z1,float x2,float z2){
         float dx=x1-x2,dz=z1-z2;return (float)Math.sqrt(dx*dx+dz*dz);
     }
