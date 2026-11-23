@@ -98,4 +98,39 @@ public final class MatchSimulationTest {
         assertTrue(simulation.homeAttacksNegativeZ());
         assertEquals(homeZ,simulation.getPlayers().get(0).z,0.001f);
     }
+
+    @Test public void attackingShapeSendsStrikerForwardAndKeepsWingersWide() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        MatchSimulation.PlayerState striker=simulation.getPlayers().get(9);
+        MatchSimulation.PlayerState winger=simulation.getPlayers().get(8);
+        MatchSimulation.TacticalTarget strikerTarget=MatchSimulation.calculateOffBallTarget(
+                striker,0f,-30f,true,true);
+        MatchSimulation.TacticalTarget wingerTarget=MatchSimulation.calculateOffBallTarget(
+                winger,0f,-30f,true,true);
+        assertTrue(strikerTarget.z<striker.homeZ);
+        assertTrue(wingerTarget.z<winger.homeZ);
+        assertTrue(Math.abs(wingerTarget.x)>Math.abs(strikerTarget.x)+10f);
+    }
+
+    @Test public void defensiveShapeCompactsTowardBallWithoutLeavingPitch() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        MatchSimulation.PlayerState centreBack=simulation.getPlayers().get(2);
+        MatchSimulation.TacticalTarget target=MatchSimulation.calculateOffBallTarget(
+                centreBack,20f,-35f,false,true);
+        assertTrue(target.z<centreBack.homeZ);
+        assertTrue(Math.abs(target.x)<=MatchSimulation.FIELD_HALF_WIDTH-2f);
+        assertTrue(Math.abs(target.z)<=MatchSimulation.FIELD_HALF_LENGTH-3f);
+    }
+
+    @Test public void roleAwareShapeReversesAfterHalfTime() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        simulation.switchEnds();
+        MatchSimulation.PlayerState striker=simulation.getPlayers().get(9);
+        MatchSimulation.TacticalTarget target=MatchSimulation.calculateOffBallTarget(
+                striker,0f,30f,true,false);
+        assertTrue(target.z>striker.homeZ);
+    }
 }
