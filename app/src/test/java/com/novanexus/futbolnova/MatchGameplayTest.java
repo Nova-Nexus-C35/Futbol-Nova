@@ -97,4 +97,30 @@ public final class MatchGameplayTest {
   assertFalse(MatchGameplay.shouldAiCarryBall(20f,3f));
   assertFalse(MatchGameplay.shouldAiCarryBall(Float.NaN,8f));
  }
+
+ @Test public void aiCarrierChoosesAForwardLaneAwayFromDefenders(){
+  MatchSimulation simulation=new MatchSimulation();
+  assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState carrier=players.get(9);
+  carrier.x=0f;carrier.z=-16f;
+  for(int i=11;i<players.size();i++){
+   players.get(i).x=0f;players.get(i).z=-21f;
+  }
+  Vector3 target=MatchGameplay.chooseAiCarryTarget(players,9,true);
+  assertTrue(target.z<carrier.z);
+  assertTrue(Math.abs(target.x)>1f);
+  assertTrue(Math.abs(target.x)<=MatchSimulation.FIELD_HALF_WIDTH-2f);
+ }
+
+ @Test public void aiCarrierUsesReversedAttackingDirectionAfterHalfTime(){
+  MatchSimulation simulation=new MatchSimulation();
+  assertTrue(simulation.start("home","away"));
+  simulation.switchEnds();
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState carrier=players.get(9);
+  carrier.x=0f;carrier.z=16f;
+  Vector3 target=MatchGameplay.chooseAiCarryTarget(players,9,false);
+  assertTrue(target.z>carrier.z);
+ }
 }
