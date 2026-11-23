@@ -367,10 +367,12 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void applyDismissal(String playerId){
         for(int i=0;i<matchSimulation.getPlayers().size();i++){
             MatchSimulation.PlayerState player=matchSimulation.getPlayers().get(i);
-            if(player.playerId.equals(playerId)&&matchSimulation.dismissPlayer(playerId)){
+            if(player.playerId.equals(playerId)){
+                boolean wasControlled=i==matchSimulation.getControlledPlayerIndex();
+                if(!matchSimulation.dismissPlayer(playerId))return;
                 if(possessionOwnerIndex==i)possessionOwnerIndex=MatchGameplay.NO_OWNER;
                 if(pendingOffsideReceiver==i)pendingOffsideReceiver=MatchGameplay.NO_OWNER;
-                if(i==9||i==10||i==matchSimulation.getControlledPlayerIndex()){
+                if(wasControlled){
                     MatchSimulation.PlayerState replacement=matchSimulation.getControlledPlayer();
                     if(replacement!=null)controlledPosition.set(replacement.x,0f,replacement.z);
                 }
@@ -486,6 +488,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(lineup.size()!=22)return false;
         for(int keeperIndex:new int[]{0,11}){
             MatchSimulation.PlayerState keeper=lineup.get(keeperIndex);
+            if(!keeper.active)continue;
             float ownGoalDirection=keeper.homeTeam
                     ?(matchSimulation.homeAttacksNegativeZ()?1f:-1f)
                     :(matchSimulation.homeAttacksNegativeZ()?-1f:1f);
