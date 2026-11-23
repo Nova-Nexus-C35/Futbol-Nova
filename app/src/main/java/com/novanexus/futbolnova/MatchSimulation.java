@@ -181,12 +181,43 @@ public final class MatchSimulation {
         }
     }
 
+    /** Role-aware support/defensive shape target used by off-ball teammates. */
+    public static final class TacticalTarget {
+        public final float x,z;
+        private TacticalTarget(float x,float z){this.x=x;this.z=z;}
+    }
+
+    public static TacticalTarget calculateOffBallTarget(PlayerState player,float ballX,float ballZ,
+            boolean teamAttacking,boolean homeAttacksNegativeZ) {
+        if(player==null||!Float.isFinite(ballX)||!Float.isFinite(ballZ))
+            return new TacticalTarget(0f,0f);
+        float attackSign=player.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
+        float targetX=player.homeX+clamp(ballX*0.14f,-5f,5f);
+        float targetZ=player.homeZ+clamp((ballZ-player.homeZ)*0.18f,-6f,6f);
+        if(teamAttacking){
+            float progress=(ballZ-player.homeZ)*attackSign;
+            float advance;
+            if("ST".equals(player.role))advance=clamp(progress*0.45f,-2f,12f);
+            else if("LW".equals(player.role)||"RW".equals(player.role))advance=clamp(progress*0.38f,-3f,10f);
+            else if("AM".equals(player.role))advance=clamp(progress*0.34f,-3f,8f);
+            else if("CM".equals(player.role))advance=clamp(progress*0.28f,-3f,6f);
+            else if("DM".equals(player.role))advance=clamp(progress*0.20f,-2f,4f);
+            else advance=clamp(progress*0.14f,-1f,2.5f);
+            targetZ=player.homeZ+attackSign*advance;
+            if("LW".equals(player.role)||"RW".equals(player.role))
+                targetX=player.homeX+clamp(ballX*0.08f,-2.5f,2.5f);
+            else if("ST".equals(player.role))
+                targetX=player.homeX+clamp(ballX*0.12f,-3f,3f);
+            else targetX=player.homeX+clamp(ballX*0.16f,-5.5f,5.5f);
+        }
+        return new TacticalTarget(clamp(targetX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f),
+                clamp(targetZ,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f));
+    }
+
     private void chooseTarget(int index,float ballX,float ballZ) {
         PlayerState p=players.get(index);
-        float targetX=p.homeX+clamp(ballX*0.14f,-5f,5f);
-        float targetZ=p.homeZ+clamp(ballZ*0.12f,-7f,7f);
+        float attackSign=p.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
         if ("GK".equals(p.role)) {
-            float attackSign=p.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
             float ownGoalZ=p.homeTeam?(homeAttacksNegativeZ?49f:-49f):(homeAttacksNegativeZ?-49f:49f);
             float stepOut=0f;
             if (ballZ*attackSign>22f) stepOut=clamp((Math.abs(ballZ)-22f)/27f,0f,1f)*5.5f;
@@ -194,13 +225,19 @@ public final class MatchSimulation {
             p.targetZ=ownGoalZ+attackSign*stepOut;
             return;
         }
-        int nearest=nearestTeammateToBall(p.homeTeam,ballX,ballZ);
-        if (nearest==index && distance(p.homeX,p.homeZ,ballX,ballZ)<29f) {
-            float attackSign=p.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
-            targetX=ballX; targetZ=ballZ+attackSign*1.25f;
+        int nearestOwn=nearestTeammateToBall(p.homeTeam,ballX,ballZ);
+        int nearestOpposition=nearestTeammateToBall(!p.homeTeam,ballX,ballZ);
+        float ownDistance=nearestOwn<0?Float.MAX_VALUE:distance(players.get(nearestOwn).x,
+                players.get(nearestOwn).z,ballX,ballZ);
+        float oppositionDistance=nearestOpposition<0?Float.MAX_VALUE:distance(
+                players.get(nearestOpposition).x,players.get(nearestOpposition).z,ballX,ballZ);
+        boolean teamAttacking=ownDistance<=oppositionDistance;
+        TacticalTarget shape=calculateOffBallTarget(p,ballX,ballZ,teamAttacking,homeAttacksNegativeZ);
+        p.targetX=shape.x;p.targetZ=shape.z;
+        if(nearestOwn==index&&distance(p.homeX,p.homeZ,ballX,ballZ)<29f){
+            p.targetX=clamp(ballX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f);
+            p.targetZ=clamp(ballZ+attackSign*1.25f,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f);
         }
-        p.targetX=clamp(targetX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f);
-        p.targetZ=clamp(targetZ,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f);
     }
 
     private int nearestTeammateToBall(boolean home,float ballX,float ballZ) {
