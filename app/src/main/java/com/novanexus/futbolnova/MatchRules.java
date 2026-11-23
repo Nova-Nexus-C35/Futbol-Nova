@@ -5,16 +5,41 @@ import com.badlogic.gdx.math.Vector3;
 public final class MatchRules{
  public enum Restart{IN_PLAY,GOAL,THROW_IN,CORNER,GOAL_KICK,FREE_KICK,PENALTY}
  private MatchRules(){}
+ /**
+  * Evaluates offside position at the instant a teammate plays the ball.
+  * Coordinates are projected onto the attacking direction so the same rule
+  * works before and after the teams switch ends. The offside line is the
+  * farther-forward of the ball and the second-last active opponent.
+  *
+  * The active flag represents involvement in active play (for this game the
+  * receiver is sanctioned only if they subsequently touch/interfere with play).
+  */
  public static OffsideDecision evaluateOffsideAtPass(float attackerZ,float ballZ,List<Float> defenders,float attackSign,boolean active,String restart){
-  if("goal_kick".equals(restart)||"throw_in".equals(restart)||"corner".equals(restart))return new OffsideDecision(false,false,"restart_exemption",Float.NaN);
-  if(Math.abs(attackSign)<0.000001f||defenders==null||defenders.size()<2)return new OffsideDecision(false,false,"insufficient_data",Float.NaN);
-  float dir=Math.signum(attackSign),a=attackerZ*dir,b=ballZ*dir;
-  if(a<=0f)return new OffsideDecision(false,false,"own_half",Float.NaN);
+  if(isOffsideExemptRestart(restart))return new OffsideDecision(false,false,"restart_exemption",Float.NaN,Float.NaN);
+  if(!Float.isFinite(attackerZ)||!Float.isFinite(ballZ)||!Float.isFinite(attackSign)
+          ||Math.abs(attackSign)<0.000001f||defenders==null)
+   return new OffsideDecision(false,false,"insufficient_data",Float.NaN,Float.NaN);
+  float direction=Math.signum(attackSign),attacker=attackerZ*direction,ball=ballZ*direction;
+  if(attacker<=0f)return new OffsideDecision(false,false,"own_half",Float.NaN,Float.NaN);
   float first=Float.NEGATIVE_INFINITY,second=Float.NEGATIVE_INFINITY;
-  for(Float raw:defenders){if(raw==null)continue;float v=raw*dir;if(v>first){second=first;first=v;}else if(v>second)second=v;}
-  if(second==Float.NEGATIVE_INFINITY)return new OffsideDecision(false,false,"insufficient_defenders",Float.NaN);
-  boolean pos=a>b&&a>second,off=pos&&active;
-  return new OffsideDecision(pos,off,off?"active_offside":(pos?"passive_position":"onside"),second);
+  int validDefenders=0;
+  for(Float raw:defenders){
+   if(raw==null||!Float.isFinite(raw))continue;
+   float progress=raw*direction;validDefenders++;
+   if(progress>first){second=first;first=progress;}
+   else if(progress>second)second=progress;
+  }
+  if(validDefenders<2)return new OffsideDecision(false,false,"insufficient_defenders",Float.NaN,Float.NaN);
+  float line=Math.max(ball,second);
+  boolean position=attacker>line+0.0001f;
+  boolean offence=position&&active;
+  String reason=offence?"active_offside":(position?"passive_position":"onside");
+  return new OffsideDecision(position,offence,reason,second,line);
+ }
+
+ private static boolean isOffsideExemptRestart(String restart){
+  return restart!=null&&(restart.equalsIgnoreCase("goal_kick")
+          ||restart.equalsIgnoreCase("throw_in")||restart.equalsIgnoreCase("corner"));
  }
  /** Produces the initial ball velocity for every automatic restart, respecting the attacking direction. */
  public static Vector3 restartVelocity(Restart restart,boolean kickoff,boolean awardedHome,
@@ -57,8 +82,12 @@ public final class MatchRules{
   return new ExitDecision(Restart.THROW_IN,!lastHome,clamp(x,-hw,hw),0f,clamp(z,-hl,hl));
  }
  public static final class OffsideDecision{
-  public final boolean offsidePosition,offence;public final String reason;public final float secondLastDefenderProgress;
-  private OffsideDecision(boolean p,boolean o,String r,float d){offsidePosition=p;offence=o;reason=r;secondLastDefenderProgress=d;}
+  public final boolean offsidePosition,offence;
+  public final String reason;
+  public final float secondLastDefenderProgress,offsideLineProgress;
+  private OffsideDecision(boolean p,boolean o,String r,float d,float line){
+   offsidePosition=p;offence=o;reason=r;secondLastDefenderProgress=d;offsideLineProgress=line;
+  }
  }
  public static final class ExitDecision{
   public final Restart restart;public final boolean awardedHome;public final float x,y,z;

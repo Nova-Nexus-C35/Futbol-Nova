@@ -523,3 +523,12 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - El HUD muestra el indicador «LEY DE LA VENTAJA» mientras está activa. El estado guarda las coordenadas de la falta y el equipo que debe recibir el reinicio.
 - Se añadieron pruebas unitarias para continuidad, pérdida de posesión, expiración con posesión, balón libre y entradas no válidas.
 - Limitación: es una regla temporal simplificada; aún no existe una evaluación contextual del árbitro sobre gravedad de la falta, probabilidad de ataque prometedor, distancia a portería, fase de juego, interrupciones simultáneas o decisión de volver atrás en el caso de una ventaja tardía. No representa un árbitro completo ni reemplaza pruebas en Android.
+
+
+### Incremento: precisión geométrica del fuera de juego (2026-11-23)
+
+- Se endureció la evaluación en el instante del pase: la línea de fuera de juego es el punto más adelantado entre el balón y el segundo último adversario activo. El atacante debe estar en campo contrario y superar esa línea; estar exactamente a la misma altura no es infracción.
+- La proyección de coordenadas usa el sentido de ataque, por lo que la evaluación funciona en ambas mitades. Se ignoran posiciones defensivas nulas/no finitas y se rechazan coordenadas o direcciones inválidas.
+- Las excepciones de saque de puerta, saque de banda y córner se comparan sin distinguir mayúsculas/minúsculas.
+- Se amplió OffsideDecision para exponer la línea efectiva y se añadieron pruebas de línea definida por balón/defensa, mitad propia, posición pasiva, ambos sentidos de ataque, datos inválidos y excepciones.
+- Límite que permanece: el juego solo sanciona al receptor marcado si ese mismo jugador obtiene la posesión/toca el balón. No detecta aún interferencia con un adversario, obstrucción de visión del portero, disputa por el balón, rebotes deliberados ni otras formas de participación activa. Tampoco incluye VAR ni árbitro visual.
