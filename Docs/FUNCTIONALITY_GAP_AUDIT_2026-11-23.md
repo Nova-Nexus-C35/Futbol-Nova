@@ -179,3 +179,12 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - El marcador muestra los nombres de los dos clubes. Durante el partido se muestra el nombre del jugador activo.
 - Tras el pitido final, la zona superior izquierda reinicia marcador, reloj, balón, posesión, enfriamientos y alineaciones para un nuevo amistoso.
 - Añadido reset explícito de MatchState y prueba unitaria. El catálogo seleccionable se limita a los 20 grupos de plantilla disponibles en el JSON actual.
+
+### Implementación: selector de equipos y corrección de disparo tras el descanso (2026-11-23)
+
+- Se incorporó `TeamSelection` como modelo puro para elegir local y visitante entre plantillas realmente jugables. Filtra plantillas sin 11 jugadores, IDs vacíos y clubes duplicados; nunca permite enfrentar un club consigo mismo.
+- El selector está conectado a la pantalla previa: toque superior izquierdo cambia el local, centro cambia el visitante y derecha inicia el encuentro. Al cambiar equipos se reconstruyen las alineaciones y se limpia el estado temporal del balón/posesión para no arrastrar el partido anterior.
+- Se añadieron tres pruebas unitarias del selector: selección inicial distinta, ciclos sin duplicar rival y rechazo de una sola plantilla.
+- Se corrigió la posición inicial del disparo para que el balón salga desde el lado correcto del futbolista según la dirección de ataque actual, incluido el segundo tiempo.
+- Archivos de selector, runtime, prueba y esta auditoría fueron releídos desde GitHub después de sus escrituras. La ejecución #82 fue cancelada por nuevos commits; no cuenta como validación. Debe completarse la ejecución CI correspondiente al último commit antes de declarar aprobada esta tanda.
+- Limitaciones que permanecen: las plantillas disponibles no cubren todos los clubes de Primera y Segunda; los dorsales reales, banquillo y suplentes todavía no están modelados; las equipaciones continúan siendo colores genéricos; y no se ha probado en el teléfono físico.
