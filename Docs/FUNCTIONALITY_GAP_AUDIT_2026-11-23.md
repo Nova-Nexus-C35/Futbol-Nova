@@ -307,3 +307,13 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se detalló la geometría de las porterías con una cuadrícula de red en fondo, laterales y parte superior, en lugar de mostrar únicamente el marco exterior.
 - Se completaron marcas del campo: áreas de meta, puntos central y de penalti, y arcos de esquina. Se conserva el render 3D existente y las líneas se dibujan en coordenadas del campo.
 - Limitación: las redes siguen siendo líneas estáticas, no deformables por el balón; la geometría del campo y estadio sigue siendo procedural. Falta validar visualmente la legibilidad y el rendimiento en el teléfono.
+
+
+### Implementación: zoom contextual de cámara y optimización del control táctil (2026-11-23)
+
+- BroadcastCamera suaviza el seguimiento del balón y amplía el campo de visión según la velocidad: FOV base de 49 grados, hasta 57 grados en transiciones rápidas. El zoom usa interpolación temporal y valida valores no finitos.
+- Se añadió una prueba para verificar la ampliación progresiva y el límite superior del campo de visión.
+- FutbolNovaGame reutiliza un Vector3 para el movimiento táctil en vez de crear un objeto nuevo por frame/puntero, reduciendo presión de asignaciones durante el control continuo.
+- Se releyeron desde GitHub BroadcastCamera.java, BroadcastCameraTest.java y FutbolNovaGame.java después de escribirlos. Se comprobó que no quedó la secuencia literal de escape que causó el error Java anterior.
+- CI #142 falló por un carácter de escape literal en una versión previa de FutbolNovaGame.java; ese archivo fue corregido posteriormente. Las ejecuciones #146–#148 se cancelaron por nuevos commits antes de completar las pruebas. CI #149 y la validación del commit final siguen pendientes; no se declara compilación aprobada hasta que una ejecución posterior al último cambio termine con éxito.
+- La cámara 3D, césped por franjas, gradas escalonadas, marcas del campo y redes geométricas constituyen mejoras del prototipo procedural. No hay todavía futbolistas con rig/skin de calidad moderna, público realista, redes deformables, iluminación/sombras de producción ni aceptación visual en Android físico.
