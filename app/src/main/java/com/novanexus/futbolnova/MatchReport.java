@@ -16,6 +16,8 @@ public final class MatchReport {
     public int homeShots,awayShots,homePasses,awayPasses,homeTackles,awayTackles;
     public int homeFouls,awayFouls,homeSaves,awaySaves,homeOffsides,awayOffsides;
     public List<CardRecord> cards = new ArrayList<>();
+    /** Ordered event timeline copied from the bounded in-match statistics ledger. */
+    public List<EventRecord> events = new ArrayList<>();
 
     public static final class CardRecord {
         public String playerId;
@@ -27,6 +29,17 @@ public final class MatchReport {
         CardRecord(MatchDiscipline.CardEvent event) {
             playerId=event.playerId;card=event.card.name();reason=event.reason.name();
             elapsedSeconds=event.elapsedSeconds;dismissed=event.dismissed;
+        }
+    }
+
+    /** One chronological gameplay event; order is preserved even when no timestamp exists. */
+    public static final class EventRecord {
+        public String type;
+        public boolean homeTeam;
+        public String playerId;
+        public EventRecord() {}
+        EventRecord(MatchStatistics.Event event) {
+            type=event.type.name();homeTeam=event.homeTeam;playerId=event.playerId;
         }
     }
 
@@ -45,6 +58,7 @@ public final class MatchReport {
         report.homeSaves=stats.getSaves(true);report.awaySaves=stats.getSaves(false);
         report.homeOffsides=stats.getOffsides(true);report.awayOffsides=stats.getOffsides(false);
         for(MatchDiscipline.CardEvent event:discipline.snapshotEvents())report.cards.add(new CardRecord(event));
+        for(MatchStatistics.Event event:stats.getEvents())report.events.add(new EventRecord(event));
         return report;
     }
 

@@ -22,7 +22,29 @@ public class MatchReportTest {
         assertEquals("PERSISTENT_INFRINGEMENT",restored.cards.get(0).reason);
         assertEquals(1530f,restored.cards.get(0).elapsedSeconds,0.001f);
     }
+
+    @Test public void reportPreservesOrderedGameplayTimelineAcrossJsonRoundTrip(){
+        MatchStatistics stats=new MatchStatistics();
+        stats.recordPassAttempt("home_06",true);
+        stats.recordShot("home_09",true);
+        stats.recordSave("away_01",false);
+        stats.recordGoal("home_09",true);
+        MatchReport original=MatchReport.capture("Cuba","Visitante",1,0,2700f,stats,new MatchDiscipline());
+        MatchReport restored=MatchReport.fromJson(original.toJson());
+        assertNotNull(restored);
+        assertEquals(4,restored.events.size());
+        assertEquals("PASS_ATTEMPT",restored.events.get(0).type);
+        assertTrue(restored.events.get(0).homeTeam);
+        assertEquals("home_06",restored.events.get(0).playerId);
+        assertEquals("SHOT",restored.events.get(1).type);
+        assertEquals("SAVE",restored.events.get(2).type);
+        assertFalse(restored.events.get(2).homeTeam);
+        assertEquals("GOAL",restored.events.get(3).type);
+        assertEquals("home_09",restored.events.get(3).playerId);
+    }
+
     @Test public void invalidReportJsonIsRejected(){
-        assertNull(MatchReport.fromJson(""));assertNull(MatchReport.fromJson("{invalid"));
+        assertNull(MatchReport.fromJson(""));
+        assertNull(MatchReport.fromJson("{invalid"));
     }
 }
