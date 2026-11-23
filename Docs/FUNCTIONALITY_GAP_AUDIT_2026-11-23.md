@@ -113,3 +113,28 @@ Mantener Java 17 + libGDX y el motor de simulación propio. Primero portar conce
 No declarar el amistoso funcional hasta que una prueba reproducible y una sesión en el Android objetivo permitan: seleccionar dos clubes con plantillas válidas; iniciar 11v11; controlar y cambiar futbolistas; pasar, conducir, tirar y defender; ver al portero intervenir; ejecutar faltas y reinicios; completar dos períodos y, cuando corresponda, prórroga/penaltis; generar marcador, eventos, estadísticas y resumen; pausar/reanudar/salir; y jugar un segundo partido sin residuos del anterior.
 
 **Estado final de esta auditoría:** compilación ARM64 y suite unitaria aprobadas en CI #49; prototipo 3D ejecutable a nivel de build; amistoso completo, prueba física Android y sistemas de producción todavía pendientes.
+
+
+## Registro de implementación posterior a la auditoría
+
+### Cambios realizados en la rama de desarrollo
+
+- Se añadió `MatchClock.java`: máquina de estados pura para prepartido, primera parte, descanso, segunda parte y final; duración configurable, tiempo añadido por período, pausa/reanudación y reinicio para una nueva sesión.
+- Se añadió `MatchClockTest.java`: pruebas para inicio explícito, descanso, segunda parte, final, tiempo añadido, pausa, deltas inválidos, reinicio y duración inválida.
+- Se sustituyó la lectura de un único toque global por seguimiento de hasta 20 punteros Android independientes en `FutbolNovaGame.updateTouchControls`. La intención es permitir mover con el dedo izquierdo mientras se toca disparo/pase/entrada con otro dedo.
+- Se corrigió el signo del eje Z del joystick para conservar la dirección de avance previa.
+
+### Verificación pendiente
+
+- Ambos archivos del reloj y el archivo del runtime fueron releídos desde GitHub después de escribirlos.
+- La ejecución CI más reciente observada durante esta implementación es la run #54 (`45250324823`), commit `c9bf647c`, que estaba **in_progress** al registrar esta actualización. Las runs #51–#53 fueron canceladas por pushes posteriores; no se consideran validación.
+- El reloj es todavía un componente probado de forma aislada: falta conectarlo a la interfaz y al ciclo real del partido con una política de duración/velocidad elegida, descanso visible y botón de continuar. No declarar terminados los períodos del juego por la mera existencia de esta clase.
+- El control multitáctil requiere validación manual en un Android real; la compilación CI solo valida compatibilidad de código y empaquetado.
+- El cambio de control no implementa todavía selección/cambio de futbolista, controles configurables ni joystick dibujado en pantalla.
+
+### Siguiente bloque de trabajo
+
+1. Conectar MatchClock al ciclo de partido sin congelar el juego en el descanso: interfaz de pausa/continuar y final, duración de partido configurable.
+2. Hacer que el jugador visual y el estado simulado usen una única fuente de posición para evitar desincronización del futbolista controlado.
+3. Implementar selección del jugador controlado y actualización de posesión/control sin depender del índice fijo del delantero.
+4. Añadir pruebas de integración del ciclo de partido y controles/reglas; después continuar con porteros, colisiones, árbitro y equipos reales.
