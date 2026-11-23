@@ -20,4 +20,29 @@ public class MatchRulesTest{
   assertEquals(MatchRules.Restart.FREE_KICK,MatchRules.classifyFoulRestart(24f,42f,true,true));
   assertEquals(MatchRules.Restart.PENALTY,MatchRules.classifyFoulRestart(0f,-42f,true,false));
  }
+
+ @Test public void restartVelocityUsesAwardedTeamsAttackingDirection(){
+  com.badlogic.gdx.math.Vector3 homeKickoff=MatchRules.restartVelocity(MatchRules.Restart.IN_PLAY,true,true,true,0f,0f);
+  com.badlogic.gdx.math.Vector3 awayKickoff=MatchRules.restartVelocity(MatchRules.Restart.IN_PLAY,true,false,true,0f,0f);
+  com.badlogic.gdx.math.Vector3 homeThrow=MatchRules.restartVelocity(MatchRules.Restart.THROW_IN,false,true,true,20f,0f);
+  com.badlogic.gdx.math.Vector3 awayThrow=MatchRules.restartVelocity(MatchRules.Restart.THROW_IN,false,false,true,-20f,0f);
+  assertTrue(homeKickoff.z<0f);assertTrue(awayKickoff.z>0f);
+  assertTrue(homeThrow.z<0f);assertTrue(awayThrow.z>0f);
+  assertTrue(homeThrow.x<0f);assertTrue(awayThrow.x>0f);
+ }
+ @Test public void cornerGoalKickAndFreeKickHaveExpectedLaunches(){
+  com.badlogic.gdx.math.Vector3 corner=MatchRules.restartVelocity(MatchRules.Restart.CORNER,false,true,true,10f,0f);
+  com.badlogic.gdx.math.Vector3 goalKick=MatchRules.restartVelocity(MatchRules.Restart.GOAL_KICK,false,false,true,0f,0f);
+  com.badlogic.gdx.math.Vector3 freeKick=MatchRules.restartVelocity(MatchRules.Restart.FREE_KICK,false,true,false,0f,0f);
+  assertTrue(corner.z<0f);assertEquals(16f,corner.len(),0.001f);
+  assertTrue(goalKick.z>0f);assertTrue(goalKick.y>0f);
+  assertTrue(freeKick.z>0f);assertTrue(freeKick.y>0f);
+ }
+ @Test public void penaltyRestartUsesGoalkeeperAndInvalidInputsStaySafe(){
+  com.badlogic.gdx.math.Vector3 keeperRight=MatchRules.restartVelocity(MatchRules.Restart.PENALTY,false,true,true,0f,1.8f);
+  com.badlogic.gdx.math.Vector3 keeperLeft=MatchRules.restartVelocity(MatchRules.Restart.PENALTY,false,true,true,0f,-1.8f);
+  com.badlogic.gdx.math.Vector3 invalid=MatchRules.restartVelocity(MatchRules.Restart.THROW_IN,false,true,true,Float.NaN,0f);
+  assertTrue(keeperRight.x<0f);assertTrue(keeperLeft.x>0f);
+  assertEquals(0f,invalid.len2(),0.0001f);
+ }
 }
