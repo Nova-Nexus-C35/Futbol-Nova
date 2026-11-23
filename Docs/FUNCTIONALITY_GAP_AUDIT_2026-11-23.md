@@ -299,3 +299,11 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - Se sustituyeron los cuatro bloques de gradas por seis niveles escalonados por lado, con tonos alternos para dar volumen y lectura de estadio desde la nueva cámara elevada.
 - Los elementos se instancian desde mallas compartidas para evitar crear una malla independiente por fila.
 - Limitación: todavía no hay público modelado, asientos individuales, cubiertas, barandillas, túneles, banquillos ni sombras avanzadas. Se registra como mejora de prototipo y no como estadio moderno terminado.
+
+
+### Implementación: corrección de compilación y detalle de portería/campo (2026-11-23)
+
+- Se corrigió una declaración de campo de cámara que contenía una secuencia de escape literal y hacía fallar la compilación Java. El fallo quedó identificado en CI #142, archivo FutbolNovaGame.java, línea 52; la corrección ya está guardada y debe confirmarse con una nueva ejecución.
+- Se detalló la geometría de las porterías con una cuadrícula de red en fondo, laterales y parte superior, en lugar de mostrar únicamente el marco exterior.
+- Se completaron marcas del campo: áreas de meta, puntos central y de penalti, y arcos de esquina. Se conserva el render 3D existente y las líneas se dibujan en coordenadas del campo.
+- Limitación: las redes siguen siendo líneas estáticas, no deformables por el balón; la geometría del campo y estadio sigue siendo procedural. Falta validar visualmente la legibilidad y el rendimiento en el teléfono.
