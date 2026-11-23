@@ -35,11 +35,13 @@ public final class MatchSimulation {
 
     private final List<PlayerState> players = new ArrayList<>(22);
     private float decisionClock;
+    private int controlledPlayerIndex = CONTROLLED_HOME_PLAYER_INDEX;
 
     public boolean start(String homeTeamId, String awayTeamId) {
         if (homeTeamId==null || awayTeamId==null || homeTeamId.trim().isEmpty()
                 || awayTeamId.trim().isEmpty() || homeTeamId.equals(awayTeamId)) return false;
         players.clear();
+        controlledPlayerIndex = CONTROLLED_HOME_PLAYER_INDEX;
         for (int side=0; side<2; side++) {
             boolean home=side==0;
             String teamId=home?homeTeamId:awayTeamId;
@@ -54,8 +56,16 @@ public final class MatchSimulation {
     }
 
     public List<PlayerState> getPlayers() { return Collections.unmodifiableList(players); }
+    public int getControlledPlayerIndex() { return controlledPlayerIndex; }
     public PlayerState getControlledPlayer() {
-        return players.size()==22?players.get(CONTROLLED_HOME_PLAYER_INDEX):null;
+        return players.size()==22?players.get(controlledPlayerIndex):null;
+    }
+
+    /** Cycles through the ten outfield players on the home team; the goalkeeper is AI-controlled. */
+    public int cycleControlledPlayer() {
+        if (players.size()!=22) return -1;
+        controlledPlayerIndex = controlledPlayerIndex >= 10 ? 1 : controlledPlayerIndex + 1;
+        return controlledPlayerIndex;
     }
 
     public void update(float deltaSeconds,float ballX,float ballZ,float controlledX,float controlledZ) {
@@ -76,11 +86,11 @@ public final class MatchSimulation {
             decisionClock+=AI_DECISION_INTERVAL;
             if (decisionClock<=0f) decisionClock=AI_DECISION_INTERVAL;
             for (int i=0;i<players.size();i++)
-                if (i!=CONTROLLED_HOME_PLAYER_INDEX) chooseTarget(i,ballX,ballZ);
+                if (i!=controlledPlayerIndex) chooseTarget(i,ballX,ballZ);
         }
 
         for (int i=0;i<players.size();i++) {
-            if (i==CONTROLLED_HOME_PLAYER_INDEX) continue;
+            if (i==controlledPlayerIndex) continue;
             PlayerState player=players.get(i);
             float dx=player.targetX-player.x, dz=player.targetZ-player.z;
             float distance=(float)Math.sqrt(dx*dx+dz*dz);
