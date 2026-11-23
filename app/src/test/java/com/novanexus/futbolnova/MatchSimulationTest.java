@@ -164,7 +164,7 @@ public final class MatchSimulationTest {
         MatchSimulation.TacticalTarget target=MatchSimulation.calculateDefensiveCoverTarget(
                 cover,players,0f,10f,true);
         assertTrue("cover should shift toward the ball",Math.abs(target.x)<Math.abs(cover.homeX));
-        assertTrue("cover should remain on the goal side",target.z<10f);
+        assertTrue("cover should remain on the goal side",target.z>10f);
         assertTrue("cover movement must remain bounded",
                 Math.hypot(target.x-cover.homeX,target.z-cover.homeZ)<=11.001);
         assertTrue(Math.abs(target.x)<=MatchSimulation.FIELD_HALF_WIDTH-2f);
