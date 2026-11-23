@@ -158,3 +158,14 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - El sector superior central del HUD cambia el futbolista; la zona superior izquierda conserva inicio/continuación y la derecha pausa/reanudación.
 - Se añadió prueba unitaria del ciclo y de la exclusión del portero. Pendiente comprobar usabilidad y multitáctil en Android físico.
 - Corrección posterior a la revisión: tiro, pase y entrada usan ahora el índice dinámico seleccionado también para identificar al pasador y asignar la posesión tras una entrada exitosa. Se releyó `FutbolNovaGame.java` desde GitHub y se confirmó que la única referencia al índice inicial fijo restante se utiliza exclusivamente para colocar el jugador seleccionado inicial al crear los modelos.
+
+
+### Implementación: plantillas canónicas y nombres de equipos (2026-11-23)
+
+- Se conectó el lector de datos a `cuba_players.json`: extrae ID, nombre, posición, valoración general y atributos de los futbolistas sin sustituirlos por identidades inventadas.
+- `MatchSimulation` puede formar dos XI iniciales 4-3-3 desde las plantillas reales incluidas, seleccionando jugadores por posición preferida y usando valoración como desempate; si una posición no está disponible, selecciona el mejor jugador aún no usado.
+- La escena inicia con las dos primeras plantillas que existen realmente en el catálogo (Tercera División), muestra nombres de clubes y del futbolista controlado. El catálogo disponible contiene 20 grupos de plantilla de 22 jugadores; las ligas de Primera y Segunda tienen clubes en el catálogo de competiciones, pero todavía no tienen plantillas correspondientes en `cuba_players.json`, por lo que no se simulan como si tuvieran jugadores cargados.
+- Los dorsales 1–11 de esta alineación son números visuales asignados por orden de campo, ya que el JSON de plantilla no incluye dorsales individuales.
+- Se añadieron pruebas para el parseo de identidades/atributos y para crear el partido desde dos plantillas.
+- Se corrigió además la posición inicial del control para usar el índice dinámico seleccionado y no el delantero fijo original.
+- Pendiente: selector de clubes/plantillas en interfaz, y completar las plantillas ausentes de Primera/Segunda sin fabricar datos. Esta implementación no acredita todavía una prueba en dispositivo.
