@@ -504,3 +504,12 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Se aplican límites de cinco sustituciones por equipo y tres ventanas durante el juego. Una sustitución en el descanso no consume ventana. Se rechazan IDs desconocidos, suplentes ya utilizados, jugadores del equipo contrario, titulares inactivos/expulsados y ventanas fuera de rango.
 - Se añadieron pruebas para banquillo, sustitución efectiva, conservación del índice/rol, límites de sustituciones/ventanas, excepción del descanso y rechazos.
 - Alcance actual: el motor ya puede efectuar sustituciones por API y mantiene el banquillo de ambas plantillas. Aún falta la interfaz para elegir suplente y jugador saliente, la presentación del banquillo en HUD, el flujo de interrupción arbitral y la prueba visual en Android. Por tanto, no se declara terminada la experiencia de sustituciones ni el reglamento completo.
+
+
+### Incremento: interfaz táctil de sustituciones (2026-11-23)
+
+- La franja superior durante pausa o descanso abre el selector de cambios del equipo local.
+- En el selector: zona superior izquierda recorre titulares activos; zona central recorre suplentes disponibles; zona superior derecha confirma el cambio. El selector permanece abierto para permitir varios cambios dentro de la misma ventana reglamentaria.
+- Un toque en la mitad izquierda del campo cierra el selector; en la mitad derecha lo cierra y reanuda si el partido estaba pausado. En el descanso no se reanuda automáticamente: el botón de inicio de segunda parte sigue separado.
+- Al reemplazar al jugador que tenía el balón, la posesión se libera; al reemplazar al jugador controlado, el control se conserva en el puesto estable y se actualiza su posición.
+- Límite funcional: la interfaz actual administra sustituciones del equipo local. El rival continúa bajo IA; todavía no hay menú de gestión para suplentes del equipo visitante, animación de entrada/salida ni sustituciones automáticas por lesión. La pausa manual se usa como ventana de gestión; no se presenta como árbitro real ni como sistema de ventaja.
