@@ -37,4 +37,19 @@ public final class BroadcastCameraTest {
         assertEquals(before.x, controller.getSmoothedFocus().x, 0.0001f);
         assertEquals(before.z, controller.getSmoothedFocus().z, 0.0001f);
     }
+
+    @Test public void fastTransitionsWidenTheBroadcastViewSmoothly() {
+        BroadcastCamera controller = new BroadcastCamera();
+        PerspectiveCamera camera = new PerspectiveCamera(55f, 1920f, 1080f);
+        controller.reset(camera, new Vector3());
+        float initialFov = camera.fieldOfView;
+        controller.update(camera, new Vector3(), 30f, 0.05f);
+        assertTrue(camera.fieldOfView > initialFov);
+        assertTrue(camera.fieldOfView < 57f);
+        for (int i = 0; i < 40; i++) {
+            controller.update(camera, new Vector3(), 30f, 0.05f);
+        }
+        assertTrue(camera.fieldOfView > 54f);
+        assertTrue(camera.fieldOfView <= 57f);
+    }
 }
