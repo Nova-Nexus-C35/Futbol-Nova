@@ -310,9 +310,9 @@ public final class MatchSimulation {
         }
         if(nearestDefender==defender)
             return new TacticalTarget(clamp(ballX,-FIELD_HALF_WIDTH+2f,FIELD_HALF_WIDTH-2f),
-                    clamp(ballZ+attackSign*1.4f,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f));
+                    clamp(ballZ-attackSign*1.4f,-FIELD_HALF_LENGTH+3f,FIELD_HALF_LENGTH-3f));
         float targetX=defender.homeX+(ballX-defender.homeX)*0.22f;
-        float targetZ=ballZ+attackSign*5f;
+        float targetZ=ballZ-attackSign*5f;
         float maxShift=11f;
         float dx=targetX-defender.homeX,dz=targetZ-defender.homeZ;
         float displacement=(float)Math.sqrt(dx*dx+dz*dz);
