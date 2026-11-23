@@ -22,23 +22,34 @@ public final class PlayerVisual {
     }
 
     public void update(float x,float z,float yaw,float time,float speed) {
-        float swing=(float)Math.sin(time*9f+phaseOffset)*Math.min(0.48f,speed*0.075f);
-        place(torso,x,1.15f,z,yaw,0f);
-        place(shorts,x,0.77f,z,yaw,0f);
-        place(head,x,1.64f,z,yaw,0f);
-        place(hair,x,1.77f,z,yaw,0f);
-        place(leftArm,x-0.39f,1.15f,z,yaw,-swing*0.85f);
-        place(rightArm,x+0.39f,1.15f,z,yaw,swing*0.85f);
-        place(leftLeg,x-0.14f,0.43f,z,yaw,swing);
-        place(rightLeg,x+0.14f,0.43f,z,yaw,-swing);
-        place(leftBoot,x-0.14f,0.10f,z-0.045f,yaw,swing);
-        place(rightBoot,x+0.14f,0.10f,z-0.045f,yaw,-swing);
+        float swing=PlayerAnimation.gaitSwing(speed,time,phaseOffset);
+        float bob=PlayerAnimation.bodyBob(speed,time,phaseOffset);
+        place(torso,x,1.15f+bob,z,yaw);
+        place(shorts,x,0.77f+bob*0.55f,z,yaw);
+        place(head,x,1.64f+bob,z,yaw);
+        place(hair,x,1.77f+bob,z,yaw);
+        // Arms and legs rotate around shoulder/hip pivots instead of their own centers.
+        placeLimb(leftArm,x-0.27f,1.42f,z,yaw,-swing*0.82f,0.44f);
+        placeLimb(rightArm,x+0.27f,1.42f,z,yaw,swing*0.82f,0.44f);
+        placeLimb(leftLeg,x-0.14f,0.66f,z,yaw,swing,0.47f);
+        placeLimb(rightLeg,x+0.14f,0.66f,z,yaw,-swing,0.47f);
+        placeLimb(leftBoot,x-0.14f,0.22f,z-0.045f,yaw,swing*0.55f,0.30f);
+        placeLimb(rightBoot,x+0.14f,0.22f,z-0.045f,yaw,-swing*0.55f,0.30f);
     }
 
-    private static void place(ModelInstance instance,float x,float y,float z,float yaw,float limbSwing) {
+    private static void place(ModelInstance instance,float x,float y,float z,float yaw) {
         instance.transform.setToTranslation(x,y,z);
         instance.transform.rotate(UP,yaw);
-        if(limbSwing!=0f) instance.transform.rotate(Vector3.X,limbSwing*57.29578f);
+    }
+
+    private static void placeLimb(ModelInstance instance,float pivotX,float pivotY,float pivotZ,
+            float yaw,float angle,float length) {
+        float half=length*0.5f;
+        float centerY=pivotY-half*(float)Math.cos(angle);
+        float centerZ=pivotZ-half*(float)Math.sin(angle);
+        instance.transform.setToTranslation(pivotX,centerY,centerZ);
+        instance.transform.rotate(UP,yaw);
+        instance.transform.rotate(Vector3.X,angle*57.29578f);
     }
 
     public void render(ModelBatch batch,Environment environment) {
