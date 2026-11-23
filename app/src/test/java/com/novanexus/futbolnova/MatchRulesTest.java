@@ -12,4 +12,12 @@ public class MatchRulesTest{
   MatchRules.ExitDecision secondHalf=MatchRules.classifyBallExit(0,1,53.2f,false,34f,52.5f,3.66f,2.44f,0.22f,false);
   assertEquals(MatchRules.Restart.GOAL,secondHalf.restart);assertTrue(secondHalf.awardedHome);
  }
+
+ @Test public void classifiesFoulsInsideAndOutsideBothPenaltyAreas(){
+  assertEquals(MatchRules.Restart.PENALTY,MatchRules.classifyFoulRestart(0f,42f,true,true));
+  assertEquals(MatchRules.Restart.FREE_KICK,MatchRules.classifyFoulRestart(0f,20f,true,true));
+  assertEquals(MatchRules.Restart.PENALTY,MatchRules.classifyFoulRestart(0f,-42f,false,true));
+  assertEquals(MatchRules.Restart.FREE_KICK,MatchRules.classifyFoulRestart(24f,42f,true,true));
+  assertEquals(MatchRules.Restart.PENALTY,MatchRules.classifyFoulRestart(0f,-42f,true,false));
+ }
 }

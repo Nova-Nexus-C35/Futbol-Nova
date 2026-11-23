@@ -2,7 +2,7 @@ package com.novanexus.futbolnova;
 import java.util.List;
 /** Deterministic rule geometry ported from the original Fútbol Nova match rules. */
 public final class MatchRules{
- public enum Restart{IN_PLAY,GOAL,THROW_IN,CORNER,GOAL_KICK}
+ public enum Restart{IN_PLAY,GOAL,THROW_IN,CORNER,GOAL_KICK,FREE_KICK,PENALTY}
  private MatchRules(){}
  public static OffsideDecision evaluateOffsideAtPass(float attackerZ,float ballZ,List<Float> defenders,float attackSign,boolean active,String restart){
   if("goal_kick".equals(restart)||"throw_in".equals(restart)||"corner".equals(restart))return new OffsideDecision(false,false,"restart_exemption",Float.NaN);
@@ -14,6 +14,13 @@ public final class MatchRules{
   if(second==Float.NEGATIVE_INFINITY)return new OffsideDecision(false,false,"insufficient_defenders",Float.NaN);
   boolean pos=a>b&&a>second,off=pos&&active;
   return new OffsideDecision(pos,off,off?"active_offside":(pos?"passive_position":"onside"),second);
+ }
+ /** Classifies a direct free kick or penalty based on the defending team's own penalty area. */
+ public static Restart classifyFoulRestart(float x,float z,boolean defendingHome,boolean homeDefendsPositiveZ){
+  float ownGoalDirection=defendingHome?(homeDefendsPositiveZ?1f:-1f):(homeDefendsPositiveZ?-1f:1f);
+  float goalProgress=z*ownGoalDirection;
+  boolean insidePenaltyArea=Math.abs(x)<=20.16f&&goalProgress>=36f&&goalProgress<=52.5f;
+  return insidePenaltyArea?Restart.PENALTY:Restart.FREE_KICK;
  }
  public static ExitDecision classifyBallExit(float x,float y,float z,boolean lastHome,float radius){
   return classifyBallExit(x,y,z,lastHome,34f,52.5f,3.66f,2.44f,radius);

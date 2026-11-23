@@ -207,3 +207,12 @@ No declarar el amistoso funcional hasta que una prueba reproducible y una sesió
 - El HUD muestra contadores agregados por equipo. El estado se reinicia al comenzar un amistoso nuevo, no en el descanso.
 - Se añadieron pruebas para separación por equipo, eventos, límite de historial y reset.
 - Estas estadísticas son una primera instrumentación: aún no calculan posesión porcentual, precisión de pase, tiros a puerta, regates ni estadísticas individuales; tampoco hay pantalla de resumen postpartido ni persistencia histórica.
+
+
+### Implementación: tiros libres y penaltis tras entradas sancionadas (2026-11-23)
+
+- Las infracciones detectadas por la entrada del jugador o por la presión de la IA ya no dejan el balón en juego sin sanción: generan un reinicio a favor del equipo perjudicado.
+- Se añadió clasificación geométrica de falta directa o penalti según la zona de la infracción, el área de 16,5 m y la anchura reglamentaria aproximada del área.
+- Los tiros libres y penaltis ejecutan una reanudación automática orientada hacia la portería rival; los penaltis colocan el balón en el punto de 11 m.
+- Se añadieron pruebas para faltas dentro/fuera de ambas áreas y para la inversión de campos.
+- Limitación: aún no hay árbitro visible, barrera, elección del lanzador, animación, tarjetas ni ventaja; la ejecución automática es provisional y requiere ajuste de jugabilidad.
