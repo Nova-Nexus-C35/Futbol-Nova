@@ -131,6 +131,10 @@ public final class MatchSimulationTest {
         MatchSimulation.PlayerState centreBack=players.get(2);
         MatchSimulation.PlayerState striker=players.get(20);
         centreBack.x=-7f;centreBack.z=36f;
+        players.get(1).x=-22f;players.get(1).z=32f;
+        players.get(3).x=7f;players.get(3).z=36f;
+        players.get(4).x=22f;players.get(4).z=32f;
+        players.get(5).x=15f;players.get(5).z=40f;
         striker.x=-8f;striker.z=22f;
         MatchSimulation.TacticalTarget target=MatchSimulation.calculateDefensiveMarkTarget(
                 centreBack,players,true);
