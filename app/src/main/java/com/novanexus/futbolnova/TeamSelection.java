@@ -3,6 +3,8 @@ package com.novanexus.futbolnova;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Deterministic pre-match selector over squads that are actually available to play. */
 public final class TeamSelection {
@@ -13,9 +15,11 @@ public final class TeamSelection {
     public TeamSelection(List<OriginalProjectData.TeamRoster> teams) {
         if (teams == null) throw new IllegalArgumentException("Team list is required");
         List<OriginalProjectData.TeamRoster> valid = new ArrayList<>();
+        Set<String> seenClubIds = new HashSet<>();
         for (OriginalProjectData.TeamRoster team : teams) {
             if (team != null && team.clubId != null && !team.clubId.isEmpty()
-                    && team.players != null && team.players.size() >= 11) valid.add(team);
+                    && team.players != null && team.players.size() >= 11
+                    && seenClubIds.add(team.clubId)) valid.add(team);
         }
         if (valid.size() < 2) throw new IllegalArgumentException("At least two playable teams are required");
         this.teams = Collections.unmodifiableList(valid);
