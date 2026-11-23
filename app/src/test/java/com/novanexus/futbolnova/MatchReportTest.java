@@ -68,7 +68,6 @@ public class MatchReportTest {
         assertNull(MatchReport.fromJson(""));
         assertNull(MatchReport.fromJson("{invalid"));
     }
-}
 
     @Test public void csvExportContainsMatchTeamPlayerEventsAndCards() {
         MatchStatistics stats=new MatchStatistics();
