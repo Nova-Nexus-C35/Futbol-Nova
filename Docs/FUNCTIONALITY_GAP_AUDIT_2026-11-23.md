@@ -419,3 +419,11 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Se mantiene la comprobación de carril despejado y la preferencia por receptores en posición reglamentaria; la nueva puntuación solo ordena las opciones que superan esos filtros.
 - Se añadieron pruebas para comprobar que el receptor libre supera al marcado y que los roles de ataque reciben una bonificación moderada.
 - Limitación: la decisión todavía usa posiciones instantáneas; no predice la trayectoria futura del receptor ni calcula riesgo de intercepción en el tiempo, presión coordinada, pie hábil o velocidad individual.
+
+### Incremento de IA defensiva: asignación de marcaje individual (2026-11-23)
+
+- Durante fases defensivas, los laterales, centrales y mediocentro defensivo buscan una amenaza rival de campo para la que sean el defensor de rol elegible más cercano.
+- El defensor asignado se coloca en el lado de portería del atacante, con una separación objetivo de 2,2 m y un límite de desplazamiento de 13 m respecto a su posición base para evitar persecuciones desproporcionadas.
+- La presión del compañero más cercano al balón conserva prioridad sobre el objetivo de marcaje, y los jugadores sin amenaza asignada mantienen la estructura defensiva de zona.
+- Se añadió una prueba que comprueba la asignación al central más cercano, la colocación entre atacante y portería y los límites del campo.
+- Limitación: es marcaje heurístico individual; todavía faltan coberturas coordinadas, permutas entre defensores, defensa de centros, línea de fuera de juego sincronizada y validación estadística en partidos completos.
