@@ -593,12 +593,27 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         line(-34f, y, 0f, 34f, y, 0f);
         circleOnPitch(0f, 0f, 9.15f, y);
         drawGoalNet(-53.2f,y); drawGoalNet(53.2f,y);
+        // Penalty areas and six-yard goal areas.
         line(-20.16f, y, -52.5f, 20.16f, y, -52.5f);
         line(-20.16f, y, -52.5f, -20.16f, y, -35f);
         line(20.16f, y, -52.5f, 20.16f, y, -35f);
         line(-20.16f, y, 52.5f, 20.16f, y, 52.5f);
         line(-20.16f, y, 52.5f, -20.16f, y, 35f);
         line(20.16f, y, 52.5f, 20.16f, y, 35f);
+        line(-9.16f,y,-52.5f,9.16f,y,-52.5f);
+        line(-9.16f,y,-52.5f,-9.16f,y,-47f);
+        line(9.16f,y,-52.5f,9.16f,y,-47f);
+        line(-9.16f,y,52.5f,9.16f,y,52.5f);
+        line(-9.16f,y,52.5f,-9.16f,y,47f);
+        line(9.16f,y,52.5f,9.16f,y,47f);
+        // Centre and penalty spots, plus corner arcs.
+        circleOnPitch(0f,0f,0.18f,y);
+        circleOnPitch(0f,-41.5f,0.18f,y);
+        circleOnPitch(0f,41.5f,0.18f,y);
+        drawCornerArc(-34f,-52.5f,1f,y,0f);
+        drawCornerArc(34f,-52.5f,1f,y,90f);
+        drawCornerArc(34f,52.5f,1f,y,180f);
+        drawCornerArc(-34f,52.5f,1f,y,270f);
         shapeRenderer.end();
     }
 
@@ -609,6 +624,30 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         line(-3.66f,y,z,-3.66f,y,back);line(3.66f,y,z,3.66f,y,back);
         line(-3.66f,2.44f,z,-3.66f,2.44f,back);line(3.66f,2.44f,z,3.66f,2.44f,back);
         line(-3.66f,y,back,3.66f,y,back);line(-3.66f,2.44f,back,3.66f,2.44f,back);
+        // Fine mesh grid makes the goal read as a net rather than a wireframe frame.
+        for(int row=1;row<6;row++){
+            float netY=row*0.4f;
+            line(-3.66f,netY,z,3.66f,netY,z);
+            line(-3.66f,netY,back,3.66f,netY,back);
+            line(-3.66f,netY,z,-3.66f,netY,back);
+            line(3.66f,netY,z,3.66f,netY,back);
+        }
+        for(int column=1;column<12;column++){
+            float netX=-3.66f+column*(7.32f/12f);
+            line(netX,y,z,netX,2.44f,z);
+            line(netX,y,back,netX,2.44f,back);
+            line(netX,y,z,netX,y,back);
+            line(netX,2.44f,z,netX,2.44f,back);
+        }
+    }
+
+    private void drawCornerArc(float x,float z,float radius,float y,float startDegrees){
+        for(int i=0;i<8;i++){
+            float a1=(float)Math.toRadians(startDegrees+i*90f/8f);
+            float a2=(float)Math.toRadians(startDegrees+(i+1)*90f/8f);
+            line(x+(float)Math.cos(a1)*radius,y,z+(float)Math.sin(a1)*radius,
+                    x+(float)Math.cos(a2)*radius,y,z+(float)Math.sin(a2)*radius);
+        }
     }
 
     private void circleOnPitch(float centerX, float centerZ, float radius, float y) {
