@@ -19,27 +19,33 @@ public final class MatchSimulation {
     private static final float[] FORMATION_Z = {47f,32f,36f,36f,32f,19f,14f,8f,-9f,-16f,-9f};
 
     public static final class PlayerState {
-        public final String playerId, teamId, role;
+        public final String playerId, playerName, teamId, role;
+        public final int overall;
         public final boolean homeTeam;
         public final int shirtNumber;
         public final float homeX, homeZ;
         public float x, z, targetX, targetZ, stamina = 100f, speed, movementSpeed, forwardX, forwardZ = -1f;
 
-        private PlayerState(String playerId, String teamId, String role, boolean homeTeam,
-                            int shirtNumber, float x, float z) {
-            this.playerId=playerId; this.teamId=teamId; this.role=role; this.homeTeam=homeTeam;
+        private PlayerState(String playerId, String playerName, String teamId, String role,
+                            int overall, boolean homeTeam, int shirtNumber, float x, float z,
+                            float pace) {
+            this.playerId=playerId; this.playerName=playerName; this.teamId=teamId;
+            this.role=role; this.overall=overall; this.homeTeam=homeTeam;
             this.shirtNumber=shirtNumber; this.homeX=x; this.homeZ=z;
-            this.x=x; this.z=z; this.targetX=x; this.targetZ=z; this.speed="GK".equals(role)?4.2f:5f;
+            this.x=x; this.z=z; this.targetX=x; this.targetZ=z;
+            this.speed="GK".equals(role)?4.2f:4.1f+pace*0.012f;
         }
     }
 
     private final List<PlayerState> players = new ArrayList<>(22);
     private float decisionClock;
     private int controlledPlayerIndex = CONTROLLED_HOME_PLAYER_INDEX;
+    private String homeTeamName = "home", awayTeamName = "away";
 
     public boolean start(String homeTeamId, String awayTeamId) {
         if (homeTeamId==null || awayTeamId==null || homeTeamId.trim().isEmpty()
                 || awayTeamId.trim().isEmpty() || homeTeamId.equals(awayTeamId)) return false;
+        homeTeamName=homeTeamId; awayTeamName=awayTeamId;
         players.clear();
         controlledPlayerIndex = CONTROLLED_HOME_PLAYER_INDEX;
         for (int side=0; side<2; side++) {
@@ -47,13 +53,66 @@ public final class MatchSimulation {
             String teamId=home?homeTeamId:awayTeamId;
             for (int i=0;i<PLAYERS_PER_TEAM;i++) {
                 float z=home?FORMATION_Z[i]:-FORMATION_Z[i];
-                players.add(new PlayerState(teamId+"_"+String.format(java.util.Locale.US,"%02d",i+1),
-                        teamId,ROLES[i],home,i+1,FORMATION_X[i],z));
+                String id=teamId+"_"+String.format(java.util.Locale.US,"%02d",i+1);
+                players.add(new PlayerState(id,"Jugador "+(i+1),teamId,ROLES[i],50,
+                        home,i+1,FORMATION_X[i],z,50f));
             }
         }
         decisionClock=AI_DECISION_INTERVAL;
         return validateLineups(players);
     }
+
+    /** Starts a match with two real 22-player squads from the bundled canonical catalogue. */
+    public boolean start(OriginalProjectData.TeamRoster home, OriginalProjectData.TeamRoster away) {
+        if(home==null||away==null||home.clubId.isEmpty()||away.clubId.isEmpty()
+                ||home.clubId.equals(away.clubId))return false;
+        List<OriginalProjectData.PlayerRecord> homeXI=selectStartingEleven(home);
+        List<OriginalProjectData.PlayerRecord> awayXI=selectStartingEleven(away);
+        if(homeXI.size()!=PLAYERS_PER_TEAM||awayXI.size()!=PLAYERS_PER_TEAM)return false;
+        players.clear(); controlledPlayerIndex=CONTROLLED_HOME_PLAYER_INDEX;
+        homeTeamName=home.clubName;awayTeamName=away.clubName;
+        appendRoster(home,homeXI,true);
+        appendRoster(away,awayXI,false);
+        decisionClock=AI_DECISION_INTERVAL;
+        return validateLineups(players);
+    }
+
+    private void appendRoster(OriginalProjectData.TeamRoster team,
+            List<OriginalProjectData.PlayerRecord> selected,boolean home) {
+        for(int i=0;i<PLAYERS_PER_TEAM;i++){
+            OriginalProjectData.PlayerRecord record=selected.get(i);
+            float z=home?FORMATION_Z[i]:-FORMATION_Z[i];
+            float pace=(record.attribute(0)+record.attribute(1))*0.5f;
+            players.add(new PlayerState(record.id,record.name,team.clubId,ROLES[i],
+                    record.overall,home,i+1,FORMATION_X[i],z,pace));
+        }
+    }
+
+    private List<OriginalProjectData.PlayerRecord> selectStartingEleven(OriginalProjectData.TeamRoster team) {
+        String[][] preferences={{"POR"},{"LI"},{"DFC"},{"DFC"},{"LD"},{"MCD","MC"},
+                {"MC","MCD"},{"MCO","MC"},{"EI","MI"},{"DC"},{"ED","MD"}};
+        List<OriginalProjectData.PlayerRecord> selected=new ArrayList<>(PLAYERS_PER_TEAM);
+        Set<String> used=new HashSet<>();
+        for(String[] accepted:preferences){
+            OriginalProjectData.PlayerRecord best=null;
+            for(OriginalProjectData.PlayerRecord player:team.players){
+                if(used.contains(player.id))continue;
+                for(String position:accepted){
+                    if(position.equals(player.position)&&(best==null||player.overall>best.overall))best=player;
+                }
+            }
+            if(best==null){
+                for(OriginalProjectData.PlayerRecord player:team.players)
+                    if(!used.contains(player.id)&&(best==null||player.overall>best.overall))best=player;
+            }
+            if(best==null)return java.util.Collections.emptyList();
+            selected.add(best);used.add(best.id);
+        }
+        return selected;
+    }
+
+    public String getHomeTeamName(){return homeTeamName;}
+    public String getAwayTeamName(){return awayTeamName;}
 
     public List<PlayerState> getPlayers() { return Collections.unmodifiableList(players); }
     public int getControlledPlayerIndex() { return controlledPlayerIndex; }
