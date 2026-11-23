@@ -453,6 +453,14 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Limitación: los reinicios siguen ejecutándose automáticamente tras una espera; todavía faltan control manual de potencia/dirección, colocación de barrera, distancias reglamentarias, restricciones de jugadores y validación física de saques de banda/córner/tiros libres.
 
 
+### Integración inicial de expulsiones en la simulación (2026-11-23)
+
+- `FutbolNovaGame` mantiene un registro disciplinario por partido y expone eventos explícitos para emitir amarilla o roja. La segunda amarilla y la roja directa activan la retirada del jugador.
+- `MatchSimulation.dismissPlayer()` marca al futbolista como inactivo sin eliminarlo de la lista fija de 22, preservando los índices usados por balón, posesión, controles y modelos. El jugador controlado expulsado se sustituye por otro jugador de campo local disponible.
+- La actualización táctica y la separación de jugadores omiten a los inactivos; el render deja de dibujar su modelo y las colisiones rápidas con el balón los ignoran. El contador de activos permite verificar la inferioridad numérica.
+- Se añadió una prueba de expulsión que comprueba índice estable, reducción del equipo a diez jugadores y reasignación del control.
+- Limitación: todavía no existe criterio arbitral automático para decidir cuándo mostrar cada tarjeta, ni HUD/animación del árbitro, sustituciones, persistencia del acta o integración visual de tarjetas. La detección de falta actual no distingue por sí sola gravedad suficiente para asignar una tarjeta.
+
 ### Base disciplinaria por partido (2026-11-23)
 
 - Se añadió `MatchDiscipline`, un registro aislado por partido para amonestaciones, expulsiones directas y expulsión por segunda amarilla.
