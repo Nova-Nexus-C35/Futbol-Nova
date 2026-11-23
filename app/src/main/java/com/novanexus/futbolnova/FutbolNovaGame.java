@@ -492,24 +492,13 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(restartClock>0f){
             restartClock-=delta;
             if(restartClock<=0f){
-                float attackSign=restartAwardedHome?(matchSimulation.homeAttacksNegativeZ()?-1f:1f):(matchSimulation.homeAttacksNegativeZ()?1f:-1f);
-                if(kickoffRestart)ballVelocity.set(0f,1.2f,attackSign*5.5f);
-                else if(pendingRestart==MatchRules.Restart.THROW_IN)
-                    ballVelocity.set(ballPosition.x>=0f?-5.5f:5.5f,5.2f,attackSign*4.5f);
-                else if(pendingRestart==MatchRules.Restart.CORNER)
-                    ballVelocity.set(-ballPosition.x*0.22f,5.0f,attackSign*13f).nor().scl(16f);
-                else if(pendingRestart==MatchRules.Restart.GOAL_KICK)
-                    ballVelocity.set(0f,6.2f,attackSign*22f);
-                else if(pendingRestart==MatchRules.Restart.FREE_KICK)
-                    ballVelocity.set(0f,4.5f,attackSign*15f);
-                else if(pendingRestart==MatchRules.Restart.PENALTY) {
-                    List<MatchSimulation.PlayerState> penaltyLineup=matchSimulation.getPlayers();
-                    int goalkeeperIndex=restartAwardedHome?11:0;
-                    float goalkeeperX=penaltyLineup.size()>goalkeeperIndex
-                            ?penaltyLineup.get(goalkeeperIndex).x:Float.NaN;
-                    ballVelocity.set(MatchGameplay.penaltyShotVelocity(
-                            goalkeeperX,restartAwardedHome,matchSimulation.homeAttacksNegativeZ()));
-                }
+                List<MatchSimulation.PlayerState> penaltyLineup=matchSimulation.getPlayers();
+                int goalkeeperIndex=restartAwardedHome?11:0;
+                float goalkeeperX=penaltyLineup.size()>goalkeeperIndex
+                        ?penaltyLineup.get(goalkeeperIndex).x:Float.NaN;
+                ballVelocity.set(MatchRules.restartVelocity(pendingRestart,kickoffRestart,
+                        restartAwardedHome,matchSimulation.homeAttacksNegativeZ(),
+                        ballPosition.x,goalkeeperX));
                 lastTouchHome=restartAwardedHome;
                 pendingRestart=MatchRules.Restart.IN_PLAY;
                 kickoffRestart=false;
