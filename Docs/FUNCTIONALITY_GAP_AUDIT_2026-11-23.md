@@ -513,3 +513,13 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Un toque en la mitad izquierda del campo cierra el selector; en la mitad derecha lo cierra y reanuda si el partido estaba pausado. En el descanso no se reanuda automáticamente: el botón de inicio de segunda parte sigue separado.
 - Al reemplazar al jugador que tenía el balón, la posesión se libera; al reemplazar al jugador controlado, el control se conserva en el puesto estable y se actualiza su posición.
 - Límite funcional: la interfaz actual administra sustituciones del equipo local. El rival continúa bajo IA; todavía no hay menú de gestión para suplentes del equipo visitante, animación de entrada/salida ni sustituciones automáticas por lesión. La pausa manual se usa como ventana de gestión; no se presenta como árbitro real ni como sistema de ventaja.
+
+
+### Incremento: ley de la ventaja simplificada (2026-11-23)
+
+- Se añadió un estado determinista de ventaja arbitral de hasta 2,5 segundos de simulación para las faltas detectadas en entradas manuales y automáticas.
+- Si el equipo que recibió la falta conserva el balón al terminar la ventana, el juego continúa y la ventaja se considera realizada. Si el rival recupera la posesión antes, se detiene el juego y se concede el reinicio por la falta; si la ventana termina con el balón libre, también se concede el reinicio.
+- Si el balón sale del campo durante la ventana, un gol válido se mantiene y cualquier otra salida activa el reinicio por la falta previa. Una infracción de fuera de juego posterior cancela la ventaja y conserva prioridad como decisión arbitral.
+- El HUD muestra el indicador «LEY DE LA VENTAJA» mientras está activa. El estado guarda las coordenadas de la falta y el equipo que debe recibir el reinicio.
+- Se añadieron pruebas unitarias para continuidad, pérdida de posesión, expiración con posesión, balón libre y entradas no válidas.
+- Limitación: es una regla temporal simplificada; aún no existe una evaluación contextual del árbitro sobre gravedad de la falta, probabilidad de ataque prometedor, distancia a portería, fase de juego, interrupciones simultáneas o decisión de volver atrás en el caso de una ventaja tardía. No representa un árbitro completo ni reemplaza pruebas en Android.
