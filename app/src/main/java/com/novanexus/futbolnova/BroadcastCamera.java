@@ -30,7 +30,7 @@ public final class BroadcastCamera {
             reset(camera, focus);
             return;
         }
-        float safeDelta = MathUtils.clamp(delta, 0f, 0.1f);
+        float safeDelta = Float.isFinite(delta) ? MathUtils.clamp(delta, 0f, 0.1f) : 0f;
         float alpha = 1f - (float)Math.exp(-FOLLOW_RESPONSE * safeDelta);
         smoothedFocus.lerp(new Vector3(
                 MathUtils.clamp(focus.x, -34f, 34f), 0f,
