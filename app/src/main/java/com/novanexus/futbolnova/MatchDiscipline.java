@@ -12,18 +12,31 @@ public final class MatchDiscipline {
     public static final class PlayerRecord {
         public final String playerId;
         public final int yellowCards;
+        public final int foulsSinceCaution;
         public final boolean sentOff;
-        private PlayerRecord(String id,int yellows,boolean dismissed){
-            playerId=id;yellowCards=yellows;sentOff=dismissed;
+        private PlayerRecord(String id,int yellows,int fouls,boolean dismissed){
+            playerId=id;yellowCards=yellows;foulsSinceCaution=fouls;sentOff=dismissed;
         }
     }
 
     private static final class MutableRecord {
         int yellows;
+        int foulsSinceCaution;
         boolean dismissed;
     }
 
     private final Map<String,MutableRecord> records=new LinkedHashMap<>();
+
+    /** Three recorded fouls trigger a caution for persistent infringement; this is an explicit gameplay heuristic. */
+    public Outcome recordFoul(String playerId){
+        if(!valid(playerId))return Outcome.INVALID_PLAYER;
+        MutableRecord record=records.computeIfAbsent(playerId,k->new MutableRecord());
+        if(record.dismissed)return Outcome.ALREADY_DISMISSED;
+        record.foulsSinceCaution++;
+        if(record.foulsSinceCaution<3)return Outcome.NO_CARD;
+        record.foulsSinceCaution=0;
+        return issueYellow(playerId);
+    }
 
     public Outcome issueYellow(String playerId){
         if(!valid(playerId))return Outcome.INVALID_PLAYER;
@@ -61,15 +74,15 @@ public final class MatchDiscipline {
     public PlayerRecord getRecord(String playerId){
         if(!valid(playerId))return null;
         MutableRecord record=records.get(playerId);
-        return record==null?new PlayerRecord(playerId,0,false)
-                :new PlayerRecord(playerId,record.yellows,record.dismissed);
+        return record==null?new PlayerRecord(playerId,0,0,false)
+                :new PlayerRecord(playerId,record.yellows,record.foulsSinceCaution,record.dismissed);
     }
 
     public Map<String,PlayerRecord> snapshot(){
         Map<String,PlayerRecord> copy=new LinkedHashMap<>();
         for(Map.Entry<String,MutableRecord> entry:records.entrySet()){
             MutableRecord value=entry.getValue();
-            copy.put(entry.getKey(),new PlayerRecord(entry.getKey(),value.yellows,value.dismissed));
+            copy.put(entry.getKey(),new PlayerRecord(entry.getKey(),value.yellows,value.foulsSinceCaution,value.dismissed));
         }
         return Collections.unmodifiableMap(copy);
     }
