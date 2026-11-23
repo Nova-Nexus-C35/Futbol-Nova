@@ -95,3 +95,11 @@ La referencia FIFA describe el nivel y la dirección de calidad deseados; no aut
 - El zoom se suaviza con la misma respuesta temporal del seguimiento para evitar cambios bruscos; velocidad y delta se limitan y se validan antes de usarse.
 - Se añadieron pruebas unitarias para comprobar que el campo de visión se amplía progresivamente y respeta su límite.
 - La cámara sigue siendo una primera versión de retransmisión: todavía faltan selección de plano según contexto, seguimiento de posesión, repetición y ajustes de usuario.
+
+
+## Progreso de implementación — ciclo de carrera articulado (2026-11-23)
+
+- Se añadió PlayerAnimation, una función determinista que calcula balanceo alterno de extremidades y oscilación vertical suave del torso según velocidad y fase individual.
+- PlayerVisual ahora articula brazos y piernas alrededor de pivotes aproximados de hombros y caderas, en vez de girar cada pieza sobre su propio centro; los pies acompañan el ciclo y el torso/cabeza absorben un pequeño movimiento vertical.
+- Se añadieron pruebas unitarias para reposo, alternancia y límites de amplitud, además de entradas no finitas.
+- Alcance real: es una animación procedural de locomoción para las mallas low-poly actuales. No sustituye modelos esqueléticos, clips de animación profesionales ni acciones específicas (pase, tiro, cabezazo, barrida, caída, celebración o atajada); esas siguen en la hoja de ruta.
