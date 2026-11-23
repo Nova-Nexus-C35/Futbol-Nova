@@ -1,0 +1,94 @@
+package com.novanexus.futbolnova;
+
+/**
+ * Deterministic regulation-time state machine, independent from rendering.
+ * Durations are simulation seconds, so arcade speed can be configured by the caller.
+ */
+public final class MatchClock {
+    public enum Phase { PRE_MATCH, FIRST_HALF, HALF_TIME, SECOND_HALF, FULL_TIME }
+
+    private final float halfDurationSeconds;
+    private float elapsedInHalf;
+    private float firstHalfAddedTime;
+    private float secondHalfAddedTime;
+    private Phase phase = Phase.PRE_MATCH;
+    private boolean paused;
+
+    public MatchClock() { this(45f * 60f); }
+
+    public MatchClock(float halfDurationSeconds) {
+        if (!Float.isFinite(halfDurationSeconds) || halfDurationSeconds <= 0f) {
+            throw new IllegalArgumentException("Half duration must be a positive finite number");
+        }
+        this.halfDurationSeconds = halfDurationSeconds;
+    }
+
+    public boolean start() {
+        if (phase != Phase.PRE_MATCH) return false;
+        phase = Phase.FIRST_HALF;
+        paused = false;
+        return true;
+    }
+
+    public void update(float deltaSeconds) {
+        if (paused || !isPlaying() || !Float.isFinite(deltaSeconds) || deltaSeconds <= 0f) return;
+        elapsedInHalf += deltaSeconds;
+        float limit = halfDurationSeconds + getAddedTimeForCurrentHalf();
+        if (elapsedInHalf >= limit) {
+            elapsedInHalf = limit;
+            paused = true;
+            phase = phase == Phase.FIRST_HALF ? Phase.HALF_TIME : Phase.FULL_TIME;
+        }
+    }
+
+    public boolean startSecondHalf() {
+        if (phase != Phase.HALF_TIME) return false;
+        elapsedInHalf = 0f;
+        phase = Phase.SECOND_HALF;
+        paused = false;
+        return true;
+    }
+
+    public void pause() {
+        if (isPlaying()) paused = true;
+    }
+
+    public void resume() {
+        if (isPlaying()) paused = false;
+    }
+
+    public boolean setAddedTime(int seconds) {
+        if (seconds < 0 || !isPlaying()) return false;
+        if (phase == Phase.FIRST_HALF) firstHalfAddedTime = seconds;
+        else secondHalfAddedTime = seconds;
+        return true;
+    }
+
+    public void reset() {
+        elapsedInHalf = 0f;
+        firstHalfAddedTime = 0f;
+        secondHalfAddedTime = 0f;
+        phase = Phase.PRE_MATCH;
+        paused = false;
+    }
+
+    public boolean isPlaying() {
+        return phase == Phase.FIRST_HALF || phase == Phase.SECOND_HALF;
+    }
+
+    public boolean isPaused() { return paused; }
+    public Phase getPhase() { return phase; }
+    public float getElapsedInHalfSeconds() { return elapsedInHalf; }
+    public float getHalfDurationSeconds() { return halfDurationSeconds; }
+    public float getAddedTimeForCurrentHalf() {
+        return phase == Phase.SECOND_HALF ? secondHalfAddedTime : firstHalfAddedTime;
+    }
+    public float getTotalElapsedSeconds() {
+        if (phase == Phase.PRE_MATCH) return 0f;
+        if (phase == Phase.FIRST_HALF || phase == Phase.HALF_TIME) return elapsedInHalf;
+        if (phase == Phase.SECOND_HALF || phase == Phase.FULL_TIME) {
+            return halfDurationSeconds + firstHalfAddedTime + elapsedInHalf;
+        }
+        return 0f;
+    }
+}
