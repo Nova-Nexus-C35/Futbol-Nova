@@ -15,7 +15,7 @@ public final class GoalkeeperSaveModelTest {
 
     @Test public void choosesCatchForControllableLowShot() {
         GoalkeeperSaveModel.Plan plan=GoalkeeperSaveModel.evaluate(
-                0f,49f,0f,0.7f,48f,0f,0f,4f,1f);
+                0f,49f,0f,0.7f,48f,0f,5f,4f,1f);
         assertNotNull(plan);
         assertEquals(GoalkeeperSaveModel.Action.CATCH,plan.action);
     }
@@ -24,14 +24,14 @@ public final class GoalkeeperSaveModelTest {
         assertNull(GoalkeeperSaveModel.evaluate(0f,49f,3.5f,1f,45f,0f,0f,10f,1f));
         assertNull(GoalkeeperSaveModel.evaluate(0f,49f,0f,1f,45f,0f,0f,-10f,1f));
         assertNull(GoalkeeperSaveModel.evaluate(Float.NaN,49f,0f,1f,45f,0f,0f,10f,1f));
-        assertNull(GoalkeeperSaveModel.evaluate(0f,49f,0f,3f,45f,0f,0f,10f,1f));
+        assertNull(GoalkeeperSaveModel.evaluate(0f,49f,0f,0.5f,45f,0f,0f,10f,1f));
     }
 
     @Test public void supportsBothGoalDirectionsAndLateralDives() {
         GoalkeeperSaveModel.Plan positive=GoalkeeperSaveModel.evaluate(
-                0f,49f,1f,1.1f,45f,0f,0f,10f,1f);
+                0f,49f,1f,1.1f,45f,0f,4.5f,10f,1f);
         GoalkeeperSaveModel.Plan negative=GoalkeeperSaveModel.evaluate(
-                0f,-49f,-1f,1.1f,-45f,0f,0f,-10f,-1f);
+                0f,-49f,-1f,1.1f,-45f,0f,4.5f,-10f,-1f);
         assertNotNull(positive);assertNotNull(negative);
         assertEquals(1f,positive.diveDirection,0.0001f);
         assertEquals(-1f,negative.diveDirection,0.0001f);
