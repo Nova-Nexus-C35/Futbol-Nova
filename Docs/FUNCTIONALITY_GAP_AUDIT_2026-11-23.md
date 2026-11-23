@@ -451,3 +451,12 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Se añadieron pruebas unitarias para la dirección de ambos equipos, saque de banda, córner, saque de meta, tiro libre, penalti según la posición lateral del portero y protección frente a coordenadas no finitas.
 - Esta separación facilita sustituir los reinicios automáticos por ejecuciones interactivas sin duplicar reglas en el controlador principal.
 - Limitación: los reinicios siguen ejecutándose automáticamente tras una espera; todavía faltan control manual de potencia/dirección, colocación de barrera, distancias reglamentarias, restricciones de jugadores y validación física de saques de banda/córner/tiros libres.
+
+
+### Base disciplinaria por partido (2026-11-23)
+
+- Se añadió `MatchDiscipline`, un registro aislado por partido para amonestaciones, expulsiones directas y expulsión por segunda amarilla.
+- Impide acumular tarjetas después de una expulsión, expone si el jugador puede seguir participando y ofrece una instantánea inmutable del registro.
+- Se añadieron cinco pruebas unitarias para primera amarilla, segunda amarilla, roja directa, identificadores inválidos, instantáneas y reinicio.
+- Estado: lógica de registro y reglas de acumulación implementadas y verificadas en GitHub.
+- Pendiente de integración en el flujo de faltas/árbitro y de consecuencias en el campo: no se asignan tarjetas automáticamente por criterio arbitral, no se retiran jugadores del posicionamiento ni se ajusta el número de jugadores, y no hay HUD de tarjetas. No debe presentarse como reglamento disciplinario completo.
