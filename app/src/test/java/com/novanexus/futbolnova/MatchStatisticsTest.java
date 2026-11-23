@@ -25,4 +25,14 @@ public class MatchStatisticsTest {
         assertEquals(0,stats.getGoals(true));assertEquals(0,stats.getPasses(false));
         assertTrue(stats.getEvents().isEmpty());
     }
+
+    @Test public void recordsOffsideAgainstTheOffendingTeam(){
+        MatchStatistics stats=new MatchStatistics();
+        stats.recordOffside(true);
+        assertEquals(1,stats.getOffsides(true));
+        assertEquals(0,stats.getOffsides(false));
+        assertEquals(MatchStatistics.EventType.OFFSIDE,stats.getEvents().get(0).type);
+        stats.reset();
+        assertEquals(0,stats.getOffsides(true));
+    }
 }
