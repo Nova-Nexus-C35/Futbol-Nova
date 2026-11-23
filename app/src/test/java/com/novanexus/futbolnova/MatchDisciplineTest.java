@@ -21,6 +21,20 @@ public class MatchDisciplineTest {
         assertEquals(2,discipline.getYellowCards("away_08"));
     }
 
+    @Test public void thirdFoulTriggersCautionAndResetsInfringementCounter(){
+        MatchDiscipline discipline=new MatchDiscipline();
+        assertEquals(MatchDiscipline.Outcome.NO_CARD,discipline.recordFoul("home_05"));
+        assertEquals(MatchDiscipline.Outcome.NO_CARD,discipline.recordFoul("home_05"));
+        assertEquals(2,discipline.getRecord("home_05").foulsSinceCaution);
+        assertEquals(MatchDiscipline.Outcome.CAUTION,discipline.recordFoul("home_05"));
+        assertEquals(1,discipline.getYellowCards("home_05"));
+        assertEquals(0,discipline.getRecord("home_05").foulsSinceCaution);
+        assertEquals(MatchDiscipline.Outcome.NO_CARD,discipline.recordFoul("home_05"));
+        assertEquals(MatchDiscipline.Outcome.NO_CARD,discipline.recordFoul("home_05"));
+        assertEquals(MatchDiscipline.Outcome.DISMISSED,discipline.recordFoul("home_05"));
+        assertTrue(discipline.isSentOff("home_05"));
+    }
+
     @Test public void directRedDismissesWithoutYellow(){
         MatchDiscipline discipline=new MatchDiscipline();
         assertEquals(MatchDiscipline.Outcome.DISMISSED,discipline.issueRed("home_03"));
