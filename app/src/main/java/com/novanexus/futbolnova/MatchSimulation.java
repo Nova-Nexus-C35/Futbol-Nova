@@ -23,7 +23,7 @@ public final class MatchSimulation {
         public final int overall;
         public final boolean homeTeam;
         public final int shirtNumber;
-        public final float homeX, homeZ;
+        public float homeX, homeZ;
         public float x, z, targetX, targetZ, stamina = 100f, speed, movementSpeed, forwardX, forwardZ = -1f;
 
         private PlayerState(String playerId, String playerName, String teamId, String role,
@@ -41,11 +41,12 @@ public final class MatchSimulation {
     private float decisionClock;
     private int controlledPlayerIndex = CONTROLLED_HOME_PLAYER_INDEX;
     private String homeTeamName = "home", awayTeamName = "away";
+    private boolean homeAttacksNegativeZ = true;
 
     public boolean start(String homeTeamId, String awayTeamId) {
         if (homeTeamId==null || awayTeamId==null || homeTeamId.trim().isEmpty()
                 || awayTeamId.trim().isEmpty() || homeTeamId.equals(awayTeamId)) return false;
-        homeTeamName=homeTeamId; awayTeamName=awayTeamId;
+        homeTeamName=homeTeamId; awayTeamName=awayTeamId; homeAttacksNegativeZ=true;
         players.clear();
         controlledPlayerIndex = CONTROLLED_HOME_PLAYER_INDEX;
         for (int side=0; side<2; side++) {
@@ -70,7 +71,7 @@ public final class MatchSimulation {
         List<OriginalProjectData.PlayerRecord> awayXI=selectStartingEleven(away);
         if(homeXI.size()!=PLAYERS_PER_TEAM||awayXI.size()!=PLAYERS_PER_TEAM)return false;
         players.clear(); controlledPlayerIndex=CONTROLLED_HOME_PLAYER_INDEX;
-        homeTeamName=home.clubName;awayTeamName=away.clubName;
+        homeTeamName=home.clubName;awayTeamName=away.clubName;homeAttacksNegativeZ=true;
         appendRoster(home,homeXI,true);
         appendRoster(away,awayXI,false);
         decisionClock=AI_DECISION_INTERVAL;
@@ -109,6 +110,20 @@ public final class MatchSimulation {
             selected.add(best);used.add(best.id);
         }
         return selected;
+    }
+
+    public boolean homeAttacksNegativeZ(){return homeAttacksNegativeZ;}
+
+    /** Mirrors both teams at half-time and reverses their attacking direction. */
+    public void switchEnds(){
+        if(players.size()!=22)return;
+        for(PlayerState player:players){
+            player.homeZ=-player.homeZ;
+            player.z=-player.z;
+            player.targetZ=-player.targetZ;
+            player.forwardZ=-player.forwardZ;
+        }
+        homeAttacksNegativeZ=!homeAttacksNegativeZ;
     }
 
     public String getHomeTeamName(){return homeTeamName;}
@@ -171,8 +186,8 @@ public final class MatchSimulation {
         float targetX=p.homeX+clamp(ballX*0.14f,-5f,5f);
         float targetZ=p.homeZ+clamp(ballZ*0.12f,-7f,7f);
         if ("GK".equals(p.role)) {
-            float attackSign=p.homeTeam?-1f:1f;
-            float ownGoalZ=p.homeTeam?49f:-49f;
+            float attackSign=p.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
+            float ownGoalZ=p.homeTeam?(homeAttacksNegativeZ?49f:-49f):(homeAttacksNegativeZ?-49f:49f);
             float stepOut=0f;
             if (ballZ*attackSign>22f) stepOut=clamp((Math.abs(ballZ)-22f)/27f,0f,1f)*5.5f;
             p.targetX=clamp(ballX*0.42f,-5f,5f);
