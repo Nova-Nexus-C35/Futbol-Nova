@@ -364,6 +364,9 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             ballVelocity.x*=0.91f;ballVelocity.z*=0.91f;
         }
         if(tryGoalkeeperSave())return;
+        BallCollisionModel.resolveGoalFrame(ballPosition,ballVelocity,3.66f,2.44f,52.5f,BALL_RADIUS);
+        BallCollisionModel.resolveGoalFrame(ballPosition,ballVelocity,3.66f,2.44f,-52.5f,BALL_RADIUS);
+        BallCollisionModel.resolvePlayerContact(ballPosition,ballVelocity,matchSimulation.getPlayers());
         if(Math.abs(ballPosition.x)-BALL_RADIUS>FIELD_HALF_WIDTH
                 ||Math.abs(ballPosition.z)-BALL_RADIUS>FIELD_HALF_LENGTH){
             MatchRules.ExitDecision exit=MatchRules.classifyBallExit(
