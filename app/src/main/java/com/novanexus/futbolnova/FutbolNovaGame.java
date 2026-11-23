@@ -271,7 +271,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 if(x<width*0.58f)substitutionMode=false;
                 else{
                     substitutionMode=false;
-                    if(matchClock.isPlaying()&&matchClock.isPaused())matchClock.resume();
+                    if(matchClock.getPhase()==MatchClock.Phase.HALF_TIME)startSecondHalf();
+                    else if(matchClock.isPlaying()&&matchClock.isPaused())matchClock.resume();
                 }
                 pointerWasTouched[pointer]=true;
                 continue;
@@ -337,7 +338,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             return;
         }
         if(phase==MatchClock.Phase.HALF_TIME){
-            startSecondHalf();
+            if(matchSimulation.getBenchPlayers(true).isEmpty())startSecondHalf();
+            else openSubstitutionMode();
         }else if(phase==MatchClock.Phase.FULL_TIME){
             resetMatch();
         }else if(matchClock.isPlaying()&&matchClock.isPaused()){
@@ -359,6 +361,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void openSubstitutionMode(){
         if(matchClock.getPhase()!=MatchClock.Phase.HALF_TIME&&!matchClock.isPaused())return;
         if(matchSimulation.getBenchPlayers(true).isEmpty())return;
+        if(matchClock.getPhase()!=MatchClock.Phase.HALF_TIME
+                &&matchSimulation.getSubstitutionWindowsUsed(true)>=3)return;
         substitutionMode=true;
         substitutionWindow=Math.min(3,matchSimulation.getSubstitutionWindowsUsed(true)+1);
         substitutionOutgoingIndex=matchSimulation.getControlledPlayerIndex();
@@ -370,8 +374,9 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private int findNextActiveHomePlayer(int fromIndex){
         List<MatchSimulation.PlayerState> players=matchSimulation.getPlayers();
+        int base=fromIndex>=1?fromIndex-1:9;
         for(int offset=1;offset<=10;offset++){
-            int candidate=1+((Math.max(0,fromIndex-1)+offset)%10);
+            int candidate=1+((base+offset)%10);
             if(players.get(candidate).active)return candidate;
         }
         return -1;
