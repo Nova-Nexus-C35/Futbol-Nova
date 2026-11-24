@@ -275,4 +275,69 @@ public final class MatchSimulationTest {
                 striker,0f,30f,true,false);
         assertTrue(target.z>striker.homeZ);
     }
+
+    @Test public void snapshotRestoresPlayersBenchesDirectionAndSubstitutionWindows() {
+        java.util.List<OriginalProjectData.PlayerRecord> homeSquad=new java.util.ArrayList<>();
+        java.util.List<OriginalProjectData.PlayerRecord> awaySquad=new java.util.ArrayList<>();
+        for(int i=0;i<14;i++){
+            String position=i==0?"POR":"MC";
+            homeSquad.add(new OriginalProjectData.PlayerRecord("H"+i,"Home "+i,position,
+                    70+i,new float[]{70f+i,75f+i,62f}));
+            awaySquad.add(new OriginalProjectData.PlayerRecord("A"+i,"Away "+i,position,
+                    65+i,new float[]{65f+i,70f+i,58f}));
+        }
+        MatchSimulation original=new MatchSimulation();
+        assertTrue(original.start(
+                new OriginalProjectData.TeamRoster("H","Home FC","league",1,homeSquad),
+                new OriginalProjectData.TeamRoster("A","Away FC","league",1,awaySquad)));
+        original.update(0.05f,-12f,-20f,3f,-18f);
+        assertTrue(original.substitutePlayer(true,original.getPlayers().get(9).playerId,
+                original.getBenchPlayers(true).get(0).id,1,false));
+        assertTrue(original.substitutePlayer(false,original.getPlayers().get(20).playerId,
+                original.getBenchPlayers(false).get(0).id,2,false));
+        original.cycleControlledPlayer();
+        original.switchEnds();
+
+        MatchSimulation.Snapshot snapshot=original.snapshot();
+        MatchSimulation restored=new MatchSimulation();
+        assertTrue(restored.restore(snapshot));
+        assertEquals(original.getHomeTeamName(),restored.getHomeTeamName());
+        assertEquals(original.getAwayTeamName(),restored.getAwayTeamName());
+        assertEquals(original.homeAttacksNegativeZ(),restored.homeAttacksNegativeZ());
+        assertEquals(original.getControlledPlayerIndex(),restored.getControlledPlayerIndex());
+        assertEquals(original.getSubstitutionsUsed(true),restored.getSubstitutionsUsed(true));
+        assertEquals(original.getSubstitutionsUsed(false),restored.getSubstitutionsUsed(false));
+        assertEquals(original.getSubstitutionWindowsUsed(true),restored.getSubstitutionWindowsUsed(true));
+        assertEquals(original.getSubstitutionWindowsUsed(false),restored.getSubstitutionWindowsUsed(false));
+        assertEquals(original.getBenchPlayers(true).get(0).id,restored.getBenchPlayers(true).get(0).id);
+        assertEquals(original.getBenchPlayers(false).get(0).id,restored.getBenchPlayers(false).get(0).id);
+        for(int i=0;i<22;i++){
+            MatchSimulation.PlayerState expected=original.getPlayers().get(i);
+            MatchSimulation.PlayerState actual=restored.getPlayers().get(i);
+            assertEquals(expected.playerId,actual.playerId);
+            assertEquals(expected.active,actual.active);
+            assertEquals(expected.x,actual.x,0.0001f);
+            assertEquals(expected.z,actual.z,0.0001f);
+            assertEquals(expected.targetX,actual.targetX,0.0001f);
+            assertEquals(expected.targetZ,actual.targetZ,0.0001f);
+            assertEquals(expected.stamina,actual.stamina,0.0001f);
+            assertEquals(expected.speed,actual.speed,0.0001f);
+            assertEquals(expected.forwardX,actual.forwardX,0.0001f);
+            assertEquals(expected.forwardZ,actual.forwardZ,0.0001f);
+        }
+    }
+
+    @Test public void invalidSnapshotIsRejectedWithoutMutatingExistingSimulation() {
+        MatchSimulation source=new MatchSimulation();
+        assertTrue(source.start("home","away"));
+        MatchSimulation.Snapshot invalid=source.snapshot();
+        invalid.schemaVersion=99;
+        MatchSimulation target=new MatchSimulation();
+        assertTrue(target.start("preserved-home","preserved-away"));
+        float preservedX=target.getPlayers().get(9).x;
+        assertFalse(target.restore(invalid));
+        assertEquals("preserved-home",target.getHomeTeamName());
+        assertEquals(preservedX,target.getPlayers().get(9).x,0.0001f);
+    }
+
 }
