@@ -604,3 +604,13 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - CI run `45467872452` terminó en **success**: `testDebugUnitTest`, `assembleDebug`, comprobación de `lib/arm64-v8a/libgdx.so` y subida del artefacto completadas. Artefacto `futbol-nova-android-arm64-debug`, ID `14956555284`, 3,484,440 bytes, SHA-256 `c376bc16e01e968c8ebbbce33a2d866934b050ad194982f210ddf2ce7df8d591`, expiración `2026-12-08T19:14:27Z`.
 - Esta métrica es una aproximación basada en que el receptor seleccionado adquiera la posesión; no equivale a un análisis avanzado de pases, no identifica desvíos complejos y el ledger de eventos aún no registra marcas de tiempo individuales.
 - La CI valida pruebas automatizadas y empaquetado ARM64, no una sesión de juego en el Android físico. Siguen pendientes aceptación multitáctil/rendimiento en el teléfono, progreso guardado durante partidos en curso, reinicios interactivos y reglamento/árbitro completos, plantillas completas para todas las divisiones, IA táctica avanzada, presentación 3D/audio de producción y APK Release firmado.
+
+### Ampliación: precisión de pase por futbolista y CI aprobada (2026-11-24)
+
+- Cada registro individual de jugador calcula ahora pases completados/intentos y porcentaje de precisión con protección para cero intentos.
+- MatchReport serializa esa métrica por jugador y MatchReportExporter la incluye en la fila PLAYER del CSV.
+- MatchReportTest verifica la ida/vuelta JSON y el valor porcentual del jugador; también valida la nueva columna CSV.
+- CI run `45468699661` terminó en **success** para el commit `df3a52cc72702ebbf486a9738a19c027f1128de4`: pruebas unitarias, APK debug ARM64, verificación del runtime nativo y subida de artefacto aprobadas.
+- Artefacto `futbol-nova-android-arm64-debug`, ID `14957730650`, ZIP 3,484,488 bytes, SHA-256 `ade9dace870e1b46624049f40c05dd20f44370302f1b88d08c9e6a96d3341106`, expiración `2026-12-08T19:19:34Z`.
+- El APK se extrajo y se comprobó que incluye `lib/arm64-v8a/libgdx.so`; SHA-256 del APK extraído: `3675e8ba11b635217629cf1449a528d25ca012af2b5bed86abad84f22cc677fc`.
+- La precisión por jugador es derivada de la misma regla de posesión del receptor que la métrica por equipo; no mide calidad del pase, asistencias, pases progresivos ni situaciones de ventaja.
