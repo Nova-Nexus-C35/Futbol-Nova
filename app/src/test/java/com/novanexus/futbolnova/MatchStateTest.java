@@ -28,4 +28,12 @@ public class MatchStateTest {
         assertEquals(0,state.getHomeGoals());assertEquals(0,state.getAwayGoals());
         assertEquals(0f,state.getElapsedSeconds(),0.0001f);assertFalse(state.isPaused());
     }
+    @Test public void snapshotRestoresScoreAndElapsedTimeAndRejectsInvalidAtomically(){
+        MatchState source=new MatchState();source.addGoal(true);source.addGoal(false);source.update(37f);
+        MatchState restored=new MatchState();assertTrue(restored.restore(source.snapshot()));
+        assertEquals(1,restored.getHomeGoals());assertEquals(1,restored.getAwayGoals());
+        assertEquals(37f,restored.getElapsedSeconds(),0.001f);
+        assertFalse(restored.restore(new MatchState.Snapshot(-1,0,2f,false)));
+        assertEquals(1,restored.getHomeGoals());assertEquals(37f,restored.getElapsedSeconds(),0.001f);
+    }
 }
