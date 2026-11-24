@@ -90,6 +90,70 @@ public final class MatchStatistics {
         return total>0f?100f*possessionSeconds[index(home)]/total:0f;
     }
     public List<Event> getEvents(){return Collections.unmodifiableList(new ArrayList<>(events));}
+
+    public static final class EventSnapshot {
+        public final EventType type;public final boolean homeTeam;public final String playerId;public final float elapsedSeconds;
+        private EventSnapshot(Event e){type=e.type;homeTeam=e.homeTeam;playerId=e.playerId;elapsedSeconds=e.elapsedSeconds;}
+    }
+    public static final class PlayerSnapshot {
+        public final String playerId;public final int shots,passes,completedPasses,tackles,fouls,saves,goals,offsides;
+        private PlayerSnapshot(PlayerCounters p){playerId=p.playerId;shots=p.shots;passes=p.passes;
+            completedPasses=p.completedPasses;tackles=p.tackles;fouls=p.fouls;saves=p.saves;goals=p.goals;offsides=p.offsides;}
+    }
+    /** Deep, versioned copy of all counters, possession time, player totals and the bounded event ledger. */
+    public static final class Snapshot {
+        public final int schemaVersion=1;
+        public final int[] shots,shotsOnTarget,passes,completedPasses,tackles,fouls,saves,goals,offsides;
+        public final float[] possessionSeconds;
+        public final List<EventSnapshot> events;
+        public final List<PlayerSnapshot> players;
+        private Snapshot(MatchStatistics s){
+            shots=s.shots.clone();shotsOnTarget=s.shotsOnTarget.clone();passes=s.passes.clone();
+            completedPasses=s.completedPasses.clone();tackles=s.tackles.clone();fouls=s.fouls.clone();
+            saves=s.saves.clone();goals=s.goals.clone();offsides=s.offsides.clone();possessionSeconds=s.possessionSeconds.clone();
+            List<EventSnapshot> eventCopies=new ArrayList<>();for(Event e:s.events)eventCopies.add(new EventSnapshot(e));
+            events=Collections.unmodifiableList(eventCopies);
+            List<PlayerSnapshot> playerCopies=new ArrayList<>();for(PlayerCounters p:s.playerCounters.values())playerCopies.add(new PlayerSnapshot(p));
+            players=Collections.unmodifiableList(playerCopies);
+        }
+    }
+    public Snapshot snapshot(){return new Snapshot(this);}
+    /** Rejects malformed snapshots atomically; event history remains bounded to 256 records. */
+    public boolean restore(Snapshot s){
+        if(s==null||s.schemaVersion!=1||!validArray(s.shots)||!validArray(s.shotsOnTarget)
+                ||!validArray(s.passes)||!validArray(s.completedPasses)||!validArray(s.tackles)
+                ||!validArray(s.fouls)||!validArray(s.saves)||!validArray(s.goals)||!validArray(s.offsides)
+                ||s.possessionSeconds==null||s.possessionSeconds.length!=2||s.events==null||s.events.size()>MAX_EVENTS
+                ||s.players==null)return false;
+        for(int i=0;i<2;i++){
+            if(s.shotsOnTarget[i]>s.shots[i]||s.completedPasses[i]>s.passes[i]
+                    ||!Float.isFinite(s.possessionSeconds[i])||s.possessionSeconds[i]<0f)return false;
+        }
+        Map<String,PlayerCounters> restoredPlayers=new LinkedHashMap<>();
+        for(PlayerSnapshot p:s.players){
+            if(p==null||p.playerId==null||p.playerId.isEmpty()||restoredPlayers.containsKey(p.playerId)
+                    ||!nonNegative(p.shots,p.passes,p.completedPasses,p.tackles,p.fouls,p.saves,p.goals,p.offsides)
+                    ||p.completedPasses>p.passes)return false;
+            PlayerCounters value=new PlayerCounters(p.playerId);value.shots=p.shots;value.passes=p.passes;
+            value.completedPasses=p.completedPasses;value.tackles=p.tackles;value.fouls=p.fouls;
+            value.saves=p.saves;value.goals=p.goals;value.offsides=p.offsides;restoredPlayers.put(p.playerId,value);
+        }
+        List<Event> restoredEvents=new ArrayList<>();
+        for(EventSnapshot e:s.events){
+            if(e==null||e.type==null||!Float.isFinite(e.elapsedSeconds)||e.elapsedSeconds<0f
+                    ||(e.playerId!=null&&!e.playerId.isEmpty()&&!restoredPlayers.containsKey(e.playerId)))return false;
+            restoredEvents.add(new Event(e.type,e.homeTeam,e.playerId,e.elapsedSeconds));
+        }
+        System.arraycopy(s.shots,0,shots,0,2);System.arraycopy(s.shotsOnTarget,0,shotsOnTarget,0,2);
+        System.arraycopy(s.passes,0,passes,0,2);System.arraycopy(s.completedPasses,0,completedPasses,0,2);
+        System.arraycopy(s.tackles,0,tackles,0,2);System.arraycopy(s.fouls,0,fouls,0,2);
+        System.arraycopy(s.saves,0,saves,0,2);System.arraycopy(s.goals,0,goals,0,2);
+        System.arraycopy(s.offsides,0,offsides,0,2);System.arraycopy(s.possessionSeconds,0,possessionSeconds,0,2);
+        playerCounters.clear();playerCounters.putAll(restoredPlayers);events.clear();events.addAll(restoredEvents);return true;
+    }
+    private static boolean validArray(int[] values){return values!=null&&values.length==2&&values[0]>=0&&values[1]>=0;}
+    private static boolean nonNegative(int... values){for(int value:values)if(value<0)return false;return true;}
+
     public void reset(){
         events.clear();playerCounters.clear();
         java.util.Arrays.fill(shots,0);java.util.Arrays.fill(shotsOnTarget,0);java.util.Arrays.fill(passes,0);
