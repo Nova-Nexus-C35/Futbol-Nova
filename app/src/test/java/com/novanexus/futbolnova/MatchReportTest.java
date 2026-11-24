@@ -58,6 +58,7 @@ public class MatchReportTest {
         stats.recordShot("home_09",true);
         stats.recordShot("home_09",true);
         stats.recordPassAttempt("home_09",true);
+        stats.recordPassCompleted("home_09",true);
         stats.recordGoal("home_09",true);
         stats.recordFoul("away_04",false);
         MatchReport original=MatchReport.capture("Cuba","Visitante",1,0,2700f,stats,new MatchDiscipline());
@@ -68,6 +69,8 @@ public class MatchReportTest {
         assertEquals("home_09",scorer.playerId);
         assertEquals(2,scorer.shots);
         assertEquals(1,scorer.passes);
+        assertEquals(1,scorer.completedPasses);
+        assertEquals(100f,scorer.passAccuracyPercent,0.001f);
         assertEquals(1,scorer.goals);
         MatchReport.PlayerRecord fouler=restored.players.get(1);
         assertEquals("away_04",fouler.playerId);
@@ -90,7 +93,7 @@ public class MatchReportTest {
         assertTrue(csv.contains("MATCH,match_id,home_team,away_team,home_goals"));
         assertTrue(csv.contains("MATCH,"+report.matchId+",Cuba,Visitante,1,0,2700.0"));
         assertTrue(csv.contains("TEAM,HOME,Cuba,1,1,0,0,0.0,0,0,0,0,0.0,0.0"));
-        assertTrue(csv.contains("PLAYER,home_09,1,0,0,0,0,0,1,0"));
+        assertTrue(csv.contains("PLAYER,home_09,1,0,0,0.0,0,0,0,1,0"));
         assertTrue(csv.contains("EVENT,GOAL,true,home_09"));
         assertTrue(csv.contains("CARD,away_04,YELLOW,PERSISTENT_INFRINGEMENT,1530.0,false"));
     }
