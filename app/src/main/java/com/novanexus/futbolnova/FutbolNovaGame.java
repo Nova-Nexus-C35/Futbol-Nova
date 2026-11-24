@@ -85,6 +85,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private int substitutionIncomingIndex;
     private int substitutionWindow = 1;
     private boolean disposed;
+    private float checkpointClock;
 
     @Override
     public void create() {
@@ -107,6 +108,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         environment.add(new DirectionalLight().set(0.85f, 0.85f, 0.85f, -0.4f, -1f, -0.25f));
 
         createProceduralPitchAndTeams();
+        restoreSavedMatch();
         try {
             OriginalProjectData.Summary summary = OriginalProjectData.loadBundledSummary();
             Gdx.app.log("FutbolNova", "Original project data loaded: " + summary);
@@ -221,6 +223,10 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             updateGameplay(delta);
         }
         saveCompletedMatchReport();
+        if(matchClock.getPhase()!=MatchClock.Phase.PRE_MATCH&&matchClock.getPhase()!=MatchClock.Phase.FULL_TIME){
+            checkpointClock+=delta;
+            if(checkpointClock>=3f){saveMatchCheckpoint();checkpointClock=0f;}
+        }
         List<MatchSimulation.PlayerState> lineup = matchSimulation.getPlayers();
         animationClock+=delta;
         for(int i=0;i<lineup.size()&&i<playerVisuals.size();i++){
@@ -461,6 +467,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void resetMatch(){
+        MatchSaveStore.clear();
         saveCompletedMatchReport();
         matchReportSaved=false;
         matchClock.reset();matchState.reset();matchStatistics.reset();matchDiscipline.reset();matchAdvantage.clear();
@@ -528,6 +535,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             Gdx.app.error("FutbolNova","Local report saved, but external CSV/JSON export failed",exportError);
         }
         matchReportSaved=true;
+        MatchSaveStore.clear();
         Gdx.app.log("FutbolNova","Saved completed match report: "+report.matchId);
     }
 
@@ -1022,8 +1030,77 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         }
     }
 
+
+    /** Android lifecycle pause freezes the match and writes a recovery checkpoint. */
+    @Override
+    public void pause(){
+        if(matchClock.isPlaying())matchClock.pause();
+        matchState.setPaused(true);
+        saveMatchCheckpoint();
+    }
+
+    /** The saved match stays paused until the player explicitly resumes it in the HUD. */
+    @Override
+    public void resume(){
+        if(camera!=null)camera.update();
+    }
+
+    private void saveMatchCheckpoint(){
+        if(Gdx.app==null||matchClock.getPhase()==MatchClock.Phase.PRE_MATCH
+                ||matchClock.getPhase()==MatchClock.Phase.FULL_TIME)return;
+        MatchRuntimeSnapshot s=new MatchRuntimeSnapshot();
+        s.simulation=matchSimulation.snapshot();s.clock=matchClock.snapshot();s.matchState=matchState.snapshot();
+        s.statistics=matchStatistics.snapshot();s.discipline=matchDiscipline.snapshotState();s.advantage=matchAdvantage.snapshot();
+        s.ballPosition=new float[]{ballPosition.x,ballPosition.y,ballPosition.z};
+        s.ballVelocity=new float[]{ballVelocity.x,ballVelocity.y,ballVelocity.z};
+        s.ballSpin=new float[]{ballSpin.x,ballSpin.y,ballSpin.z};
+        s.controlledPosition=new float[]{controlledPosition.x,controlledPosition.y,controlledPosition.z};
+        s.aiTackleCooldowns=aiTackleCooldowns.clone();s.goalkeeperRecoveryTimers=goalkeeperRecoveryTimers.clone();
+        s.goalkeeperDiveDirections=goalkeeperDiveDirections.clone();
+        s.possessionOwnerIndex=possessionOwnerIndex;s.pendingOffsideReceiver=pendingOffsideReceiver;
+        s.pendingPassReceiver=pendingPassReceiver;s.pendingPasserPlayerId=pendingPasserPlayerId;
+        s.pendingPasserHomeTeam=pendingPasserHomeTeam;s.pendingPassClock=pendingPassClock;
+        s.aiKickClock=aiKickClock;s.animationClock=animationClock;s.tackleCooldown=tackleCooldown;
+        s.restartClock=restartClock;s.ballRotation=ballRotation;s.pendingRestart=pendingRestart;
+        s.restartAwardedHome=restartAwardedHome;s.kickoffRestart=kickoffRestart;s.lastTouchHome=lastTouchHome;
+        s.matchReportSaved=matchReportSaved;s.substitutionMode=substitutionMode;
+        s.substitutionHomeTeam=substitutionHomeTeam;s.substitutionOutgoingIndex=substitutionOutgoingIndex;
+        s.substitutionIncomingIndex=substitutionIncomingIndex;s.substitutionWindow=substitutionWindow;
+        if(!MatchSaveStore.save(s))Gdx.app.error("FutbolNova","Match checkpoint was not saved");
+    }
+
+    private void restoreSavedMatch(){
+        MatchRuntimeSnapshot s=MatchSaveStore.load();
+        if(s==null)return;
+        if(!s.isValid()){Gdx.app.error("FutbolNova","Saved match failed validation; fresh match retained");return;}
+        if(!matchSimulation.restore(s.simulation)||!matchClock.restore(s.clock)
+                ||!matchState.restore(s.matchState)||!matchStatistics.restore(s.statistics)
+                ||!matchDiscipline.restore(s.discipline)||!matchAdvantage.restore(s.advantage)){
+            Gdx.app.error("FutbolNova","Saved match could not be restored; fresh match retained");return;
+        }
+        ballPosition.set(s.ballPosition[0],s.ballPosition[1],s.ballPosition[2]);
+        ballVelocity.set(s.ballVelocity[0],s.ballVelocity[1],s.ballVelocity[2]);
+        ballSpin.set(s.ballSpin[0],s.ballSpin[1],s.ballSpin[2]);
+        controlledPosition.set(s.controlledPosition[0],s.controlledPosition[1],s.controlledPosition[2]);
+        System.arraycopy(s.aiTackleCooldowns,0,aiTackleCooldowns,0,22);
+        System.arraycopy(s.goalkeeperRecoveryTimers,0,goalkeeperRecoveryTimers,0,22);
+        System.arraycopy(s.goalkeeperDiveDirections,0,goalkeeperDiveDirections,0,22);
+        possessionOwnerIndex=s.possessionOwnerIndex;pendingOffsideReceiver=s.pendingOffsideReceiver;
+        pendingPassReceiver=s.pendingPassReceiver;pendingPasserPlayerId=s.pendingPasserPlayerId;
+        pendingPasserHomeTeam=s.pendingPasserHomeTeam;pendingPassClock=s.pendingPassClock;
+        aiKickClock=s.aiKickClock;animationClock=s.animationClock;tackleCooldown=s.tackleCooldown;
+        restartClock=s.restartClock;ballRotation=s.ballRotation;pendingRestart=s.pendingRestart;
+        restartAwardedHome=s.restartAwardedHome;kickoffRestart=s.kickoffRestart;lastTouchHome=s.lastTouchHome;
+        matchReportSaved=s.matchReportSaved;substitutionMode=s.substitutionMode;
+        substitutionHomeTeam=s.substitutionHomeTeam;substitutionOutgoingIndex=s.substitutionOutgoingIndex;
+        substitutionIncomingIndex=s.substitutionIncomingIndex;substitutionWindow=s.substitutionWindow;
+        broadcastCamera.reset(camera,ballPosition);checkpointClock=0f;
+        Gdx.app.log("FutbolNova","Recovered saved match: "+matchSimulation.getHomeTeamName()+" vs "+matchSimulation.getAwayTeamName());
+    }
+
     @Override
     public void dispose() {
+        saveMatchCheckpoint();
         saveCompletedMatchReport();
         if (disposed) return;
         disposed = true;
