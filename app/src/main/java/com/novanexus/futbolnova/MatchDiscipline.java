@@ -119,6 +119,57 @@ public final class MatchDiscipline {
         return Collections.unmodifiableMap(copy);
     }
 
+
+    /** Versioned deep snapshot of every disciplinary record and chronological card event. */
+    public static final class Snapshot {
+        public final int schemaVersion=1;
+        public final java.util.List<PlayerRecord> records;
+        public final java.util.List<CardEvent> events;
+        private Snapshot(java.util.List<PlayerRecord> records,java.util.List<CardEvent> events){
+            this.records=Collections.unmodifiableList(new java.util.ArrayList<>(records));
+            this.events=Collections.unmodifiableList(new java.util.ArrayList<>(events));
+        }
+    }
+
+    public Snapshot snapshotState(){
+        return new Snapshot(new java.util.ArrayList<>(snapshot().values()),new java.util.ArrayList<>(events));
+    }
+
+    /** Validates all IDs, counters, enums and event times before replacing live state. */
+    public boolean restore(Snapshot snapshot){
+        if(snapshot==null||snapshot.schemaVersion!=1||snapshot.records==null||snapshot.events==null)return false;
+        Map<String,MutableRecord> restored=new LinkedHashMap<>();
+        for(PlayerRecord record:snapshot.records){
+            if(record==null||!valid(record.playerId)||record.yellowCards<0||record.yellowCards>2
+                    ||record.foulsSinceCaution<0||record.foulsSinceCaution>2
+                    ||record.sentOff!=(record.yellowCards>=2)&&record.yellowCards>0
+                    ||restored.containsKey(record.playerId))return false;
+            MutableRecord value=new MutableRecord();value.yellows=record.yellowCards;
+            value.foulsSinceCaution=record.foulsSinceCaution;value.dismissed=record.sentOff;
+            restored.put(record.playerId,value);
+        }
+        java.util.List<CardEvent> restoredEvents=new java.util.ArrayList<>();
+        for(CardEvent event:snapshot.events){
+            if(event==null||!valid(event.playerId)||event.card==null||event.card==Card.NONE
+                    ||event.reason==null||!Float.isFinite(event.elapsedSeconds)||event.elapsedSeconds< -1f)return false;
+            MutableRecord record=restored.get(event.playerId);
+            if(record==null)return false;
+            restoredEvents.add(new CardEvent(event.playerId,event.card,event.reason,event.elapsedSeconds,event.dismissed));
+        }
+        Map<String,Integer> yellowsFromEvents=new LinkedHashMap<>();
+        Map<String,Boolean> dismissedFromEvents=new LinkedHashMap<>();
+        for(CardEvent event:restoredEvents){
+            if(event.card==Card.YELLOW)yellowsFromEvents.put(event.playerId,yellowsFromEvents.getOrDefault(event.playerId,0)+1);
+            if(event.dismissed||event.card==Card.RED)dismissedFromEvents.put(event.playerId,true);
+        }
+        for(Map.Entry<String,MutableRecord> entry:restored.entrySet()){
+            MutableRecord value=entry.getValue();
+            if(yellowsFromEvents.getOrDefault(entry.getKey(),0)!=value.yellows
+                    ||dismissedFromEvents.getOrDefault(entry.getKey(),false)!=value.dismissed)return false;
+        }
+        records.clear();records.putAll(restored);events.clear();events.addAll(restoredEvents);return true;
+    }
+
     public void reset(){records.clear();events.clear();}
 
     private static float validTime(float seconds){
