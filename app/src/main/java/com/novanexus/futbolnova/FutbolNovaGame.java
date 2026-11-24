@@ -623,7 +623,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             if(exit.restart==MatchRules.Restart.GOAL){
                 matchAdvantage.clear();
                 matchState.addGoal(exit.awardedHome);
-                matchStatistics.recordGoal(exit.awardedHome?matchSimulation.getControlledPlayer().playerId:null,exit.awardedHome,matchClock.getTotalElapsedSeconds());
+                matchStatistics.recordGoal(null,exit.awardedHome,matchClock.getTotalElapsedSeconds());
                 ballPosition.set(0f,BALL_RADIUS,0f);
                 restartAwardedHome=!exit.awardedHome;
                 kickoffRestart=true;
