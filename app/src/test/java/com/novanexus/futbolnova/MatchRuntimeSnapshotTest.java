@@ -32,7 +32,7 @@ public class MatchRuntimeSnapshotTest {
         return s;
     }
 
-    @Test public void completeSnapshotSurvivesJsonRoundTrip(){
+    @Test public void completeSnapshotSurvivesBinaryRoundTrip(){
         MatchRuntimeSnapshot original=createSnapshot();
         assertTrue(original.isValid());
         MatchRuntimeSnapshot decoded;
