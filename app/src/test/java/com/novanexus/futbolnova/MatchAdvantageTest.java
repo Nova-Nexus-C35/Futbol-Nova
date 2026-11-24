@@ -44,4 +44,13 @@ public final class MatchAdvantageTest {
         assertEquals(0f, advantage.getElapsedSeconds(), 0.001f);
         assertFalse(advantage.begin(false, 1f, 2f, true));
     }
+    @Test public void snapshotRestoresAdvantageWindowAndRejectsInvalidState(){
+        MatchAdvantage source=new MatchAdvantage();
+        assertTrue(source.begin(true,8f,-12f,false));source.update(0.8f,1);
+        MatchAdvantage restored=new MatchAdvantage();assertTrue(restored.restore(source.snapshot()));
+        assertTrue(restored.isActive());assertEquals(8f,restored.getFoulX(),0.001f);
+        assertEquals(0.8f,restored.getElapsedSeconds(),0.001f);
+        MatchAdvantage.Snapshot invalid=new MatchAdvantage.Snapshot(2.5f,true,true,false,Float.NaN,0f,1f);
+        assertFalse(restored.restore(invalid));assertEquals(0.8f,restored.getElapsedSeconds(),0.001f);
+    }
 }
