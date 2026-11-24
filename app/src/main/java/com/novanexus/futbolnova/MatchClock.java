@@ -9,10 +9,11 @@ public final class MatchClock {
 
     /** Immutable, versioned value object for preserving the exact match-clock state. */
     public static final class Snapshot {
-        public final int schemaVersion=1;
-        public final float halfDurationSeconds,elapsedInHalf,firstHalfAddedTime,secondHalfAddedTime;
-        public final Phase phase;
-        public final boolean paused;
+        public int schemaVersion=1;
+        public float halfDurationSeconds,elapsedInHalf,firstHalfAddedTime,secondHalfAddedTime;
+        public Phase phase;
+        public boolean paused;
+        public Snapshot() {}
         public Snapshot(float duration,float elapsed,float firstAdded,float secondAdded,Phase phase,boolean paused){
             this.halfDurationSeconds=duration;this.elapsedInHalf=elapsed;
             this.firstHalfAddedTime=firstAdded;this.secondHalfAddedTime=secondAdded;
