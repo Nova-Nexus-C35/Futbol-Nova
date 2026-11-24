@@ -92,21 +92,24 @@ public final class MatchStatistics {
     public List<Event> getEvents(){return Collections.unmodifiableList(new ArrayList<>(events));}
 
     public static final class EventSnapshot {
-        public final EventType type;public final boolean homeTeam;public final String playerId;public final float elapsedSeconds;
+        public EventType type;public boolean homeTeam;public String playerId;public float elapsedSeconds;
+        public EventSnapshot() {}
         private EventSnapshot(Event e){type=e.type;homeTeam=e.homeTeam;playerId=e.playerId;elapsedSeconds=e.elapsedSeconds;}
     }
     public static final class PlayerSnapshot {
-        public final String playerId;public final int shots,passes,completedPasses,tackles,fouls,saves,goals,offsides;
+        public String playerId;public int shots,passes,completedPasses,tackles,fouls,saves,goals,offsides;
+        public PlayerSnapshot() {}
         private PlayerSnapshot(PlayerCounters p){playerId=p.playerId;shots=p.shots;passes=p.passes;
             completedPasses=p.completedPasses;tackles=p.tackles;fouls=p.fouls;saves=p.saves;goals=p.goals;offsides=p.offsides;}
     }
     /** Deep, versioned copy of all counters, possession time, player totals and the bounded event ledger. */
     public static final class Snapshot {
-        public final int schemaVersion=1;
-        public final int[] shots,shotsOnTarget,passes,completedPasses,tackles,fouls,saves,goals,offsides;
-        public final float[] possessionSeconds;
-        public final List<EventSnapshot> events;
-        public final List<PlayerSnapshot> players;
+        public int schemaVersion=1;
+        public int[] shots,shotsOnTarget,passes,completedPasses,tackles,fouls,saves,goals,offsides;
+        public float[] possessionSeconds;
+        public List<EventSnapshot> events=new ArrayList<>();
+        public List<PlayerSnapshot> players=new ArrayList<>();
+        public Snapshot() {}
         private Snapshot(MatchStatistics s){
             shots=s.shots.clone();shotsOnTarget=s.shotsOnTarget.clone();passes=s.passes.clone();
             completedPasses=s.completedPasses.clone();tackles=s.tackles.clone();fouls=s.fouls.clone();
