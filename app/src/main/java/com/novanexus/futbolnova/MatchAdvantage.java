@@ -15,7 +15,7 @@ public final class MatchAdvantage {
 
     public enum Outcome { NONE, CONTINUE, PLAY_ON, AWARD_FREE_KICK }
 
-    public static final class Snapshot {
+    public static final class Snapshot implements java.io.Serializable {
         public int schemaVersion=1;
         public float windowSeconds,foulX,foulZ,elapsedSeconds;
         public boolean active,awardedHome,defendingHome;
