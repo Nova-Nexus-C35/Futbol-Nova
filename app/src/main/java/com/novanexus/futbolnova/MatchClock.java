@@ -7,6 +7,19 @@ package com.novanexus.futbolnova;
 public final class MatchClock {
     public enum Phase { PRE_MATCH, FIRST_HALF, HALF_TIME, SECOND_HALF, FULL_TIME }
 
+    /** Immutable, versioned value object for preserving the exact match-clock state. */
+    public static final class Snapshot {
+        public final int schemaVersion=1;
+        public final float halfDurationSeconds,elapsedInHalf,firstHalfAddedTime,secondHalfAddedTime;
+        public final Phase phase;
+        public final boolean paused;
+        public Snapshot(float duration,float elapsed,float firstAdded,float secondAdded,Phase phase,boolean paused){
+            this.halfDurationSeconds=duration;this.elapsedInHalf=elapsed;
+            this.firstHalfAddedTime=firstAdded;this.secondHalfAddedTime=secondAdded;
+            this.phase=phase;this.paused=paused;
+        }
+    }
+
     private final float halfDurationSeconds;
     private float elapsedInHalf;
     private float firstHalfAddedTime;
@@ -88,6 +101,36 @@ public final class MatchClock {
     public float getAddedTimeForCurrentHalf() {
         return phase == Phase.SECOND_HALF ? secondHalfAddedTime : firstHalfAddedTime;
     }
+    public Snapshot snapshot() {
+        return new Snapshot(halfDurationSeconds,elapsedInHalf,firstHalfAddedTime,
+                secondHalfAddedTime,phase,paused);
+    }
+
+    /** Validates the complete value before changing any live clock field. */
+    public boolean restore(Snapshot snapshot) {
+        if(snapshot==null||snapshot.schemaVersion!=1||snapshot.phase==null
+                ||!Float.isFinite(snapshot.halfDurationSeconds)
+                ||Math.abs(snapshot.halfDurationSeconds-halfDurationSeconds)>0.0001f
+                ||!validNonNegative(snapshot.elapsedInHalf)
+                ||!validNonNegative(snapshot.firstHalfAddedTime)
+                ||!validNonNegative(snapshot.secondHalfAddedTime))return false;
+        float limit=halfDurationSeconds+(snapshot.phase==Phase.SECOND_HALF||snapshot.phase==Phase.FULL_TIME
+                ?snapshot.secondHalfAddedTime:snapshot.firstHalfAddedTime);
+        if(snapshot.elapsedInHalf>limit+0.001f)return false;
+        if(snapshot.phase==Phase.PRE_MATCH&&snapshot.elapsedInHalf>0.001f)return false;
+        if(snapshot.phase==Phase.FIRST_HALF&&snapshot.elapsedInHalf>=limit)return false;
+        if(snapshot.phase==Phase.SECOND_HALF&&snapshot.elapsedInHalf>=limit)return false;
+        if((snapshot.phase==Phase.HALF_TIME||snapshot.phase==Phase.FULL_TIME)
+                &&Math.abs(snapshot.elapsedInHalf-limit)>0.001f)return false;
+        if((snapshot.phase==Phase.PRE_MATCH||snapshot.phase==Phase.HALF_TIME||snapshot.phase==Phase.FULL_TIME)
+                &&!snapshot.paused)return false;
+        elapsedInHalf=snapshot.elapsedInHalf;firstHalfAddedTime=snapshot.firstHalfAddedTime;
+        secondHalfAddedTime=snapshot.secondHalfAddedTime;phase=snapshot.phase;paused=snapshot.paused;
+        return true;
+    }
+
+    private static boolean validNonNegative(float value){return Float.isFinite(value)&&value>=0f;}
+
     public float getTotalElapsedSeconds() {
         if (phase == Phase.PRE_MATCH) return 0f;
         if (phase == Phase.FIRST_HALF || phase == Phase.HALF_TIME) return elapsedInHalf;
