@@ -15,6 +15,15 @@ public final class MatchAdvantage {
 
     public enum Outcome { NONE, CONTINUE, PLAY_ON, AWARD_FREE_KICK }
 
+    public static final class Snapshot {
+        public final int schemaVersion=1;
+        public final float windowSeconds,foulX,foulZ,elapsedSeconds;
+        public final boolean active,awardedHome,defendingHome;
+        public Snapshot(float window,boolean active,boolean awardedHome,boolean defendingHome,
+                float x,float z,float elapsed){windowSeconds=window;this.active=active;
+            this.awardedHome=awardedHome;this.defendingHome=defendingHome;foulX=x;foulZ=z;elapsedSeconds=elapsed;}
+    }
+
     private final float windowSeconds;
     private boolean active;
     private boolean awardedHome;
@@ -58,6 +67,19 @@ public final class MatchAdvantage {
         }
         clear();
         return Outcome.AWARD_FREE_KICK;
+    }
+
+    public Snapshot snapshot(){return new Snapshot(windowSeconds,active,awardedHome,defendingHome,foulX,foulZ,elapsedSeconds);}
+
+    /** Restores only a fully valid state and requires the same configured window. */
+    public boolean restore(Snapshot s){
+        if(s==null||s.schemaVersion!=1||!Float.isFinite(s.windowSeconds)
+                ||Math.abs(s.windowSeconds-windowSeconds)>0.0001f
+                ||!Float.isFinite(s.elapsedSeconds)||s.elapsedSeconds<0f
+                ||(s.active&&(!Float.isFinite(s.foulX)||!Float.isFinite(s.foulZ)||s.elapsedSeconds>=windowSeconds))
+                ||(!s.active&&s.elapsedSeconds!=0f))return false;
+        active=s.active;awardedHome=s.awardedHome;defendingHome=s.defendingHome;
+        foulX=s.foulX;foulZ=s.foulZ;elapsedSeconds=s.elapsedSeconds;return true;
     }
 
     public boolean isActive() { return active; }
