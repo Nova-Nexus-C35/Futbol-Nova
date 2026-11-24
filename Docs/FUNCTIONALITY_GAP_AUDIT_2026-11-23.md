@@ -637,3 +637,18 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - La APK debug de CI #57 se descargó, se comprobó que incluye `lib/arm64-v8a/libgdx.so` y se calculó SHA-256: `c54dc8a35578fac0b102b80065c5a72aad5348abd39e30ea52981c7a21bb5d93`. Se subió y confirmó en Dropbox como `/Aplicaciones/Fútbol Nova/FutbolNova-debug-snapshot-2026-11-24.apk` (9,243,405 bytes).
 - **Pendiente:** ejecutar CI para los nuevos snapshots de reloj/marcador; snapshots de disciplina, ventaja y estadísticas; snapshot integral del runtime 3D (balón, velocidades, posesión, reinicios, temporizadores, etc.); serialización duradera, recuperación automática y validación manual en Android. No declarar terminado el guardado/carga.
 - La arquitectura visual sigue siendo Java/libGDX 3D. Los snapshots conservan estado de simulación, pero no son un sustituto de la escena 3D ni de los controles directos de los futbolistas.
+
+
+### Guardado automático y recuperación integral del partido (2026-11-24)
+
+- Se agregaron snapshots versionados y restaurables para disciplina (amonestaciones, expulsiones y eventos), estadísticas (contadores por equipo/jugador, posesión y ledger de 256 eventos), reloj, marcador y ventaja.
+- Se añadió `MatchRuntimeSnapshot`, que reúne las capas anteriores con la simulación de 22 jugadores, banquillos, balón (posición, velocidad y efecto), jugador controlado, posesión, fuera de juego pendiente, pase en curso, reinicios, enfriamientos, recuperación y dirección de las estiradas del portero, animación y estado del panel de sustituciones.
+- Se implementó `MatchSaveStore` con archivo binario en almacenamiento interno privado de la aplicación, escritura temporal seguida de sustitución del archivo, validación previa a guardar y comprobación de todas las capas antes de restaurar.
+- `FutbolNovaGame` guarda un checkpoint cada 3 segundos durante un partido, al pausar Android y al salir; intenta recuperar automáticamente el partido al iniciar. Al terminar o reiniciar el partido se limpia el checkpoint. Tras volver de segundo plano, el partido permanece pausado hasta que el usuario lo reanuda.
+- Se añadieron pruebas de restauración y validación de los subsistemas, más una prueba de serialización binaria completa del snapshot.
+- CI run `45482316374` terminó en **success** para el commit `c7b5a01127d544fd6fb8f0aae3003c959616c461`: `testDebugUnitTest`, `assembleDebug` y verificación del runtime ARM64 `lib/arm64-v8a/libgdx.so` aprobadas.
+- Artefacto GitHub Actions `futbol-nova-android-arm64-debug`, ID `14962850394`, ZIP 3,495,151 bytes. APK extraída: 9,259,789 bytes; SHA-256 `b62ed299947bf7a98f99d4e1b6e53a4bc1db74b63df2089e90163cd9c22d0497`.
+- APK debug subida y confirmada en Dropbox: `/Aplicaciones/Fútbol Nova/FutbolNova-debug-save-resume-2026-11-24.apk` (9,259,789 bytes). Se conservaron las versiones anteriores.
+- **Validación pendiente:** probar en un Android real iniciar partido, cerrar forzosamente la aplicación, volver a abrir y comprobar continuidad de posiciones, balón, marcador, tarjetas, estadísticas y sustituciones. CI no sustituye esa prueba física.
+- **3D de producción pendiente:** el proyecto ya dibuja una escena 3D libGDX con cancha, porterías, tribunas, balón, futbolistas articulados low-poly, cámara de transmisión y controles táctiles; todavía no equivale a FIFA en calidad visual/animaciones. Faltan modelos humanos de producción, animaciones completas y mezcladas, estadio/público detallado, audio, repeticiones y optimización/aceptación en dispositivos Android.
+- También siguen pendientes pruebas de juego prolongadas y una APK Release firmada; la APK entregada es debug ARM64.
