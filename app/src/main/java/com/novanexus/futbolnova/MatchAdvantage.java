@@ -16,9 +16,10 @@ public final class MatchAdvantage {
     public enum Outcome { NONE, CONTINUE, PLAY_ON, AWARD_FREE_KICK }
 
     public static final class Snapshot {
-        public final int schemaVersion=1;
-        public final float windowSeconds,foulX,foulZ,elapsedSeconds;
-        public final boolean active,awardedHome,defendingHome;
+        public int schemaVersion=1;
+        public float windowSeconds,foulX,foulZ,elapsedSeconds;
+        public boolean active,awardedHome,defendingHome;
+        public Snapshot() {}
         public Snapshot(float window,boolean active,boolean awardedHome,boolean defendingHome,
                 float x,float z,float elapsed){windowSeconds=window;this.active=active;
             this.awardedHome=awardedHome;this.defendingHome=defendingHome;foulX=x;foulZ=z;elapsedSeconds=elapsed;}
