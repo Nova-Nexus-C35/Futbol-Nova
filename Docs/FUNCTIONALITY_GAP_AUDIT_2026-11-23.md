@@ -652,3 +652,50 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - **Validación pendiente:** probar en un Android real iniciar partido, cerrar forzosamente la aplicación, volver a abrir y comprobar continuidad de posiciones, balón, marcador, tarjetas, estadísticas y sustituciones. CI no sustituye esa prueba física.
 - **3D de producción pendiente:** el proyecto ya dibuja una escena 3D libGDX con cancha, porterías, tribunas, balón, futbolistas articulados low-poly, cámara de transmisión y controles táctiles; todavía no equivale a FIFA en calidad visual/animaciones. Faltan modelos humanos de producción, animaciones completas y mezcladas, estadio/público detallado, audio, repeticiones y optimización/aceptación en dispositivos Android.
 - También siguen pendientes pruebas de juego prolongadas y una APK Release firmada; la APK entregada es debug ARM64.
+
+
+## Actualización de implementación — 2026-11-24
+
+Esta sección prevalece sobre las notas de estado anteriores cuando haya contradicción.
+
+### Guardado y recuperación del amistoso
+
+- MatchSimulation.Snapshot conserva los 22 puestos, jugadores activos, posiciones, velocidad, resistencia, orientación, objetivos de movimiento, suplentes, cambios y ventanas de sustitución.
+- MatchClock.Snapshot y MatchState.Snapshot conservan período, tiempo transcurrido, tiempo añadido, pausa y marcador.
+- MatchStatistics.Snapshot conserva contadores de ambos equipos, posesión, métricas por jugador y hasta 256 eventos recientes con marcas de tiempo.
+- MatchDiscipline.Snapshot conserva tarjetas, motivos, expulsiones y tiempos de los eventos.
+- MatchAdvantage.Snapshot conserva la ventana y el estado de la ley de la ventaja.
+- MatchRuntimeSnapshot integra esos subsistemas con posición/velocidad/spin del balón, jugador controlado, pase pendiente, fuera de juego pendiente, cooldowns, recuperación y dirección de estirada de porteros, temporizadores, reinicio y estado de sustitución.
+- MatchSaveStore guarda JSON en el almacenamiento local de la aplicación, con escritura temporal y reemplazo del checkpoint anterior. El runtime intenta recuperar la partida al iniciar, guarda periódicamente cada 3 segundos y también al pausar o entrar en el ciclo de cierre.
+- Los snapshots usan esquema versionado y validación antes de restaurar. Hay pruebas de restauración y serialización JSON, y de rechazo de datos inválidos.
+- No se debe prometer recuperación perfecta de toda la experiencia visual: la cámara, los punteros táctiles y los objetos gráficos se reconstruyen; la continuidad lógica del partido se restaura desde los datos guardados.
+- La comprobación real de cerrar/forzar cierre y reabrir la app en Android físico sigue pendiente.
+
+### Mejora de presentación 3D
+
+- Se amplió el estadio procedural con paneles perimetrales tipo LED, cuatro torres de iluminación y vigas de cubierta, manteniendo mallas compartidas y materiales sencillos para contener el coste en móvil.
+- Se conserva el campo 3D, las gradas, porterías/redes geométricas, jugadores articulados low-poly, balón físico y cámara de seguimiento tipo retransmisión.
+- Esto mejora el escenario, pero no equivale a gráficos FIFA: todavía faltan modelos humanos riggeados y texturizados, animaciones capturadas/avanzadas, público animado, sombras de calidad, colisiones completas, redes deformables, audio y optimización medida en el dispositivo objetivo.
+
+### Verificación reproducible
+
+- Rama: rebuild/libgdx-android-2026-11-22.
+- Commit validado de guardado y restauración: d68f17acb75c5df8f3ff851c7c92624a5eb254c2.
+- GitHub Actions run: https://github.com/Nova-Nexus-C35/Futbol-Nova/actions/runs/45482691220, conclusión SUCCESS.
+- Pasaron las pruebas unitarias, compilación debug, verificación de lib/arm64-v8a/libgdx.so y publicación del artefacto.
+- APK extraída: 9,259,789 bytes; SHA-256 9f7e0b8c3f5b4c602c3a9450d40fddd1d2f530f4d05cfc62e73536338e8555c9.
+- APK guardada y verificada en Dropbox: /Aplicaciones/Fútbol Nova/FutbolNova-debug-autosave-2026-11-24.apk.
+- Es una APK debug ARM64, no una release firmada. CI no demuestra por sí sola que funcione correctamente en el teléfono físico.
+
+### Estado que todavía impide declarar el juego terminado
+
+1. Probar en Android la restauración tras forzar cierre, pausa/reanudación y sustituciones.
+2. Terminar reglamento vivo: árbitro, faltas y sanciones conectadas al flujo real, fuera de juego con participación, tiros libres/penaltis ejecutables y reinicios reglamentarios.
+3. Completar porteros, colisiones balón-jugador/postes y física de contactos.
+4. Mejorar IA táctica, conducción/regate, apoyos, desmarques y transiciones.
+5. Completar selección de clubes y plantillas reales, uniformes y dorsales visuales.
+6. Llevar la presentación 3D a personajes riggeados, animaciones de acciones, público, estadio detallado, audio y HUD de producción.
+7. Medir FPS, memoria, temperatura y controles multitáctiles en el Android ARM64 objetivo.
+8. Preparar una release firmada y verificable después de la aceptación de dispositivo.
+
+**Estado honesto:** la persistencia lógica del partido tiene una primera implementación completa a nivel de snapshot y almacenamiento local y pasa CI; la experiencia integral de recuperación aún requiere prueba física. La escena 3D es un prototipo nativo ampliado, no un producto comparable visualmente a FIFA todavía.
