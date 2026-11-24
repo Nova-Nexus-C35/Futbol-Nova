@@ -296,7 +296,7 @@ public final class MatchSimulation {
 
 
     /** Versioned, plain-Java snapshot of the complete mutable simulation state. */
-    public static final class Snapshot {
+    public static final class Snapshot implements java.io.Serializable {
         public int schemaVersion = 1;
         public String homeTeamName, awayTeamName;
         public boolean homeAttacksNegativeZ;
@@ -311,7 +311,7 @@ public final class MatchSimulation {
         public Snapshot() {}
     }
 
-    public static final class PlayerSnapshot {
+    public static final class PlayerSnapshot implements java.io.Serializable {
         public String playerId, playerName, teamId, role;
         public int overall, shirtNumber;
         public boolean homeTeam, active;
@@ -320,7 +320,7 @@ public final class MatchSimulation {
         public PlayerSnapshot() {}
     }
 
-    public static final class BenchPlayerSnapshot {
+    public static final class BenchPlayerSnapshot implements java.io.Serializable {
         public String id, name, position;
         public int overall;
         public float[] attributes = new float[0];
