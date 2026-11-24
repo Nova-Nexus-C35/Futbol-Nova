@@ -2,6 +2,15 @@ package com.novanexus.futbolnova;
 
 /** Pure Java match clock and score state; independent from rendering. */
 public final class MatchState {
+    public static final class Snapshot {
+        public final int schemaVersion=1;
+        public final int homeGoals,awayGoals;
+        public final float elapsedSeconds;
+        public final boolean paused;
+        public Snapshot(int home,int away,float elapsed,boolean paused){
+            homeGoals=home;awayGoals=away;elapsedSeconds=elapsed;this.paused=paused;
+        }
+    }
     private int homeGoals;
     private int awayGoals;
     private float elapsedSeconds;
@@ -17,6 +26,14 @@ public final class MatchState {
     public int getHomeGoals() { return homeGoals; }
     public int getAwayGoals() { return awayGoals; }
     public float getElapsedSeconds() { return elapsedSeconds; }
+    public Snapshot snapshot(){return new Snapshot(homeGoals,awayGoals,elapsedSeconds,paused);}
+    /** Rejects malformed values without partially mutating the live score. */
+    public boolean restore(Snapshot snapshot){
+        if(snapshot==null||snapshot.schemaVersion!=1||snapshot.homeGoals<0||snapshot.awayGoals<0
+                ||!Float.isFinite(snapshot.elapsedSeconds)||snapshot.elapsedSeconds<0f)return false;
+        homeGoals=snapshot.homeGoals;awayGoals=snapshot.awayGoals;
+        elapsedSeconds=snapshot.elapsedSeconds;paused=snapshot.paused;return true;
+    }
     public void reset() { homeGoals=0; awayGoals=0; elapsedSeconds=0f; paused=false; }
     public boolean isPaused() { return paused; }
 }
