@@ -432,6 +432,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         int window=matchClock.getPhase()==MatchClock.Phase.HALF_TIME?0:substitutionWindow;
         boolean halfTime=matchClock.getPhase()==MatchClock.Phase.HALF_TIME;
         if(!matchSimulation.substitutePlayer(substitutionHomeTeam,outgoing.playerId,incomingId,window,halfTime))return;
+        if(pendingPassReceiver==substitutionOutgoingIndex)clearPendingPass();
         if(possessionOwnerIndex==substitutionOutgoingIndex){
             possessionOwnerIndex=MatchGameplay.NO_OWNER;
             ballVelocity.setZero();ballSpin.setZero();
@@ -500,6 +501,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 if(!matchSimulation.dismissPlayer(playerId))return;
                 if(possessionOwnerIndex==i)possessionOwnerIndex=MatchGameplay.NO_OWNER;
                 if(pendingOffsideReceiver==i)pendingOffsideReceiver=MatchGameplay.NO_OWNER;
+                if(pendingPassReceiver==i)clearPendingPass();
                 if(wasControlled){
                     MatchSimulation.PlayerState replacement=matchSimulation.getControlledPlayer();
                     if(replacement!=null)controlledPosition.set(replacement.x,0f,replacement.z);
