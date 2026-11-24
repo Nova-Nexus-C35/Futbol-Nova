@@ -16,9 +16,9 @@ public final class MatchReportExporter {
         row(csv,"PLAYER","player_id","shots","passes_attempted","passes_completed","pass_accuracy_percent","tackles","fouls","saves","goals","offsides");
         if(report.players!=null) for(MatchReport.PlayerRecord p:report.players) if(p!=null)
             row(csv,"PLAYER",v(p.playerId),v(p.shots),v(p.passes),v(p.completedPasses),v(p.passAccuracyPercent),v(p.tackles),v(p.fouls),v(p.saves),v(p.goals),v(p.offsides));
-        row(csv,"EVENT","type","home_team","player_id");
+        row(csv,"EVENT","elapsed_seconds","type","home_team","player_id");
         if(report.events!=null) for(MatchReport.EventRecord e:report.events) if(e!=null)
-            row(csv,"EVENT",v(e.type),v(e.homeTeam),v(e.playerId));
+            row(csv,"EVENT",v(e.elapsedSeconds),v(e.type),v(e.homeTeam),v(e.playerId));
         row(csv,"CARD","player_id","card","reason","elapsed_seconds","dismissed");
         if(report.cards!=null) for(MatchReport.CardRecord c:report.cards) if(c!=null)
             row(csv,"CARD",v(c.playerId),v(c.card),v(c.reason),v(c.elapsedSeconds),v(c.dismissed));
