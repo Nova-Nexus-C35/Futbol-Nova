@@ -294,6 +294,172 @@ public final class MatchSimulation {
         }
     }
 
+
+    /** Versioned, plain-Java snapshot of the complete mutable simulation state. */
+    public static final class Snapshot {
+        public int schemaVersion = 1;
+        public String homeTeamName, awayTeamName;
+        public boolean homeAttacksNegativeZ;
+        public int controlledPlayerIndex;
+        public float decisionClock;
+        public int homeSubstitutionsUsed, awaySubstitutionsUsed;
+        public List<PlayerSnapshot> players = new ArrayList<>();
+        public List<BenchPlayerSnapshot> homeBench = new ArrayList<>();
+        public List<BenchPlayerSnapshot> awayBench = new ArrayList<>();
+        public int[] homeSubstitutionWindows = new int[0];
+        public int[] awaySubstitutionWindows = new int[0];
+        public Snapshot() {}
+    }
+
+    public static final class PlayerSnapshot {
+        public String playerId, playerName, teamId, role;
+        public int overall, shirtNumber;
+        public boolean homeTeam, active;
+        public float homeX, homeZ, x, z, targetX, targetZ, stamina, speed;
+        public float movementSpeed, forwardX, forwardZ;
+        public PlayerSnapshot() {}
+    }
+
+    public static final class BenchPlayerSnapshot {
+        public String id, name, position;
+        public int overall;
+        public float[] attributes = new float[0];
+        public BenchPlayerSnapshot() {}
+    }
+
+    /** Captures all simulation state required to resume player movement and substitutions. */
+    public Snapshot snapshot() {
+        Snapshot result = new Snapshot();
+        result.homeTeamName = homeTeamName;
+        result.awayTeamName = awayTeamName;
+        result.homeAttacksNegativeZ = homeAttacksNegativeZ;
+        result.controlledPlayerIndex = controlledPlayerIndex;
+        result.decisionClock = decisionClock;
+        result.homeSubstitutionsUsed = homeSubstitutionsUsed;
+        result.awaySubstitutionsUsed = awaySubstitutionsUsed;
+        for (PlayerState player : players) {
+            PlayerSnapshot saved = new PlayerSnapshot();
+            saved.playerId=player.playerId; saved.playerName=player.playerName;
+            saved.teamId=player.teamId; saved.role=player.role; saved.overall=player.overall;
+            saved.homeTeam=player.homeTeam; saved.shirtNumber=player.shirtNumber;
+            saved.homeX=player.homeX; saved.homeZ=player.homeZ;
+            saved.active=player.active; saved.x=player.x; saved.z=player.z;
+            saved.targetX=player.targetX; saved.targetZ=player.targetZ;
+            saved.stamina=player.stamina; saved.speed=player.speed;
+            saved.movementSpeed=player.movementSpeed;
+            saved.forwardX=player.forwardX; saved.forwardZ=player.forwardZ;
+            result.players.add(saved);
+        }
+        for (OriginalProjectData.PlayerRecord player : homeBench)
+            result.homeBench.add(snapshotBenchPlayer(player));
+        for (OriginalProjectData.PlayerRecord player : awayBench)
+            result.awayBench.add(snapshotBenchPlayer(player));
+        result.homeSubstitutionWindows = toIntArray(homeSubstitutionWindows);
+        result.awaySubstitutionWindows = toIntArray(awaySubstitutionWindows);
+        return result;
+    }
+
+    /** Restores atomically; malformed or incompatible snapshots leave this simulation untouched. */
+    public boolean restore(Snapshot saved) {
+        if (!isValidSnapshot(saved)) return false;
+        List<PlayerState> restoredPlayers = new ArrayList<>(22);
+        List<OriginalProjectData.PlayerRecord> restoredHomeBench = restoreBench(saved.homeBench);
+        List<OriginalProjectData.PlayerRecord> restoredAwayBench = restoreBench(saved.awayBench);
+        for (PlayerSnapshot p : saved.players) {
+            float pace = ("GK".equals(p.role) ? 4.2f : (p.speed - 4.1f) / 0.012f);
+            PlayerState player = new PlayerState(p.playerId,p.playerName,p.teamId,p.role,
+                    p.overall,p.homeTeam,p.shirtNumber,p.x,p.z,pace);
+            player.homeX=p.homeX; player.homeZ=p.homeZ; player.active=p.active;
+            player.targetX=p.targetX; player.targetZ=p.targetZ; player.stamina=p.stamina;
+            player.speed=p.speed; player.movementSpeed=p.movementSpeed;
+            player.forwardX=p.forwardX; player.forwardZ=p.forwardZ;
+            restoredPlayers.add(player);
+        }
+        players.clear(); players.addAll(restoredPlayers);
+        homeBench.clear(); homeBench.addAll(restoredHomeBench);
+        awayBench.clear(); awayBench.addAll(restoredAwayBench);
+        homeTeamName=saved.homeTeamName; awayTeamName=saved.awayTeamName;
+        homeAttacksNegativeZ=saved.homeAttacksNegativeZ;
+        controlledPlayerIndex=saved.controlledPlayerIndex;
+        decisionClock=saved.decisionClock;
+        homeSubstitutionsUsed=saved.homeSubstitutionsUsed;
+        awaySubstitutionsUsed=saved.awaySubstitutionsUsed;
+        homeSubstitutionWindows.clear(); for(int value:saved.homeSubstitutionWindows)homeSubstitutionWindows.add(value);
+        awaySubstitutionWindows.clear(); for(int value:saved.awaySubstitutionWindows)awaySubstitutionWindows.add(value);
+        return true;
+    }
+
+    private static boolean isValidSnapshot(Snapshot s) {
+        if(s==null||s.schemaVersion!=1||s.homeTeamName==null||s.homeTeamName.trim().isEmpty()
+                ||s.awayTeamName==null||s.awayTeamName.trim().isEmpty()
+                ||s.homeTeamName.equals(s.awayTeamName)||!Float.isFinite(s.decisionClock)
+                ||s.decisionClock<0f||s.players==null||s.players.size()!=22
+                ||s.homeBench==null||s.awayBench==null||s.homeSubstitutionWindows==null
+                ||s.awaySubstitutionWindows==null||s.homeSubstitutionsUsed<0||s.homeSubstitutionsUsed>5
+                ||s.awaySubstitutionsUsed<0||s.awaySubstitutionsUsed>5
+                ||s.homeSubstitutionWindows.length>3||s.awaySubstitutionWindows.length>3
+                ||s.controlledPlayerIndex < -1 || s.controlledPlayerIndex > 10)return false;
+        Set<String> ids=new HashSet<>();
+        int home=0,away=0;
+        for(int i=0;i<s.players.size();i++){
+            PlayerSnapshot p=s.players.get(i);
+            if(p==null||!validText(p.playerId)||!validText(p.playerName)||!validText(p.teamId)
+                    ||!validText(p.role)||!ids.add(p.playerId)||p.homeTeam!=(i<11)
+                    ||!finite(p.homeX,p.homeZ,p.x,p.z,p.targetX,p.targetZ,p.stamina,p.speed,
+                            p.movementSpeed,p.forwardX,p.forwardZ)
+                    ||p.stamina<0f||p.stamina>100f||p.speed<=0f||p.overall<0
+                    ||p.shirtNumber<1||p.shirtNumber>99)return false;
+            if(p.homeTeam)home++;else away++;
+        }
+        if(home!=11||away!=11)return false;
+        if(s.controlledPlayerIndex>=0&&!s.players.get(s.controlledPlayerIndex).active)return false;
+        if(!validBench(s.homeBench,ids)||!validBench(s.awayBench,ids))return false;
+        return validWindows(s.homeSubstitutionWindows)&&validWindows(s.awaySubstitutionWindows);
+    }
+
+    private static boolean validBench(List<BenchPlayerSnapshot> bench,Set<String> ids) {
+        for(BenchPlayerSnapshot p:bench){
+            if(p==null||!validText(p.id)||!validText(p.name)||!validText(p.position)
+                    ||!ids.add(p.id)||p.overall<0||p.attributes==null)return false;
+            for(float value:p.attributes)if(!Float.isFinite(value))return false;
+        }
+        return true;
+    }
+
+    private static boolean validWindows(int[] values) {
+        Set<Integer> unique=new HashSet<>();
+        for(int value:values)if(value<1||value>3||!unique.add(value))return false;
+        return true;
+    }
+
+    private static boolean finite(float... values) {
+        for(float value:values)if(!Float.isFinite(value))return false;
+        return true;
+    }
+
+    private static boolean validText(String value) { return value!=null&&!value.trim().isEmpty(); }
+
+    private static BenchPlayerSnapshot snapshotBenchPlayer(OriginalProjectData.PlayerRecord player) {
+        BenchPlayerSnapshot saved=new BenchPlayerSnapshot();
+        saved.id=player.id; saved.name=player.name; saved.position=player.position;
+        saved.overall=player.overall; saved.attributes=player.copyAttributes();
+        return saved;
+    }
+
+    private static List<OriginalProjectData.PlayerRecord> restoreBench(List<BenchPlayerSnapshot> saved) {
+        List<OriginalProjectData.PlayerRecord> result=new ArrayList<>(saved.size());
+        for(BenchPlayerSnapshot player:saved)
+            result.add(new OriginalProjectData.PlayerRecord(player.id,player.name,player.position,
+                    player.overall,player.attributes));
+        return result;
+    }
+
+    private static int[] toIntArray(Set<Integer> values) {
+        int[] result=new int[values.size()]; int index=0;
+        for(int value:values)result[index++]=value;
+        java.util.Arrays.sort(result); return result;
+    }
+
     /** Role-aware support/defensive shape target used by off-ball teammates. */
     public static final class TacticalTarget {
         public final float x,z;
