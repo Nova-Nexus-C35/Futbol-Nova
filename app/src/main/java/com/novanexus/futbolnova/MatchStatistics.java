@@ -24,6 +24,7 @@ public final class MatchStatistics {
         private PlayerCounters(String id){playerId=id;}
         public int getShots(){return shots;} public int getPasses(){return passes;}
         public int getCompletedPasses(){return completedPasses;}
+        public float getPassAccuracyPercent(){return passes>0?100f*completedPasses/passes:0f;}
         public int getTackles(){return tackles;} public int getFouls(){return fouls;}
         public int getSaves(){return saves;} public int getGoals(){return goals;}
         public int getOffsides(){return offsides;}
