@@ -150,6 +150,44 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             addEnvironment(endModel,0f,elevation,54.8f+offset);
         }
 
+        // Broadcast presentation: perimeter LED boards, corner floodlight pylons and roof beams.
+        Material boardDark=new Material(ColorAttribute.createDiffuse(new Color(0.018f,0.035f,0.052f,1f)));
+        Material boardCyan=new Material(ColorAttribute.createDiffuse(new Color(0.02f,0.72f,0.88f,1f)));
+        Material boardViolet=new Material(ColorAttribute.createDiffuse(new Color(0.36f,0.12f,0.82f,1f)));
+        Model sideBoard=builder.createBox(0.28f,0.82f,96f,boardDark,attributes);
+        Model sideBoardGlow=builder.createBox(0.08f,0.12f,96f,boardCyan,attributes);
+        Model endBoard=builder.createBox(58f,0.82f,0.28f,boardDark,attributes);
+        Model endBoardGlow=builder.createBox(58f,0.12f,0.08f,boardViolet,attributes);
+        own(sideBoard);own(sideBoardGlow);own(endBoard);own(endBoardGlow);
+        for(float side:new float[]{-1f,1f}){
+            addEnvironment(sideBoard,side*34.65f,0.48f,0f);
+            addEnvironment(sideBoardGlow,side*34.82f,0.76f,0f);
+            addEnvironment(endBoard,0f,0.48f,side*53.15f);
+            addEnvironment(endBoardGlow,0f,0.76f,side*53.32f);
+        }
+
+        Material towerMat=new Material(ColorAttribute.createDiffuse(new Color(0.055f,0.07f,0.09f,1f)));
+        Material lampMat=new Material(ColorAttribute.createDiffuse(new Color(0.92f,0.96f,1f,1f)));
+        Model tower=builder.createBox(0.48f,17f,0.48f,towerMat,attributes);
+        Model lampBar=builder.createBox(5.8f,0.42f,0.62f,lampMat,attributes);
+        Model lampWing=builder.createBox(0.42f,0.42f,4.4f,lampMat,attributes);
+        own(tower);own(lampBar);own(lampWing);
+        for(float sx:new float[]{-1f,1f})for(float sz:new float[]{-1f,1f}){
+            float tx=sx*42.5f,tz=sz*57f;
+            addEnvironment(tower,tx,8.5f,tz);
+            addEnvironment(lampBar,tx,17.2f,tz);
+            addEnvironment(lampWing,tx,17.2f,tz);
+        }
+
+        Material roofMat=new Material(ColorAttribute.createDiffuse(new Color(0.035f,0.055f,0.075f,1f)));
+        Model roofBeam=builder.createBox(2.4f,0.55f,112f,roofMat,attributes);
+        Model roofRib=builder.createBox(78f,0.38f,1.1f,roofMat,attributes);
+        own(roofBeam);own(roofRib);
+        addEnvironment(roofBeam,-44f,10.5f,0f);
+        addEnvironment(roofBeam,44f,10.5f,0f);
+        addEnvironment(roofRib,0f,10.5f,-61f);
+        addEnvironment(roofRib,0f,10.5f,61f);
+
         Material white=new Material(ColorAttribute.createDiffuse(Color.WHITE));
         Model post=builder.createBox(0.14f,2.44f,0.14f,white,attributes);
         Model bar=builder.createBox(7.32f,0.14f,0.14f,white,attributes);
