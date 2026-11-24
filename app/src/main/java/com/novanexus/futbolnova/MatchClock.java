@@ -8,7 +8,7 @@ public final class MatchClock {
     public enum Phase { PRE_MATCH, FIRST_HALF, HALF_TIME, SECOND_HALF, FULL_TIME }
 
     /** Immutable, versioned value object for preserving the exact match-clock state. */
-    public static final class Snapshot {
+    public static final class Snapshot implements java.io.Serializable {
         public int schemaVersion=1;
         public float halfDurationSeconds,elapsedInHalf,firstHalfAddedTime,secondHalfAddedTime;
         public Phase phase;
