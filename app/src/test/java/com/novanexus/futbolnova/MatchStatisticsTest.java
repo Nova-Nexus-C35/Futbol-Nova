@@ -96,4 +96,16 @@ public class MatchStatisticsTest {
         assertNull(stats.getPlayerCounters("player-7"));
         assertTrue(stats.getPlayers().isEmpty());
     }
-}
+    @Test public void snapshotRestoresCountersPossessionPlayersAndEventsAtomically(){
+        MatchStatistics source=new MatchStatistics();source.recordShot("home_09",true,12f);
+        source.recordPassAttempt("home_09",true,15f);source.recordPassCompleted("home_09",true,16f);
+        source.recordGoal("home_09",true,20f);source.recordPossessionSeconds(40f,true);
+        MatchStatistics restored=new MatchStatistics();assertTrue(restored.restore(source.snapshot()));
+        assertEquals(1,restored.getShots(true));assertEquals(1,restored.getGoals(true));
+        assertEquals(40f,restored.getPossessionSeconds(true),0.001f);
+        assertEquals(4,restored.getEvents().size());
+        assertEquals(20f,restored.getEvents().get(3).elapsedSeconds,0.001f);
+        assertEquals(1,restored.getPlayerCounters("home_09").getCompletedPasses());
+        assertFalse(restored.restore(null));assertEquals(1,restored.getGoals(true));
+    }
+
