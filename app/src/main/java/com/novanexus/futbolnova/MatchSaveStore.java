@@ -19,7 +19,6 @@ public final class MatchSaveStore {
             FileHandle target=Gdx.files.local(SAVE_PATH),temp=Gdx.files.local(TEMP_PATH);
             target.parent().mkdirs();
             temp.writeString(content,false,"UTF-8");
-            if(target.exists())target.delete();
             temp.moveTo(target);
             return target.exists()&&target.length()>0;
         }catch(RuntimeException error){
