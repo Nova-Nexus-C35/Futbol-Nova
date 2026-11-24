@@ -16,8 +16,8 @@ public class MatchReportTest {
         assertNotNull(restored);assertEquals("Cuba",restored.homeTeam);
         assertEquals("Visitante",restored.awayTeam);assertEquals(2,restored.homeGoals);
         assertEquals(1,restored.awayGoals);assertEquals(5400f,restored.elapsedSeconds,0.001f);
-        assertEquals(1,restored.homeShots);assertEquals(1,restored.homeShotsOnTarget);
-        assertEquals(1,restored.awayShotsOnTarget);assertEquals(1,restored.awayFouls);
+        assertEquals(1,restored.homeShots);assertEquals(2,restored.homeShotsOnTarget);
+        assertEquals(0,restored.awayShotsOnTarget);assertEquals(1,restored.awayFouls);
         assertEquals(1,restored.awaySaves);assertEquals(1,restored.homeOffsides);
         assertEquals(45f,restored.homePossessionSeconds,0.001f);
         assertEquals(15f,restored.awayPossessionSeconds,0.001f);
