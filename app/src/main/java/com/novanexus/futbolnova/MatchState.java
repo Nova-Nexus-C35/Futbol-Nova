@@ -2,7 +2,7 @@ package com.novanexus.futbolnova;
 
 /** Pure Java match clock and score state; independent from rendering. */
 public final class MatchState {
-    public static final class Snapshot {
+    public static final class Snapshot implements java.io.Serializable {
         public int schemaVersion=1;
         public int homeGoals,awayGoals;
         public float elapsedSeconds;
