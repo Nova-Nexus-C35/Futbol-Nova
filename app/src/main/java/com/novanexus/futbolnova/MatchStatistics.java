@@ -13,7 +13,12 @@ public final class MatchStatistics {
         public final EventType type;
         public final boolean homeTeam;
         public final String playerId;
-        private Event(EventType type,boolean homeTeam,String playerId){this.type=type;this.homeTeam=homeTeam;this.playerId=playerId;}
+        /** Match-clock time in simulation seconds when the event was recorded. */
+        public final float elapsedSeconds;
+        private Event(EventType type,boolean homeTeam,String playerId,float elapsedSeconds){
+            this.type=type;this.homeTeam=homeTeam;this.playerId=playerId;
+            this.elapsedSeconds=Float.isFinite(elapsedSeconds)&&elapsedSeconds>=0f?elapsedSeconds:0f;
+        }
     }
     private static final int MAX_EVENTS=256;
     private final List<Event> events=new ArrayList<>();
@@ -33,24 +38,32 @@ public final class MatchStatistics {
             fouls=new int[2],saves=new int[2],goals=new int[2],offsides=new int[2];
     private final float[] possessionSeconds=new float[2];
 
-    public void recordShot(boolean home){recordShot(null,home);}
-    public void recordShot(String playerId,boolean home){shots[index(home)]++;count(playerId).shots++;add(EventType.SHOT,home,playerId);}
-    public void recordPassAttempt(boolean home){recordPassAttempt(null,home);}
-    public void recordPassAttempt(String playerId,boolean home){passes[index(home)]++;count(playerId).passes++;add(EventType.PASS_ATTEMPT,home,playerId);}
-    public void recordPassCompleted(String playerId,boolean home){
+    public void recordShot(boolean home){recordShot(null,home,0f);}
+    public void recordShot(String playerId,boolean home){recordShot(playerId,home,0f);}
+    public void recordShot(String playerId,boolean home,float elapsedSeconds){shots[index(home)]++;count(playerId).shots++;add(EventType.SHOT,home,playerId,elapsedSeconds);}
+    public void recordPassAttempt(boolean home){recordPassAttempt(null,home,0f);}
+    public void recordPassAttempt(String playerId,boolean home){recordPassAttempt(playerId,home,0f);}
+    public void recordPassAttempt(String playerId,boolean home,float elapsedSeconds){passes[index(home)]++;count(playerId).passes++;add(EventType.PASS_ATTEMPT,home,playerId,elapsedSeconds);}
+    public void recordPassCompleted(String playerId,boolean home){recordPassCompleted(playerId,home,0f);}
+    public void recordPassCompleted(String playerId,boolean home,float elapsedSeconds){
         completedPasses[index(home)]++;count(playerId).completedPasses++;
-        add(EventType.PASS_COMPLETED,home,playerId);
+        add(EventType.PASS_COMPLETED,home,playerId,elapsedSeconds);
     }
-    public void recordTackle(boolean home){recordTackle(null,home);}
-    public void recordTackle(String playerId,boolean home){tackles[index(home)]++;count(playerId).tackles++;add(EventType.TACKLE,home,playerId);}
-    public void recordFoul(boolean home){recordFoul(null,home);}
-    public void recordFoul(String playerId,boolean home){fouls[index(home)]++;count(playerId).fouls++;add(EventType.FOUL,home,playerId);}
-    public void recordSave(boolean home){recordSave(null,home);}
-    public void recordSave(String playerId,boolean home){saves[index(home)]++;shotsOnTarget[index(!home)]++;count(playerId).saves++;add(EventType.SAVE,home,playerId);}
-    public void recordGoal(boolean home){recordGoal(null,home);}
-    public void recordGoal(String playerId,boolean home){goals[index(home)]++;shotsOnTarget[index(home)]++;count(playerId).goals++;add(EventType.GOAL,home,playerId);}
-    public void recordOffside(boolean offendingHome){recordOffside(null,offendingHome);}
-    public void recordOffside(String playerId,boolean offendingHome){offsides[index(offendingHome)]++;count(playerId).offsides++;add(EventType.OFFSIDE,offendingHome,playerId);}
+    public void recordTackle(boolean home){recordTackle(null,home,0f);}
+    public void recordTackle(String playerId,boolean home){recordTackle(playerId,home,0f);}
+    public void recordTackle(String playerId,boolean home,float elapsedSeconds){tackles[index(home)]++;count(playerId).tackles++;add(EventType.TACKLE,home,playerId,elapsedSeconds);}
+    public void recordFoul(boolean home){recordFoul(null,home,0f);}
+    public void recordFoul(String playerId,boolean home){recordFoul(playerId,home,0f);}
+    public void recordFoul(String playerId,boolean home,float elapsedSeconds){fouls[index(home)]++;count(playerId).fouls++;add(EventType.FOUL,home,playerId,elapsedSeconds);}
+    public void recordSave(boolean home){recordSave(null,home,0f);}
+    public void recordSave(String playerId,boolean home){recordSave(playerId,home,0f);}
+    public void recordSave(String playerId,boolean home,float elapsedSeconds){saves[index(home)]++;shotsOnTarget[index(!home)]++;count(playerId).saves++;add(EventType.SAVE,home,playerId,elapsedSeconds);}
+    public void recordGoal(boolean home){recordGoal(null,home,0f);}
+    public void recordGoal(String playerId,boolean home){recordGoal(playerId,home,0f);}
+    public void recordGoal(String playerId,boolean home,float elapsedSeconds){goals[index(home)]++;shotsOnTarget[index(home)]++;count(playerId).goals++;add(EventType.GOAL,home,playerId,elapsedSeconds);}
+    public void recordOffside(boolean offendingHome){recordOffside(null,offendingHome,0f);}
+    public void recordOffside(String playerId,boolean offendingHome){recordOffside(playerId,offendingHome,0f);}
+    public void recordOffside(String playerId,boolean offendingHome,float elapsedSeconds){offsides[index(offendingHome)]++;count(playerId).offsides++;add(EventType.OFFSIDE,offendingHome,playerId,elapsedSeconds);}
     public PlayerCounters getPlayerCounters(String playerId){return playerId==null?null:playerCounters.get(playerId);}
     public List<PlayerCounters> getPlayers(){return Collections.unmodifiableList(new ArrayList<>(playerCounters.values()));}
     public int getShots(boolean home){return shots[index(home)];}
@@ -91,10 +104,11 @@ public final class MatchStatistics {
         if(counters==null){counters=new PlayerCounters(playerId);playerCounters.put(playerId,counters);}
         return counters;
     }
-    private void add(EventType type,boolean home){add(type,home,null);}
-    private void add(EventType type,boolean home,String playerId){
+    private void add(EventType type,boolean home){add(type,home,null,0f);}
+    private void add(EventType type,boolean home,String playerId){add(type,home,playerId,0f);}
+    private void add(EventType type,boolean home,String playerId,float elapsedSeconds){
         if(events.size()==MAX_EVENTS)events.remove(0);
-        events.add(new Event(type,home,playerId));
+        events.add(new Event(type,home,playerId,elapsedSeconds));
     }
     private static int index(boolean home){return home?0:1;}
 }
