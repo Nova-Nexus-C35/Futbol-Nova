@@ -924,6 +924,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         font.draw(spriteBatch,"TIROS "+matchStatistics.getShots(true)+"-"+matchStatistics.getShots(false)
                 +"  PASES "+matchStatistics.getPasses(true)+"-"+matchStatistics.getPasses(false)
                 +"  ENTRADAS "+matchStatistics.getTackles(true)+"-"+matchStatistics.getTackles(false)
+                +"  A PUERTA "+matchStatistics.getShotsOnTarget(true)+"-"+matchStatistics.getShotsOnTarget(false)
                 +"  PARADAS "+matchStatistics.getSaves(true)+"-"+matchStatistics.getSaves(false)
                 +"  FUERAS DE JUEGO "+matchStatistics.getOffsides(true)+"-"+matchStatistics.getOffsides(false),
                 18f,52f);

@@ -13,7 +13,7 @@ public final class MatchReport {
     public int homeGoals;
     public int awayGoals;
     public float elapsedSeconds;
-    public int homeShots,awayShots,homePasses,awayPasses,homeTackles,awayTackles;
+    public int homeShots,awayShots,homeShotsOnTarget,awayShotsOnTarget,homePasses,awayPasses,homeTackles,awayTackles;
     public int homeFouls,awayFouls,homeSaves,awaySaves,homeOffsides,awayOffsides;
     public float homePossessionSeconds,awayPossessionSeconds,homePossessionPercent,awayPossessionPercent;
     public List<CardRecord> cards = new ArrayList<>();
@@ -67,6 +67,7 @@ public final class MatchReport {
         report.homeGoals=homeGoals;report.awayGoals=awayGoals;
         report.elapsedSeconds=Float.isFinite(elapsed)&&elapsed>=0f?elapsed:0f;
         report.homeShots=stats.getShots(true);report.awayShots=stats.getShots(false);
+        report.homeShotsOnTarget=stats.getShotsOnTarget(true);report.awayShotsOnTarget=stats.getShotsOnTarget(false);
         report.homePasses=stats.getPasses(true);report.awayPasses=stats.getPasses(false);
         report.homeTackles=stats.getTackles(true);report.awayTackles=stats.getTackles(false);
         report.homeFouls=stats.getFouls(true);report.awayFouls=stats.getFouls(false);

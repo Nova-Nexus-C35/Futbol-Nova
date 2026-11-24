@@ -27,7 +27,7 @@ public final class MatchStatistics {
         public int getSaves(){return saves;} public int getGoals(){return goals;}
         public int getOffsides(){return offsides;}
     }
-    private final int[] shots=new int[2],passes=new int[2],tackles=new int[2],
+    private final int[] shots=new int[2],shotsOnTarget=new int[2],passes=new int[2],tackles=new int[2],
             fouls=new int[2],saves=new int[2],goals=new int[2],offsides=new int[2];
     private final float[] possessionSeconds=new float[2];
 
@@ -40,14 +40,16 @@ public final class MatchStatistics {
     public void recordFoul(boolean home){recordFoul(null,home);}
     public void recordFoul(String playerId,boolean home){fouls[index(home)]++;count(playerId).fouls++;add(EventType.FOUL,home,playerId);}
     public void recordSave(boolean home){recordSave(null,home);}
-    public void recordSave(String playerId,boolean home){saves[index(home)]++;count(playerId).saves++;add(EventType.SAVE,home,playerId);}
+    public void recordSave(String playerId,boolean home){saves[index(home)]++;shotsOnTarget[index(!home)]++;count(playerId).saves++;add(EventType.SAVE,home,playerId);}
     public void recordGoal(boolean home){recordGoal(null,home);}
-    public void recordGoal(String playerId,boolean home){goals[index(home)]++;count(playerId).goals++;add(EventType.GOAL,home,playerId);}
+    public void recordGoal(String playerId,boolean home){goals[index(home)]++;shotsOnTarget[index(home)]++;count(playerId).goals++;add(EventType.GOAL,home,playerId);}
     public void recordOffside(boolean offendingHome){recordOffside(null,offendingHome);}
     public void recordOffside(String playerId,boolean offendingHome){offsides[index(offendingHome)]++;count(playerId).offsides++;add(EventType.OFFSIDE,offendingHome,playerId);}
     public PlayerCounters getPlayerCounters(String playerId){return playerId==null?null:playerCounters.get(playerId);}
     public List<PlayerCounters> getPlayers(){return Collections.unmodifiableList(new ArrayList<>(playerCounters.values()));}
     public int getShots(boolean home){return shots[index(home)];}
+    /** On-target shots are confirmed only by a goal or a goalkeeper save. */
+    public int getShotsOnTarget(boolean home){return shotsOnTarget[index(home)];}
     public int getPasses(boolean home){return passes[index(home)];}
     public int getTackles(boolean home){return tackles[index(home)];}
     public int getFouls(boolean home){return fouls[index(home)];}
@@ -66,7 +68,7 @@ public final class MatchStatistics {
     public List<Event> getEvents(){return Collections.unmodifiableList(new ArrayList<>(events));}
     public void reset(){
         events.clear();playerCounters.clear();
-        java.util.Arrays.fill(shots,0);java.util.Arrays.fill(passes,0);
+        java.util.Arrays.fill(shots,0);java.util.Arrays.fill(shotsOnTarget,0);java.util.Arrays.fill(passes,0);
         java.util.Arrays.fill(tackles,0);java.util.Arrays.fill(fouls,0);java.util.Arrays.fill(offsides,0);
         java.util.Arrays.fill(saves,0);java.util.Arrays.fill(goals,0);
         java.util.Arrays.fill(possessionSeconds,0f);

@@ -11,7 +11,8 @@ public class MatchStatisticsTest {
         assertEquals(1,stats.getShots(true));assertEquals(1,stats.getShots(false));
         assertEquals(1,stats.getPasses(true));assertEquals(1,stats.getTackles(false));
         assertEquals(1,stats.getFouls(false));assertEquals(1,stats.getSaves(true));
-        assertEquals(1,stats.getGoals(true));assertEquals(7,stats.getEvents().size());
+        assertEquals(1,stats.getGoals(true));assertEquals(1,stats.getShotsOnTarget(true));
+        assertEquals(1,stats.getShotsOnTarget(false));assertEquals(7,stats.getEvents().size());
         assertEquals(MatchStatistics.EventType.GOAL,stats.getEvents().get(6).type);
     }
     @Test public void eventLedgerIsBoundedAndCountersRemainComplete(){
@@ -38,6 +39,7 @@ public class MatchStatisticsTest {
         MatchStatistics stats=new MatchStatistics();stats.recordGoal(true);stats.recordPassAttempt(false);
         stats.reset();
         assertEquals(0,stats.getGoals(true));assertEquals(0,stats.getPasses(false));
+        assertEquals(0,stats.getShotsOnTarget(true));
         assertTrue(stats.getEvents().isEmpty());
     }
 

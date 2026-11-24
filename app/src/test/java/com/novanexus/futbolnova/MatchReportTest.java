@@ -16,7 +16,8 @@ public class MatchReportTest {
         assertNotNull(restored);assertEquals("Cuba",restored.homeTeam);
         assertEquals("Visitante",restored.awayTeam);assertEquals(2,restored.homeGoals);
         assertEquals(1,restored.awayGoals);assertEquals(5400f,restored.elapsedSeconds,0.001f);
-        assertEquals(1,restored.homeShots);assertEquals(1,restored.awayFouls);
+        assertEquals(1,restored.homeShots);assertEquals(1,restored.homeShotsOnTarget);
+        assertEquals(1,restored.awayShotsOnTarget);assertEquals(1,restored.awayFouls);
         assertEquals(1,restored.awaySaves);assertEquals(1,restored.homeOffsides);
         assertEquals(45f,restored.homePossessionSeconds,0.001f);
         assertEquals(15f,restored.awayPossessionSeconds,0.001f);
@@ -84,7 +85,7 @@ public class MatchReportTest {
         String csv=MatchReportExporter.toCsv(report);
         assertTrue(csv.contains("MATCH,match_id,home_team,away_team,home_goals"));
         assertTrue(csv.contains("MATCH,"+report.matchId+",Cuba,Visitante,1,0,2700.0"));
-        assertTrue(csv.contains("TEAM,HOME,Cuba,1,0,0,0,0,0,0.0,0.0"));
+        assertTrue(csv.contains("TEAM,HOME,Cuba,1,1,0,0,0,0,0,0.0,0.0"));
         assertTrue(csv.contains("PLAYER,home_09,1,0,0,0,0,1,0"));
         assertTrue(csv.contains("EVENT,GOAL,true,home_09"));
         assertTrue(csv.contains("CARD,away_04,YELLOW,PERSISTENT_INFRINGEMENT,1530.0,false"));

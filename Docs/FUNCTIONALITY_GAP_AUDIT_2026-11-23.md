@@ -582,3 +582,13 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - La integración actual mueve el objetivo del portero hacia el punto previsto antes del contacto, registra la parada, conserva la posesión en los blocajes y produce un desvío hacia fuera de la portería en las paradas de reacción. La pose procedural inclina el cuerpo y abre las extremidades durante la recuperación breve.
 - Se añadieron pruebas deterministas para predicción, blocaje, rechazo de disparos inalcanzables/datos inválidos y ambos sentidos de ataque.
 - Limitaciones: la estirada es una pose procedural breve, no una animación esquelética ni una simulación de colisión corporal continua; la resolución de parada todavía coloca el balón en el plano de contacto previsto y no sustituye un sistema completo de portero con rebotes, centros, salidas, despejes y recuperación física. La validación CI de esta tanda queda pendiente.
+
+
+### Implementación: estadísticas de tiros a puerta (2026-11-24)
+
+- Se añadieron contadores por equipo de tiros a puerta confirmados.
+- Un gol cuenta como tiro a puerta del equipo anotador; una parada del portero cuenta como tiro a puerta del equipo contrario. Los disparos que terminan fuera o son bloqueados por otro jugador no se clasifican como tiros a puerta.
+- Se añadió la cifra al HUD y a los informes JSON/CSV.
+- Se añadieron aserciones para los contadores, su reinicio, la captura del informe y la exportación CSV.
+- La definición es conservadora: solo registra como tiro a puerta un gol o una parada del guardameta; no infiere tiros a puerta a partir de balones que pasan cerca de la portería.
+- Esta tanda queda pendiente de CI y no se considera validada hasta que termine la ejecución del SHA correspondiente.
