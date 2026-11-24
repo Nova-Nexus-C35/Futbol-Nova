@@ -3,7 +3,7 @@ package com.novanexus.futbolnova;
 import com.novanexus.futbolnova.MatchClock.Phase;
 
 /** Complete, versioned, validated snapshot of a live 3D match runtime. */
-public final class MatchRuntimeSnapshot {
+public final class MatchRuntimeSnapshot implements java.io.Serializable {
     public int schemaVersion=1;
     public MatchSimulation.Snapshot simulation;
     public MatchClock.Snapshot clock;
