@@ -108,4 +108,4 @@ public class MatchStatisticsTest {
         assertEquals(1,restored.getPlayerCounters("home_09").getCompletedPasses());
         assertFalse(restored.restore(null));assertEquals(1,restored.getGoals(true));
     }
-
+}
