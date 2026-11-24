@@ -38,6 +38,16 @@ public class MatchStatisticsTest {
         assertEquals(0f,stats.getPassAccuracyPercent(true),0.001f);
     }
 
+    @Test public void eventLedgerStoresMatchClockTimeAndSanitizesInvalidTime(){
+        MatchStatistics stats=new MatchStatistics();
+        stats.recordPassAttempt("home_06",true,127.5f);
+        stats.recordGoal("home_09",true,Float.NaN);
+        assertEquals(127.5f,stats.getEvents().get(0).elapsedSeconds,0.001f);
+        assertEquals(0f,stats.getEvents().get(1).elapsedSeconds,0.001f);
+        stats.reset();
+        assertTrue(stats.getEvents().isEmpty());
+    }
+
     @Test public void possessionTimeProducesBalancedPercentagesAndResets(){
         MatchStatistics stats=new MatchStatistics();
         stats.recordPossessionSeconds(30f,true);
