@@ -293,7 +293,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 else{
                     substitutionMode=false;
                     if(matchClock.getPhase()==MatchClock.Phase.HALF_TIME)startSecondHalf();
-                    else if(matchClock.isPlaying()&&matchClock.isPaused())matchClock.resume();
+                    else if(matchClock.isPlaying()&&matchClock.isPaused()){matchClock.resume();matchState.setPaused(false);}
                 }
                 pointerWasTouched[pointer]=true;
                 continue;
