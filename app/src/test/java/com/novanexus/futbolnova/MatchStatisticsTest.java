@@ -20,6 +20,24 @@ public class MatchStatisticsTest {
         for(int i=0;i<300;i++)stats.recordShot(true);
         assertEquals(300,stats.getShots(true));assertEquals(256,stats.getEvents().size());
     }
+    @Test public void tracksCompletedPassesAndAccuracyPerTeamAndPlayer(){
+        MatchStatistics stats=new MatchStatistics();
+        stats.recordPassAttempt("home_06",true);
+        stats.recordPassAttempt("home_06",true);
+        stats.recordPassCompleted("home_06",true);
+        stats.recordPassAttempt("away_08",false);
+        stats.recordPassCompleted("away_08",false);
+        assertEquals(2,stats.getPasses(true));
+        assertEquals(1,stats.getCompletedPasses(true));
+        assertEquals(50f,stats.getPassAccuracyPercent(true),0.001f);
+        assertEquals(100f,stats.getPassAccuracyPercent(false),0.001f);
+        assertEquals(1,stats.getPlayerCounters("home_06").getCompletedPasses());
+        assertEquals(MatchStatistics.EventType.PASS_COMPLETED,stats.getEvents().get(2).type);
+        stats.reset();
+        assertEquals(0,stats.getCompletedPasses(true));
+        assertEquals(0f,stats.getPassAccuracyPercent(true),0.001f);
+    }
+
     @Test public void possessionTimeProducesBalancedPercentagesAndResets(){
         MatchStatistics stats=new MatchStatistics();
         stats.recordPossessionSeconds(30f,true);
