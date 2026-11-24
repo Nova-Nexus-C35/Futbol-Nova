@@ -34,6 +34,7 @@ public class MatchReportTest {
     @Test public void reportPreservesOrderedGameplayTimelineAcrossJsonRoundTrip(){
         MatchStatistics stats=new MatchStatistics();
         stats.recordPassAttempt("home_06",true);
+        stats.recordPassCompleted("home_06",true);
         stats.recordShot("home_09",true);
         stats.recordSave("away_01",false);
         stats.recordGoal("home_09",true);
@@ -47,9 +48,9 @@ public class MatchReportTest {
         assertEquals("home_06",restored.events.get(0).playerId);
         assertEquals("SHOT",restored.events.get(2).type);
         assertEquals("SAVE",restored.events.get(3).type);
-        assertFalse(restored.events.get(2).homeTeam);
+        assertFalse(restored.events.get(3).homeTeam);
         assertEquals("GOAL",restored.events.get(4).type);
-        assertEquals("home_09",restored.events.get(3).playerId);
+        assertEquals("home_09",restored.events.get(4).playerId);
     }
 
     @Test public void reportCapturesPerPlayerStatistics(){
@@ -88,7 +89,7 @@ public class MatchReportTest {
         String csv=MatchReportExporter.toCsv(report);
         assertTrue(csv.contains("MATCH,match_id,home_team,away_team,home_goals"));
         assertTrue(csv.contains("MATCH,"+report.matchId+",Cuba,Visitante,1,0,2700.0"));
-        assertTrue(csv.contains("TEAM,HOME,Cuba,1,1,0,0,0,0,0,0.0,0.0"));
+        assertTrue(csv.contains("TEAM,HOME,Cuba,1,1,0,0,0.0,0,0,0,0,0.0,0.0"));
         assertTrue(csv.contains("PLAYER,home_09,1,0,0,0,0,0,1,0"));
         assertTrue(csv.contains("EVENT,GOAL,true,home_09"));
         assertTrue(csv.contains("CARD,away_04,YELLOW,PERSISTENT_INFRINGEMENT,1530.0,false"));
