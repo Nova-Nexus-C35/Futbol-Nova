@@ -3,10 +3,11 @@ package com.novanexus.futbolnova;
 /** Pure Java match clock and score state; independent from rendering. */
 public final class MatchState {
     public static final class Snapshot {
-        public final int schemaVersion=1;
-        public final int homeGoals,awayGoals;
-        public final float elapsedSeconds;
-        public final boolean paused;
+        public int schemaVersion=1;
+        public int homeGoals,awayGoals;
+        public float elapsedSeconds;
+        public boolean paused;
+        public Snapshot() {}
         public Snapshot(int home,int away,float elapsed,boolean paused){
             homeGoals=home;awayGoals=away;elapsedSeconds=elapsed;this.paused=paused;
         }
