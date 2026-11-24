@@ -8,11 +8,12 @@ Native Android football game project. The current development line uses Java 17,
 - Procedural 3D pitch, 22 player placeholders, ball, perspective camera and touch input.
 - Java 4-3-3 11v11 simulation ported from the original project: tactical repositioning, nearest-player pressure, goalkeeper positioning, stamina and player separation.
 - Aerodynamic ball flight (gravity, drag and Magnus spin) and stricter goal-line geometry.
-- Basic score and match clock; restarts and live referee decisions remain pending.
-- Match clock and score are separated into a plain Java class with unit tests.
-- Geometry is generated in code; no external models, kits, logos, sounds or images are bundled.
+- Match clock, two-half flow, score, substitutions, basic discipline/advantage and match statistics are implemented in the current development branch; full referee decisions and regulation restarts remain incomplete.
+- Versioned match snapshots and local JSON checkpoints restore simulation, benches, clock, score, statistics, cards, advantage and ball/gameplay state; periodic and lifecycle checkpoints are enabled.
+- The procedural stadium includes stands, LED perimeter boards, floodlight towers, roof beams, pitch markings and goal nets. Players remain low-poly procedural humanoids with basic gait animation.
+- Geometry is generated in code; no third-party player models, club kits, logos, sounds or images are bundled.
 
-This is an early technical vertical slice, not a complete football game. Ball possession and AI passing/shooting, full match rules/referee, goalkeeper reactions, human player models and animation, career modes, saves and real-world assets remain to be implemented.
+This remains an early 3D technical vertical slice, not a complete football game or a FIFA-equivalent production. Advanced player animations/models, realistic goalkeeper reactions and collisions, complete live referee/rules, tactical AI, licensed club assets, audience/audio, career modes and device acceptance/release signing remain to be implemented.
 
 ## Build without a PC
 
