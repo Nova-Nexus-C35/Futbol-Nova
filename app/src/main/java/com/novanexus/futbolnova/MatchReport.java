@@ -13,7 +13,10 @@ public final class MatchReport {
     public int homeGoals;
     public int awayGoals;
     public float elapsedSeconds;
-    public int homeShots,awayShots,homeShotsOnTarget,awayShotsOnTarget,homePasses,awayPasses,homeTackles,awayTackles;
+    public int homeShots,awayShots,homeShotsOnTarget,awayShotsOnTarget,homePasses,awayPasses;
+    public int homeCompletedPasses,awayCompletedPasses;
+    public float homePassAccuracyPercent,awayPassAccuracyPercent;
+    public int homeTackles,awayTackles;
     public int homeFouls,awayFouls,homeSaves,awaySaves,homeOffsides,awayOffsides;
     public float homePossessionSeconds,awayPossessionSeconds,homePossessionPercent,awayPossessionPercent;
     public List<CardRecord> cards = new ArrayList<>();
@@ -38,11 +41,11 @@ public final class MatchReport {
     /** Per-player totals captured at full time. */
     public static final class PlayerRecord {
         public String playerId;
-        public int shots,passes,tackles,fouls,saves,goals,offsides;
+        public int shots,passes,completedPasses,tackles,fouls,saves,goals,offsides;
         public PlayerRecord() {}
         PlayerRecord(MatchStatistics.PlayerCounters counters) {
             playerId=counters.playerId;
-            shots=counters.getShots();passes=counters.getPasses();
+            shots=counters.getShots();passes=counters.getPasses();completedPasses=counters.getCompletedPasses();
             tackles=counters.getTackles();fouls=counters.getFouls();
             saves=counters.getSaves();goals=counters.getGoals();
             offsides=counters.getOffsides();
@@ -69,6 +72,9 @@ public final class MatchReport {
         report.homeShots=stats.getShots(true);report.awayShots=stats.getShots(false);
         report.homeShotsOnTarget=stats.getShotsOnTarget(true);report.awayShotsOnTarget=stats.getShotsOnTarget(false);
         report.homePasses=stats.getPasses(true);report.awayPasses=stats.getPasses(false);
+        report.homeCompletedPasses=stats.getCompletedPasses(true);report.awayCompletedPasses=stats.getCompletedPasses(false);
+        report.homePassAccuracyPercent=stats.getPassAccuracyPercent(true);
+        report.awayPassAccuracyPercent=stats.getPassAccuracyPercent(false);
         report.homeTackles=stats.getTackles(true);report.awayTackles=stats.getTackles(false);
         report.homeFouls=stats.getFouls(true);report.awayFouls=stats.getFouls(false);
         report.homeSaves=stats.getSaves(true);report.awaySaves=stats.getSaves(false);
