@@ -42,10 +42,12 @@ public final class MatchReport {
     public static final class PlayerRecord {
         public String playerId;
         public int shots,passes,completedPasses,tackles,fouls,saves,goals,offsides;
+        public float passAccuracyPercent;
         public PlayerRecord() {}
         PlayerRecord(MatchStatistics.PlayerCounters counters) {
             playerId=counters.playerId;
             shots=counters.getShots();passes=counters.getPasses();completedPasses=counters.getCompletedPasses();
+            passAccuracyPercent=counters.getPassAccuracyPercent();
             tackles=counters.getTackles();fouls=counters.getFouls();
             saves=counters.getSaves();goals=counters.getGoals();
             offsides=counters.getOffsides();
