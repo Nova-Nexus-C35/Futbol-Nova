@@ -33,23 +33,26 @@ public class MatchReportTest {
 
     @Test public void reportPreservesOrderedGameplayTimelineAcrossJsonRoundTrip(){
         MatchStatistics stats=new MatchStatistics();
-        stats.recordPassAttempt("home_06",true);
-        stats.recordPassCompleted("home_06",true);
-        stats.recordShot("home_09",true);
-        stats.recordSave("away_01",false);
-        stats.recordGoal("home_09",true);
+        stats.recordPassAttempt("home_06",true,15f);
+        stats.recordPassCompleted("home_06",true,18.5f);
+        stats.recordShot("home_09",true,22f);
+        stats.recordSave("away_01",false,24f);
+        stats.recordGoal("home_09",true,25f);
         MatchReport original=MatchReport.capture("Cuba","Visitante",1,0,2700f,stats,new MatchDiscipline());
         MatchReport restored=MatchReport.fromJson(original.toJson());
         assertNotNull(restored);
         assertEquals(5,restored.events.size());
         assertEquals("PASS_ATTEMPT",restored.events.get(0).type);
+        assertEquals(15f,restored.events.get(0).elapsedSeconds,0.001f);
         assertEquals("PASS_COMPLETED",restored.events.get(1).type);
+        assertEquals(18.5f,restored.events.get(1).elapsedSeconds,0.001f);
         assertTrue(restored.events.get(0).homeTeam);
         assertEquals("home_06",restored.events.get(0).playerId);
         assertEquals("SHOT",restored.events.get(2).type);
         assertEquals("SAVE",restored.events.get(3).type);
         assertFalse(restored.events.get(3).homeTeam);
         assertEquals("GOAL",restored.events.get(4).type);
+        assertEquals(25f,restored.events.get(4).elapsedSeconds,0.001f);
         assertEquals("home_09",restored.events.get(4).playerId);
     }
 
@@ -94,7 +97,7 @@ public class MatchReportTest {
         assertTrue(csv.contains("MATCH,"+report.matchId+",Cuba,Visitante,1,0,2700.0"));
         assertTrue(csv.contains("TEAM,HOME,Cuba,1,1,0,0,0.0,0,0,0,0,0.0,0.0"));
         assertTrue(csv.contains("PLAYER,home_09,1,0,0,0.0,0,0,0,1,0"));
-        assertTrue(csv.contains("EVENT,GOAL,true,home_09"));
+        assertTrue(csv.contains("EVENT,0.0,GOAL,true,home_09"));
         assertTrue(csv.contains("CARD,away_04,YELLOW,PERSISTENT_INFRINGEMENT,1530.0,false"));
     }
 
