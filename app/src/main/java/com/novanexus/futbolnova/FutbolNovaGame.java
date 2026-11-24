@@ -332,6 +332,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             if(x<width*0.32f){cycleHomeRoster();return;}
             if(x<width*0.72f){cycleAwayRoster();return;}
             if(matchClock.start()){
+                matchState.setPaused(false);
                 matchReportSaved=false;
                 ballPosition.set(0f,BALL_RADIUS,0f);ballVelocity.setZero();ballSpin.setZero();
                 possessionOwnerIndex=MatchGameplay.NO_OWNER;pendingOffsideReceiver=MatchGameplay.NO_OWNER;clearPendingPass();restartAwardedHome=true;
@@ -349,6 +350,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(x>=width*0.72f){
             if(matchClock.isPlaying()){
                 if(matchClock.isPaused())matchClock.resume(); else matchClock.pause();
+                matchState.setPaused(matchClock.isPaused());
+                if(matchClock.isPaused())saveMatchCheckpoint();
             }
             return;
         }
@@ -371,6 +374,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
 
     private void startSecondHalf(){
         if(!matchClock.startSecondHalf())return;
+        matchState.setPaused(false);
         substitutionMode=false;
         matchSimulation.switchEnds();
         MatchSimulation.PlayerState selectedAfterSwitch=matchSimulation.getControlledPlayer();
