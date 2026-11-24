@@ -614,3 +614,15 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Artefacto `futbol-nova-android-arm64-debug`, ID `14957730650`, ZIP 3,484,488 bytes, SHA-256 `ade9dace870e1b46624049f40c05dd20f44370302f1b88d08c9e6a96d3341106`, expiración `2026-12-08T19:19:34Z`.
 - El APK se extrajo y se comprobó que incluye `lib/arm64-v8a/libgdx.so`; SHA-256 del APK extraído: `3675e8ba11b635217629cf1449a528d25ca012af2b5bed86abad84f22cc677fc`.
 - La precisión por jugador es derivada de la misma regla de posesión del receptor que la métrica por equipo; no mide calidad del pase, asistencias, pases progresivos ni situaciones de ventaja.
+
+
+### Incremento: marcas de tiempo en la cronología del partido y CI aprobada (2026-11-24)
+
+- `MatchStatistics.Event` conserva `elapsedSeconds` para registrar el segundo de partido en el que ocurrió cada evento. Los métodos de registro mantienen sobrecargas anteriores por compatibilidad y las nuevas llamadas del runtime pasan el reloj acumulado del partido.
+- `MatchReport.EventRecord` incluye el tiempo del evento en JSON y `MatchReportExporter` añade la columna `elapsed_seconds` al CSV.
+- Los tiempos no finitos o negativos se normalizan a cero. Los eventos creados por llamadas antiguas sin tiempo explícito mantienen el valor 0.
+- Se añadieron pruebas para la conservación y saneamiento de tiempos en el ledger, la ida/vuelta JSON y la compatibilidad/exportación CSV.
+- CI run `45473575613` terminó en **success** para el commit `ca46bfd75f419b4bd2e3fbfab50044e3765d90de`: pruebas unitarias, compilación Android ARM64, verificación de `lib/arm64-v8a/libgdx.so` y subida del artefacto completadas.
+- Artefacto `futbol-nova-android-arm64-debug`, ID `14957683587`, ZIP de 3,484,797 bytes. El artefacto está disponible en GitHub Actions; todavía no se ha confirmado su copia a Dropbox.
+- Esta tanda añade marcas de tiempo a los eventos, pero no implementa todavía guardado/reanudación del estado vivo del partido. La precisión de goles sin autor conocido se conserva sin atribuir un goleador inventado.
+- La CI no sustituye la prueba de instalación y jugabilidad en el Android físico ni convierte el APK debug en una versión Release firmada.
