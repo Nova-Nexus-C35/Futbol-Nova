@@ -13,22 +13,24 @@ public final class MatchDiscipline {
         VIOLENT_CONDUCT, DENIAL_OF_GOAL_SCORING_OPPORTUNITY, DISSENT, OTHER
     }
     public static final class CardEvent {
-        public final String playerId;
-        public final Card card;
-        public final Reason reason;
+        public String playerId;
+        public Card card;
+        public Reason reason;
         /** Match elapsed seconds; -1 means the caller did not supply a match time. */
-        public final float elapsedSeconds;
-        public final boolean dismissed;
+        public float elapsedSeconds;
+        public boolean dismissed;
+        public CardEvent() {}
         private CardEvent(String id,Card card,Reason reason,float seconds,boolean dismissed){
             this.playerId=id;this.card=card;this.reason=reason;this.elapsedSeconds=seconds;this.dismissed=dismissed;
         }
     }
 
     public static final class PlayerRecord {
-        public final String playerId;
-        public final int yellowCards;
-        public final int foulsSinceCaution;
-        public final boolean sentOff;
+        public String playerId;
+        public int yellowCards;
+        public int foulsSinceCaution;
+        public boolean sentOff;
+        public PlayerRecord() {}
         private PlayerRecord(String id,int yellows,int fouls,boolean dismissed){
             playerId=id;yellowCards=yellows;foulsSinceCaution=fouls;sentOff=dismissed;
         }
@@ -122,9 +124,10 @@ public final class MatchDiscipline {
 
     /** Versioned deep snapshot of every disciplinary record and chronological card event. */
     public static final class Snapshot {
-        public final int schemaVersion=1;
-        public final java.util.List<PlayerRecord> records;
-        public final java.util.List<CardEvent> events;
+        public int schemaVersion=1;
+        public java.util.List<PlayerRecord> records=new java.util.ArrayList<>();
+        public java.util.List<CardEvent> events=new java.util.ArrayList<>();
+        public Snapshot() {}
         private Snapshot(java.util.List<PlayerRecord> records,java.util.List<CardEvent> events){
             this.records=Collections.unmodifiableList(new java.util.ArrayList<>(records));
             this.events=Collections.unmodifiableList(new java.util.ArrayList<>(events));
