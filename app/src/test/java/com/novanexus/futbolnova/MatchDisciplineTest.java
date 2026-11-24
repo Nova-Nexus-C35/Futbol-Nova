@@ -99,4 +99,4 @@ public class MatchDisciplineTest {
         MatchDiscipline.Snapshot invalid=source.snapshotState();
         assertFalse(restored.restore(null));assertTrue(restored.isSentOff("away_02"));
     }
-
+}
