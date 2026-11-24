@@ -93,6 +93,7 @@ public final class OriginalProjectData {
             this.id=id; this.name=name; this.position=position; this.overall=overall;
             this.attributes=attributes.clone();
         }
+        float[] copyAttributes() { return attributes.clone(); }
         public float attribute(int index) {
             return index >= 0 && index < attributes.length ? attributes[index] : 50f;
         }
