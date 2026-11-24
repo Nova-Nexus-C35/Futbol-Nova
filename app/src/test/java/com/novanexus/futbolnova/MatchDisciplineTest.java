@@ -90,4 +90,13 @@ public class MatchDisciplineTest {
         assertFalse(discipline.isSentOff("away_01"));
         assertTrue(discipline.snapshot().isEmpty());
     }
-}
+    @Test public void snapshotRestoresCardsEventsAndDismissalsAtomically(){
+        MatchDiscipline source=new MatchDiscipline();source.issueYellow("home_04",MatchDiscipline.Reason.DISSENT,80f);
+        source.issueRed("away_02",MatchDiscipline.Reason.VIOLENT_CONDUCT,125f);
+        MatchDiscipline restored=new MatchDiscipline();assertTrue(restored.restore(source.snapshotState()));
+        assertEquals(1,restored.getYellowCards("home_04"));assertTrue(restored.isSentOff("away_02"));
+        assertEquals(2,restored.snapshotEvents().size());
+        MatchDiscipline.Snapshot invalid=source.snapshotState();
+        assertFalse(restored.restore(null));assertTrue(restored.isSentOff("away_02"));
+    }
+
