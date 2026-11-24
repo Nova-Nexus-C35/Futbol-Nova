@@ -626,3 +626,14 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Artefacto `futbol-nova-android-arm64-debug`, ID `14957683587`, ZIP de 3,484,797 bytes. El artefacto está disponible en GitHub Actions; todavía no se ha confirmado su copia a Dropbox.
 - Esta tanda añade marcas de tiempo a los eventos, pero no implementa todavía guardado/reanudación del estado vivo del partido. La precisión de goles sin autor conocido se conserva sin atribuir un goleador inventado.
 - La CI no sustituye la prueba de instalación y jugabilidad en el Android físico ni convierte el APK debug en una versión Release firmada.
+
+
+### Persistencia: snapshots de reloj y marcador (2026-11-24)
+
+- La primera capa de snapshots de `MatchSimulation` (jugadores, banquillos, dirección, control y ventanas de sustitución) quedó integrada en el commit `89830e355960a4c0e2bdb6a3b92a800c31edeaf8`; CI #57 (`45475197957`) terminó en **success**, incluidas pruebas, compilación Android ARM64 y verificación de `lib/arm64-v8a/libgdx.so`.
+- Se añadió a `MatchClock` un snapshot versionado que conserva duración, tiempo transcurrido del período, tiempo añadido, fase y pausa. La restauración valida todos los valores antes de mutar el reloj.
+- Se añadió a `MatchState` un snapshot versionado para marcador, tiempo acumulado y pausa, también con restauración atómica.
+- Se añadieron pruebas de round-trip y rechazo de snapshots inválidos para ambos componentes.
+- La APK debug de CI #57 se descargó, se comprobó que incluye `lib/arm64-v8a/libgdx.so` y se calculó SHA-256: `c54dc8a35578fac0b102b80065c5a72aad5348abd39e30ea52981c7a21bb5d93`. Se subió y confirmó en Dropbox como `/Aplicaciones/Fútbol Nova/FutbolNova-debug-snapshot-2026-11-24.apk` (9,243,405 bytes).
+- **Pendiente:** ejecutar CI para los nuevos snapshots de reloj/marcador; snapshots de disciplina, ventaja y estadísticas; snapshot integral del runtime 3D (balón, velocidades, posesión, reinicios, temporizadores, etc.); serialización duradera, recuperación automática y validación manual en Android. No declarar terminado el guardado/carga.
+- La arquitectura visual sigue siendo Java/libGDX 3D. Los snapshots conservan estado de simulación, pero no son un sustituto de la escena 3D ni de los controles directos de los futbolistas.
