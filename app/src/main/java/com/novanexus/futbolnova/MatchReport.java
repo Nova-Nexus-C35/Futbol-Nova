@@ -57,9 +57,11 @@ public final class MatchReport {
         public String type;
         public boolean homeTeam;
         public String playerId;
+        public float elapsedSeconds;
         public EventRecord() {}
         EventRecord(MatchStatistics.Event event) {
             type=event.type.name();homeTeam=event.homeTeam;playerId=event.playerId;
+            elapsedSeconds=event.elapsedSeconds;
         }
     }
 
