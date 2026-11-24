@@ -1,6 +1,9 @@
 package com.novanexus.futbolnova;
 
-import com.badlogic.gdx.utils.Json;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -32,9 +35,14 @@ public class MatchRuntimeSnapshotTest {
     @Test public void completeSnapshotSurvivesJsonRoundTrip(){
         MatchRuntimeSnapshot original=createSnapshot();
         assertTrue(original.isValid());
-        Json json=new Json();
-        String encoded=json.toJson(original);
-        MatchRuntimeSnapshot decoded=json.fromJson(MatchRuntimeSnapshot.class,encoded);
+        MatchRuntimeSnapshot decoded;
+        try{
+            ByteArrayOutputStream bytes=new ByteArrayOutputStream();
+            try(ObjectOutputStream output=new ObjectOutputStream(bytes)){output.writeObject(original);}
+            try(ObjectInputStream input=new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))){
+                decoded=(MatchRuntimeSnapshot)input.readObject();
+            }
+        }catch(Exception error){throw new AssertionError("Snapshot binary round-trip failed",error);}
         assertNotNull(decoded);assertTrue(decoded.isValid());
         assertEquals("home",decoded.simulation.homeTeamName);
         assertEquals(1,decoded.matchState.homeGoals);
