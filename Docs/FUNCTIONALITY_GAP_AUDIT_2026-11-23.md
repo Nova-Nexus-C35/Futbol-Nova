@@ -592,3 +592,15 @@ Se añadieron pruebas de objetivos de delantero/extremo, compactación defensiva
 - Se añadieron aserciones para los contadores, su reinicio, la captura del informe y la exportación CSV.
 - La definición es conservadora: solo registra como tiro a puerta un gol o una parada del guardameta; no infiere tiros a puerta a partir de balones que pasan cerca de la portería.
 - Esta tanda queda pendiente de CI y no se considera validada hasta que termine la ejecución del SHA correspondiente.
+
+### Implementación: precisión de pases y validación ARM64 (2026-11-24)
+
+- `MatchStatistics` ahora separa pases intentados y completados por equipo y por futbolista, y calcula la precisión porcentual sin dividir entre cero.
+- El runtime conserva temporalmente la identidad del pasador y el índice del receptor. El pase solo se marca como completado cuando ese receptor obtiene la posesión dentro de la ventana de seguimiento; una intercepción, expiración, salida del balón, fuera de juego o salida del receptor por sustitución/expulsión cancela el intento pendiente.
+- Un despeje sin receptor válido ya no se contabiliza como pase intentado. El HUD muestra pases completados/intentos y precisión de ambos equipos.
+- El informe JSON incorpora los totales y porcentajes por equipo y los pases completados por jugador. La exportación CSV incluye las columnas correspondientes y el ledger conserva el evento `PASS_COMPLETED`.
+- Se añadieron pruebas para porcentajes de precisión, estadísticas individuales, reinicio, orden de eventos, ida/vuelta JSON y exportación CSV.
+- La primera CI de este incremento detectó un literal de texto sin cerrar en el HUD; se corrigió y se volvió a ejecutar sobre el commit `339e4d7538aabd59df3742e643f73a06fe3489ad`.
+- CI run `45467872452` terminó en **success**: `testDebugUnitTest`, `assembleDebug`, comprobación de `lib/arm64-v8a/libgdx.so` y subida del artefacto completadas. Artefacto `futbol-nova-android-arm64-debug`, ID `14956555284`, 3,484,440 bytes, SHA-256 `c376bc16e01e968c8ebbbce33a2d866934b050ad194982f210ddf2ce7df8d591`, expiración `2026-12-08T19:14:27Z`.
+- Esta métrica es una aproximación basada en que el receptor seleccionado adquiera la posesión; no equivale a un análisis avanzado de pases, no identifica desvíos complejos y el ledger de eventos aún no registra marcas de tiempo individuales.
+- La CI valida pruebas automatizadas y empaquetado ARM64, no una sesión de juego en el Android físico. Siguen pendientes aceptación multitáctil/rendimiento en el teléfono, progreso guardado durante partidos en curso, reinicios interactivos y reglamento/árbitro completos, plantillas completas para todas las divisiones, IA táctica avanzada, presentación 3D/audio de producción y APK Release firmado.
