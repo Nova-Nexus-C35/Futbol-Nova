@@ -13,9 +13,9 @@ public final class MatchReportExporter {
         row(csv,"TEAM","side","team","shots","shots_on_target","passes_attempted","passes_completed","pass_accuracy_percent","tackles","fouls","saves","offsides","possession_seconds","possession_percent");
         row(csv,"TEAM","HOME",v(report.homeTeam),v(report.homeShots),v(report.homeShotsOnTarget),v(report.homePasses),v(report.homeCompletedPasses),v(report.homePassAccuracyPercent),v(report.homeTackles),v(report.homeFouls),v(report.homeSaves),v(report.homeOffsides),v(report.homePossessionSeconds),v(report.homePossessionPercent));
         row(csv,"TEAM","AWAY",v(report.awayTeam),v(report.awayShots),v(report.awayShotsOnTarget),v(report.awayPasses),v(report.awayCompletedPasses),v(report.awayPassAccuracyPercent),v(report.awayTackles),v(report.awayFouls),v(report.awaySaves),v(report.awayOffsides),v(report.awayPossessionSeconds),v(report.awayPossessionPercent));
-        row(csv,"PLAYER","player_id","shots","passes_attempted","passes_completed","tackles","fouls","saves","goals","offsides");
+        row(csv,"PLAYER","player_id","shots","passes_attempted","passes_completed","pass_accuracy_percent","tackles","fouls","saves","goals","offsides");
         if(report.players!=null) for(MatchReport.PlayerRecord p:report.players) if(p!=null)
-            row(csv,"PLAYER",v(p.playerId),v(p.shots),v(p.passes),v(p.completedPasses),v(p.tackles),v(p.fouls),v(p.saves),v(p.goals),v(p.offsides));
+            row(csv,"PLAYER",v(p.playerId),v(p.shots),v(p.passes),v(p.completedPasses),v(p.passAccuracyPercent),v(p.tackles),v(p.fouls),v(p.saves),v(p.goals),v(p.offsides));
         row(csv,"EVENT","type","home_team","player_id");
         if(report.events!=null) for(MatchReport.EventRecord e:report.events) if(e!=null)
             row(csv,"EVENT",v(e.type),v(e.homeTeam),v(e.playerId));
