@@ -9,7 +9,7 @@ import java.io.IOException;
 /** Atomic local-file storage for automatic match recovery on Android. */
 public final class MatchSaveStore {
     private static final String SAVE_PATH="FutbolNova/saves/current-match.bin";
-    private static final String TEMP_PATH="FutbolNova/saves/current-match.json.tmp";
+    private static final String TEMP_PATH="FutbolNova/saves/current-match.bin.tmp";
     private MatchSaveStore() {}
 
     public static boolean save(MatchRuntimeSnapshot snapshot){
@@ -22,7 +22,7 @@ public final class MatchSaveStore {
             }
             temp.moveTo(target);
             return target.exists()&&target.length()>0;
-        }catch(RuntimeException error){
+        }catch(IOException|RuntimeException error){
             if(Gdx.app!=null)Gdx.app.error("FutbolNova","Could not persist match checkpoint",error);
             return false;
         }
