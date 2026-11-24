@@ -8,7 +8,7 @@ import java.util.Map;
 
 /** Bounded, deterministic per-match event ledger and team counters. */
 public final class MatchStatistics {
-    public enum EventType { SHOT, PASS_ATTEMPT, TACKLE, FOUL, SAVE, GOAL, OFFSIDE }
+    public enum EventType { SHOT, PASS_ATTEMPT, PASS_COMPLETED, TACKLE, FOUL, SAVE, GOAL, OFFSIDE }
     public static final class Event {
         public final EventType type;
         public final boolean homeTeam;
@@ -20,14 +20,15 @@ public final class MatchStatistics {
     private final Map<String,PlayerCounters> playerCounters=new LinkedHashMap<>();
     public static final class PlayerCounters {
         public final String playerId;
-        private int shots,passes,tackles,fouls,saves,goals,offsides;
+        private int shots,passes,completedPasses,tackles,fouls,saves,goals,offsides;
         private PlayerCounters(String id){playerId=id;}
         public int getShots(){return shots;} public int getPasses(){return passes;}
+        public int getCompletedPasses(){return completedPasses;}
         public int getTackles(){return tackles;} public int getFouls(){return fouls;}
         public int getSaves(){return saves;} public int getGoals(){return goals;}
         public int getOffsides(){return offsides;}
     }
-    private final int[] shots=new int[2],shotsOnTarget=new int[2],passes=new int[2],tackles=new int[2],
+    private final int[] shots=new int[2],shotsOnTarget=new int[2],passes=new int[2],completedPasses=new int[2],tackles=new int[2],
             fouls=new int[2],saves=new int[2],goals=new int[2],offsides=new int[2];
     private final float[] possessionSeconds=new float[2];
 
@@ -35,6 +36,10 @@ public final class MatchStatistics {
     public void recordShot(String playerId,boolean home){shots[index(home)]++;count(playerId).shots++;add(EventType.SHOT,home,playerId);}
     public void recordPassAttempt(boolean home){recordPassAttempt(null,home);}
     public void recordPassAttempt(String playerId,boolean home){passes[index(home)]++;count(playerId).passes++;add(EventType.PASS_ATTEMPT,home,playerId);}
+    public void recordPassCompleted(String playerId,boolean home){
+        completedPasses[index(home)]++;count(playerId).completedPasses++;
+        add(EventType.PASS_COMPLETED,home,playerId);
+    }
     public void recordTackle(boolean home){recordTackle(null,home);}
     public void recordTackle(String playerId,boolean home){tackles[index(home)]++;count(playerId).tackles++;add(EventType.TACKLE,home,playerId);}
     public void recordFoul(boolean home){recordFoul(null,home);}
@@ -51,6 +56,11 @@ public final class MatchStatistics {
     /** On-target shots are confirmed only by a goal or a goalkeeper save. */
     public int getShotsOnTarget(boolean home){return shotsOnTarget[index(home)];}
     public int getPasses(boolean home){return passes[index(home)];}
+    public int getCompletedPasses(boolean home){return completedPasses[index(home)];}
+    public float getPassAccuracyPercent(boolean home){
+        int attempted=passes[index(home)];
+        return attempted>0?100f*completedPasses[index(home)]/attempted:0f;
+    }
     public int getTackles(boolean home){return tackles[index(home)];}
     public int getFouls(boolean home){return fouls[index(home)];}
     public int getSaves(boolean home){return saves[index(home)];}
@@ -69,6 +79,7 @@ public final class MatchStatistics {
     public void reset(){
         events.clear();playerCounters.clear();
         java.util.Arrays.fill(shots,0);java.util.Arrays.fill(shotsOnTarget,0);java.util.Arrays.fill(passes,0);
+        java.util.Arrays.fill(completedPasses,0);
         java.util.Arrays.fill(tackles,0);java.util.Arrays.fill(fouls,0);java.util.Arrays.fill(offsides,0);
         java.util.Arrays.fill(saves,0);java.util.Arrays.fill(goals,0);
         java.util.Arrays.fill(possessionSeconds,0f);
