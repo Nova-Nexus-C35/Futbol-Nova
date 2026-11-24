@@ -8,6 +8,7 @@ public class MatchReportTest {
         MatchStatistics stats=new MatchStatistics();
         stats.recordShot("home_09",true);stats.recordFoul("away_04",false);
         stats.recordSave("away_01",false);stats.recordOffside("home_11",true);
+        stats.recordPossessionSeconds(45f,true);stats.recordPossessionSeconds(15f,false);
         MatchDiscipline discipline=new MatchDiscipline();
         discipline.issueYellow("away_04",MatchDiscipline.Reason.PERSISTENT_INFRINGEMENT,1530f);
         MatchReport original=MatchReport.capture("Cuba","Visitante",2,1,5400f,stats,discipline);
@@ -17,6 +18,10 @@ public class MatchReportTest {
         assertEquals(1,restored.awayGoals);assertEquals(5400f,restored.elapsedSeconds,0.001f);
         assertEquals(1,restored.homeShots);assertEquals(1,restored.awayFouls);
         assertEquals(1,restored.awaySaves);assertEquals(1,restored.homeOffsides);
+        assertEquals(45f,restored.homePossessionSeconds,0.001f);
+        assertEquals(15f,restored.awayPossessionSeconds,0.001f);
+        assertEquals(75f,restored.homePossessionPercent,0.001f);
+        assertEquals(25f,restored.awayPossessionPercent,0.001f);
         assertEquals(1,restored.cards.size());assertEquals("away_04",restored.cards.get(0).playerId);
         assertEquals("YELLOW",restored.cards.get(0).card);
         assertEquals("PERSISTENT_INFRINGEMENT",restored.cards.get(0).reason);
@@ -79,7 +84,7 @@ public class MatchReportTest {
         String csv=MatchReportExporter.toCsv(report);
         assertTrue(csv.contains("MATCH,match_id,home_team,away_team,home_goals"));
         assertTrue(csv.contains("MATCH,"+report.matchId+",Cuba,Visitante,1,0,2700.0"));
-        assertTrue(csv.contains("TEAM,HOME,Cuba,1,0,0,0,0,0"));
+        assertTrue(csv.contains("TEAM,HOME,Cuba,1,0,0,0,0,0,0.0,0.0"));
         assertTrue(csv.contains("PLAYER,home_09,1,0,0,0,0,1,0"));
         assertTrue(csv.contains("EVENT,GOAL,true,home_09"));
         assertTrue(csv.contains("CARD,away_04,YELLOW,PERSISTENT_INFRINGEMENT,1530.0,false"));

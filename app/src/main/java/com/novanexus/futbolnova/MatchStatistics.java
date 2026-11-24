@@ -29,6 +29,7 @@ public final class MatchStatistics {
     }
     private final int[] shots=new int[2],passes=new int[2],tackles=new int[2],
             fouls=new int[2],saves=new int[2],goals=new int[2],offsides=new int[2];
+    private final float[] possessionSeconds=new float[2];
 
     public void recordShot(boolean home){recordShot(null,home);}
     public void recordShot(String playerId,boolean home){shots[index(home)]++;count(playerId).shots++;add(EventType.SHOT,home,playerId);}
@@ -53,12 +54,22 @@ public final class MatchStatistics {
     public int getSaves(boolean home){return saves[index(home)];}
     public int getGoals(boolean home){return goals[index(home)];}
     public int getOffsides(boolean home){return offsides[index(home)];}
+    /** Adds controlled-ball time in match-clock seconds, excluding dead-ball intervals. */
+    public void recordPossessionSeconds(float seconds,boolean home){
+        if(Float.isFinite(seconds)&&seconds>0f)possessionSeconds[index(home)]+=seconds;
+    }
+    public float getPossessionSeconds(boolean home){return possessionSeconds[index(home)];}
+    public float getPossessionPercent(boolean home){
+        float total=possessionSeconds[0]+possessionSeconds[1];
+        return total>0f?100f*possessionSeconds[index(home)]/total:0f;
+    }
     public List<Event> getEvents(){return Collections.unmodifiableList(new ArrayList<>(events));}
     public void reset(){
         events.clear();playerCounters.clear();
         java.util.Arrays.fill(shots,0);java.util.Arrays.fill(passes,0);
         java.util.Arrays.fill(tackles,0);java.util.Arrays.fill(fouls,0);java.util.Arrays.fill(offsides,0);
         java.util.Arrays.fill(saves,0);java.util.Arrays.fill(goals,0);
+        java.util.Arrays.fill(possessionSeconds,0f);
     }
     private PlayerCounters count(String playerId){
         if(playerId==null||playerId.isEmpty())return new PlayerCounters("");

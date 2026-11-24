@@ -776,6 +776,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         float ownerAttackSign=owner.homeTeam?(matchSimulation.homeAttacksNegativeZ()?-1f:1f):(matchSimulation.homeAttacksNegativeZ()?1f:-1f);
         ballPosition.set(owner.x,BALL_RADIUS,owner.z+ownerAttackSign*0.62f);
         ballVelocity.setZero();ballSpin.setZero();lastTouchHome=owner.homeTeam;
+        matchStatistics.recordPossessionSeconds(delta*MATCH_TIME_SCALE,owner.homeTeam);
         if(possessionOwnerIndex==matchSimulation.getControlledPlayerIndex())return;
         float goalProgress=owner.z*ownerAttackSign;
         float nearestOpponentDistance=Float.MAX_VALUE;
@@ -926,6 +927,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 +"  PARADAS "+matchStatistics.getSaves(true)+"-"+matchStatistics.getSaves(false)
                 +"  FUERAS DE JUEGO "+matchStatistics.getOffsides(true)+"-"+matchStatistics.getOffsides(false),
                 18f,52f);
+        font.draw(spriteBatch,String.format(java.util.Locale.US,"POSESIÓN %.0f%% - %.0f%%",
+                matchStatistics.getPossessionPercent(true),matchStatistics.getPossessionPercent(false)),18f,40f);
         String phaseText;
         switch(matchClock.getPhase()){
             case PRE_MATCH: phaseText="ARRIBA IZQ: EQUIPO LOCAL | CENTRO: VISITANTE | DERECHA: INICIAR"; break;

@@ -19,6 +19,21 @@ public class MatchStatisticsTest {
         for(int i=0;i<300;i++)stats.recordShot(true);
         assertEquals(300,stats.getShots(true));assertEquals(256,stats.getEvents().size());
     }
+    @Test public void possessionTimeProducesBalancedPercentagesAndResets(){
+        MatchStatistics stats=new MatchStatistics();
+        stats.recordPossessionSeconds(30f,true);
+        stats.recordPossessionSeconds(10f,false);
+        stats.recordPossessionSeconds(Float.NaN,true);
+        stats.recordPossessionSeconds(-2f,false);
+        assertEquals(30f,stats.getPossessionSeconds(true),0.001f);
+        assertEquals(10f,stats.getPossessionSeconds(false),0.001f);
+        assertEquals(75f,stats.getPossessionPercent(true),0.001f);
+        assertEquals(25f,stats.getPossessionPercent(false),0.001f);
+        stats.reset();
+        assertEquals(0f,stats.getPossessionSeconds(true),0.001f);
+        assertEquals(0f,stats.getPossessionPercent(false),0.001f);
+    }
+
     @Test public void resetClearsCountersAndEvents(){
         MatchStatistics stats=new MatchStatistics();stats.recordGoal(true);stats.recordPassAttempt(false);
         stats.reset();

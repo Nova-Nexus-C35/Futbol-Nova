@@ -15,6 +15,7 @@ public final class MatchReport {
     public float elapsedSeconds;
     public int homeShots,awayShots,homePasses,awayPasses,homeTackles,awayTackles;
     public int homeFouls,awayFouls,homeSaves,awaySaves,homeOffsides,awayOffsides;
+    public float homePossessionSeconds,awayPossessionSeconds,homePossessionPercent,awayPossessionPercent;
     public List<CardRecord> cards = new ArrayList<>();
     /** Ordered event timeline copied from the bounded in-match statistics ledger. */
     public List<EventRecord> events = new ArrayList<>();
@@ -71,6 +72,10 @@ public final class MatchReport {
         report.homeFouls=stats.getFouls(true);report.awayFouls=stats.getFouls(false);
         report.homeSaves=stats.getSaves(true);report.awaySaves=stats.getSaves(false);
         report.homeOffsides=stats.getOffsides(true);report.awayOffsides=stats.getOffsides(false);
+        report.homePossessionSeconds=stats.getPossessionSeconds(true);
+        report.awayPossessionSeconds=stats.getPossessionSeconds(false);
+        report.homePossessionPercent=stats.getPossessionPercent(true);
+        report.awayPossessionPercent=stats.getPossessionPercent(false);
         for(MatchDiscipline.CardEvent event:discipline.snapshotEvents())report.cards.add(new CardRecord(event));
         for(MatchStatistics.Event event:stats.getEvents())report.events.add(new EventRecord(event));
         for(MatchStatistics.PlayerCounters player:stats.getPlayers())report.players.add(new PlayerRecord(player));
