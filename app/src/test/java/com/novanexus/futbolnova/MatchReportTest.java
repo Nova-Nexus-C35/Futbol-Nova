@@ -6,7 +6,8 @@ import static org.junit.Assert.*;
 public class MatchReportTest {
     @Test public void finishedMatchSnapshotRoundTripsAllCoreFields(){
         MatchStatistics stats=new MatchStatistics();
-        stats.recordShot("home_09",true);stats.recordFoul("away_04",false);
+        stats.recordShot("home_09",true);stats.recordPassAttempt("home_06",true);
+        stats.recordPassCompleted("home_06",true);stats.recordFoul("away_04",false);
         stats.recordSave("away_01",false);stats.recordOffside("home_11",true);
         stats.recordPossessionSeconds(45f,true);stats.recordPossessionSeconds(15f,false);
         MatchDiscipline discipline=new MatchDiscipline();
@@ -19,6 +20,7 @@ public class MatchReportTest {
         assertEquals(1,restored.homeShots);assertEquals(1,restored.homeShotsOnTarget);
         assertEquals(0,restored.awayShotsOnTarget);assertEquals(1,restored.awayFouls);
         assertEquals(1,restored.awaySaves);assertEquals(1,restored.homeOffsides);
+        assertEquals(1,restored.homeCompletedPasses);assertEquals(100f,restored.homePassAccuracyPercent,0.001f);
         assertEquals(45f,restored.homePossessionSeconds,0.001f);
         assertEquals(15f,restored.awayPossessionSeconds,0.001f);
         assertEquals(75f,restored.homePossessionPercent,0.001f);
@@ -38,14 +40,15 @@ public class MatchReportTest {
         MatchReport original=MatchReport.capture("Cuba","Visitante",1,0,2700f,stats,new MatchDiscipline());
         MatchReport restored=MatchReport.fromJson(original.toJson());
         assertNotNull(restored);
-        assertEquals(4,restored.events.size());
+        assertEquals(5,restored.events.size());
         assertEquals("PASS_ATTEMPT",restored.events.get(0).type);
+        assertEquals("PASS_COMPLETED",restored.events.get(1).type);
         assertTrue(restored.events.get(0).homeTeam);
         assertEquals("home_06",restored.events.get(0).playerId);
-        assertEquals("SHOT",restored.events.get(1).type);
-        assertEquals("SAVE",restored.events.get(2).type);
+        assertEquals("SHOT",restored.events.get(2).type);
+        assertEquals("SAVE",restored.events.get(3).type);
         assertFalse(restored.events.get(2).homeTeam);
-        assertEquals("GOAL",restored.events.get(3).type);
+        assertEquals("GOAL",restored.events.get(4).type);
         assertEquals("home_09",restored.events.get(3).playerId);
     }
 
@@ -86,7 +89,7 @@ public class MatchReportTest {
         assertTrue(csv.contains("MATCH,match_id,home_team,away_team,home_goals"));
         assertTrue(csv.contains("MATCH,"+report.matchId+",Cuba,Visitante,1,0,2700.0"));
         assertTrue(csv.contains("TEAM,HOME,Cuba,1,1,0,0,0,0,0,0.0,0.0"));
-        assertTrue(csv.contains("PLAYER,home_09,1,0,0,0,0,1,0"));
+        assertTrue(csv.contains("PLAYER,home_09,1,0,0,0,0,0,1,0"));
         assertTrue(csv.contains("EVENT,GOAL,true,home_09"));
         assertTrue(csv.contains("CARD,away_04,YELLOW,PERSISTENT_INFRINGEMENT,1530.0,false"));
     }
