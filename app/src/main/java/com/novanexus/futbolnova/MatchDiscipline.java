@@ -12,7 +12,7 @@ public final class MatchDiscipline {
         PERSISTENT_INFRINGEMENT, REFEREE_DECISION, SERIOUS_FOUL_PLAY,
         VIOLENT_CONDUCT, DENIAL_OF_GOAL_SCORING_OPPORTUNITY, DISSENT, OTHER
     }
-    public static final class CardEvent {
+    public static final class CardEvent implements java.io.Serializable {
         public String playerId;
         public Card card;
         public Reason reason;
@@ -25,7 +25,7 @@ public final class MatchDiscipline {
         }
     }
 
-    public static final class PlayerRecord {
+    public static final class PlayerRecord implements java.io.Serializable {
         public String playerId;
         public int yellowCards;
         public int foulsSinceCaution;
@@ -123,7 +123,7 @@ public final class MatchDiscipline {
 
 
     /** Versioned deep snapshot of every disciplinary record and chronological card event. */
-    public static final class Snapshot {
+    public static final class Snapshot implements java.io.Serializable {
         public int schemaVersion=1;
         public java.util.List<PlayerRecord> records=new java.util.ArrayList<>();
         public java.util.List<CardEvent> events=new java.util.ArrayList<>();
