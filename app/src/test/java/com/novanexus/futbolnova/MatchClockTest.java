@@ -80,6 +80,19 @@ public final class MatchClockTest {
         assertTrue(clock.start());
     }
 
+    @Test public void snapshotRestoresExactClockAndRejectsInvalidValuesAtomically(){
+        MatchClock source=new MatchClock(100f);source.start();source.setAddedTime(5);source.update(42f);
+        MatchClock.Snapshot saved=source.snapshot();
+        MatchClock restored=new MatchClock(100f);
+        assertTrue(restored.restore(saved));
+        assertEquals(source.getPhase(),restored.getPhase());
+        assertEquals(source.getElapsedInHalfSeconds(),restored.getElapsedInHalfSeconds(),0.001f);
+        assertEquals(source.getTotalElapsedSeconds(),restored.getTotalElapsedSeconds(),0.001f);
+        MatchClock.Snapshot invalid=new MatchClock.Snapshot(100f,Float.NaN,5f,0f,MatchClock.Phase.FIRST_HALF,false);
+        assertFalse(restored.restore(invalid));
+        assertEquals(42f,restored.getElapsedInHalfSeconds(),0.001f);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void rejectsInvalidHalfDuration() {
         new MatchClock(Float.NaN);
