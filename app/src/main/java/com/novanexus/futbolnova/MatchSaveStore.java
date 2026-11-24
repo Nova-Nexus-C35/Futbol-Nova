@@ -2,23 +2,24 @@ package com.novanexus.futbolnova;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
 
 /** Atomic local-file storage for automatic match recovery on Android. */
 public final class MatchSaveStore {
-    private static final String SAVE_PATH="FutbolNova/saves/current-match.json";
+    private static final String SAVE_PATH="FutbolNova/saves/current-match.bin";
     private static final String TEMP_PATH="FutbolNova/saves/current-match.json.tmp";
     private MatchSaveStore() {}
 
     public static boolean save(MatchRuntimeSnapshot snapshot){
         if(Gdx.files==null||snapshot==null||!snapshot.isValid())return false;
         try{
-            Json json=new Json();json.setOutputType(JsonWriter.OutputType.json);
-            String content=json.toJson(snapshot);
             FileHandle target=Gdx.files.local(SAVE_PATH),temp=Gdx.files.local(TEMP_PATH);
             target.parent().mkdirs();
-            temp.writeString(content,false,"UTF-8");
+            try(ObjectOutputStream output=new ObjectOutputStream(temp.write(false))){
+                output.writeObject(snapshot);output.flush();
+            }
             temp.moveTo(target);
             return target.exists()&&target.length()>0;
         }catch(RuntimeException error){
@@ -31,11 +32,12 @@ public final class MatchSaveStore {
         if(Gdx.files==null)return null;
         FileHandle file=Gdx.files.local(SAVE_PATH);
         if(!file.exists())return null;
-        try{
-            Json json=new Json();json.setIgnoreUnknownFields(false);
-            MatchRuntimeSnapshot snapshot=json.fromJson(MatchRuntimeSnapshot.class,file);
-            return snapshot!=null&&snapshot.isValid()?snapshot:null;
-        }catch(RuntimeException error){
+        try(ObjectInputStream input=new ObjectInputStream(file.read())){
+            Object value=input.readObject();
+            if(!(value instanceof MatchRuntimeSnapshot))return null;
+            MatchRuntimeSnapshot snapshot=(MatchRuntimeSnapshot)value;
+            return snapshot.isValid()?snapshot:null;
+        }catch(IOException|ClassNotFoundException|RuntimeException error){
             if(Gdx.app!=null)Gdx.app.error("FutbolNova","Saved match is unreadable; leaving current match untouched",error);
             return null;
         }
