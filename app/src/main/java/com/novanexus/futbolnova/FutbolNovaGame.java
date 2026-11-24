@@ -964,7 +964,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 +"  JUGADORES "+matchSimulation.getActivePlayerCount(true)+"-"+matchSimulation.getActivePlayerCount(false),18f,78f);
         font.draw(spriteBatch, "IZQUIERDA: MOVER   DERECHA: ARRIBA TIRO | CENTRO PASE | ABAJO ROBO", 18f, 28f);
         font.draw(spriteBatch,"TIROS "+matchStatistics.getShots(true)+"-"+matchStatistics.getShots(false)
-                +"  PASES "+matchStatistics.getCompletedPasses(true)+"/"+matchStatistics.getPasses(true)+" ("+String.format(java.util.Locale.US,"%.0f",matchStatistics.getPassAccuracyPercent(true))+"%) - "+matchStatistics.getCompletedPasses(false)+"/"+matchStatistics.getPasses(false)+" ("+String.format(java.util.Locale.US,"%.0f",matchStatistics.getPassAccuracyPercent(false))+"%)
+                +"  PASES "+matchStatistics.getCompletedPasses(true)+"/"+matchStatistics.getPasses(true)+" ("+String.format(java.util.Locale.US,"%.0f",matchStatistics.getPassAccuracyPercent(true))+"%) - "+matchStatistics.getCompletedPasses(false)+"/"+matchStatistics.getPasses(false)+" ("+String.format(java.util.Locale.US,"%.0f",matchStatistics.getPassAccuracyPercent(false))+"%)"
                 +"  ENTRADAS "+matchStatistics.getTackles(true)+"-"+matchStatistics.getTackles(false)
                 +"  A PUERTA "+matchStatistics.getShotsOnTarget(true)+"-"+matchStatistics.getShotsOnTarget(false)
                 +"  PARADAS "+matchStatistics.getSaves(true)+"-"+matchStatistics.getSaves(false)
