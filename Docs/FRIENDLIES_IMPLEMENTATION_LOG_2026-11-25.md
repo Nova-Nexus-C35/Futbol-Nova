@@ -118,3 +118,14 @@ Alcance:
 - El ciclo completo de pase, tiro, robo, sustitución, reanudación y gol todavía necesita pruebas de integración que conduzcan el estado del partido.
 - El workflow .github/workflows/android-build.yml está configurado para ejecutarse al hacer push a esta rama. Este commit documental final también dispara una ejecución para validar todos los cambios anteriores de esta tanda.
 - No se ha instalado ni probado el APK en un teléfono real.
+
+
+## Cierre de corrección de pruebas y CI — 2026-11-25
+
+- La ejecución 45691048752 identificó dos errores de las pruebas recién añadidas: se intentaba modificar la vista no modificable de getPlayers(), y el amistoso creado con start("home","away") no tiene suplentes para probar una sustitución.
+- Se corrigieron las pruebas usando una copia mutable únicamente para simular slots nulos y dos plantillas de 14 futbolistas para disponer de suplentes reales en el escenario de sustitución. La vista de simulación se conserva para verificar que el reemplazo mantiene el índice estable.
+- Commit verificado: 2ea93695f8769fce3eea7326a01704d308f4a603.
+- CI final: [45691426001](https://github.com/Nova-Nexus-C35/Futbol-Nova/actions/runs/45691426001) — SUCCESS. Pasaron testDebugUnitTest y assembleDebug; el paso de verificación encontró lib/arm64-v8a/libgdx.so y el artefacto se subió correctamente.
+- Artefacto: futbol-nova-android-arm64-debug, ID 15059376049, ZIP 3,497,329 bytes, SHA-256 8bfb2563f2c2491801aec06da0d71a9e6f951b6982d1e576c4f1f60a655661c3. APK dentro: 9,259,789 bytes. ZIP y APK se inspeccionaron; el APK contiene AndroidManifest.xml y lib/arm64-v8a/libgdx.so.
+- Este CI valida la compilación y pruebas unitarias automatizadas. No demuestra el funcionamiento táctil ni el partido completo en un teléfono físico.
+- Pendiente real: pruebas end-to-end de FutbolNovaGame para pase/tiro/robo/reanudación/gol, y prueba del APK en Android. No se marca Amistosos como terminado hasta completar ambas.
