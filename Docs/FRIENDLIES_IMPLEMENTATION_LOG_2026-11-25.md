@@ -71,3 +71,32 @@ Prueba: `app/src/test/java/com/novanexus/futbolnova/MatchSimulationTest.java`
 - Artefacto `futbol-nova-android-arm64-debug`, ZIP de 3,497,242 bytes, con `app-debug.apk` de 9,259,789 bytes. Expira el 2026-12-09. Este APK corresponde al bloque anterior de controles visibles; no contiene todavía el nuevo guard de coordenadas.
 - El nuevo commit de validación de coordenadas requiere su propia ejecución de CI antes de considerar su APK listo.
 - Ningún APK ha sido instalado ni probado físicamente por el propietario en esta sesión.
+
+
+## Auditoría de sincronización y posesión — 2026-11-25
+
+Archivos inspeccionados desde la rama activa:
+- app/src/main/java/com/novanexus/futbolnova/FutbolNovaGame.java
+- app/src/main/java/com/novanexus/futbolnova/MatchSimulation.java
+- app/src/main/java/com/novanexus/futbolnova/MatchGameplay.java
+- app/src/test/java/com/novanexus/futbolnova/MatchGameplayTest.java
+
+Hallazgos:
+- El movimiento táctil actualiza controlledPosition; MatchSimulation.update copia esa posición al futbolista controlado.
+- El cambio de jugador, el cambio de lado en el descanso, la reconstrucción de alineaciones, la sustitución del jugador controlado y la expulsión del jugador controlado sincronizan la posición de control en los puntos inspeccionados.
+- Mientras existe un poseedor válido, updateGameplay ancla el balón delante de ese futbolista. Los tiros/pases liberan el índice de posesión y establecen la velocidad del balón; los reinicios también limpian la posesión.
+- La adquisición de posesión no rechazaba explícitamente NaN/infinito ni velocidad negativa. Se endureció MatchGameplay.acquirePossession para validar todas las coordenadas, altura y velocidad antes de calcular distancias.
+
+Prueba añadida:
+- MatchGameplayTest.possessionRejectsNonFiniteOrNegativeBallState cubre NaN, infinito, velocidad negativa y altura negativa. Se conserva la prueba existente para posesión de jugadores activos y excluye expulsados.
+
+Investigación pública:
+- atas76/openengine: README y LICENSE leídos; licencia MIT. Motor Java de partidos con enfoque contextual/data-driven. No se integra: el POM usa Java 18 y dependencias Maven (Spring/JDBC/SQLite/Jackson/Commons CSV), no un módulo Android/libGDX listo.
+- modelence/open-soccer: referencia 11v11 en TypeScript/Canvas para separación de motor/render/tipos; no se integra en Java Android.
+- No se copió código, assets ni dependencias de esos repositorios.
+
+## Verificación posterior a esta actualización
+
+- La ejecución CI 45689356818 terminó SUCCESS para el commit anterior 8235ca389d4a6d8c4973700706f69aaf04863fe4: pruebas, build Android ARM64 y verificación del runtime nativo completados.
+- Los cambios nuevos de adquisición de posesión y sus pruebas se escribieron después de esa ejecución. Necesitan una ejecución CI propia; no atribuirles todavía el resultado SUCCESS anterior.
+- Pendiente de pruebas de integración para continuidad en pases/tiros/robos/sustituciones/reinicios y de prueba física en Android.
