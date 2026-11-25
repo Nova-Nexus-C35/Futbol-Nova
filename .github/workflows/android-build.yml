@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-${{ github.ref }}
@@ -49,3 +49,26 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+  publish-release:
+    if: github.event_name == 'push'
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: futbol-nova-android-arm64-debug
+          path: release-assets
+      - name: Publish persistent GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: debug-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Fútbol Nova — APK debug #${{ github.run_number }}
+          body: |
+            APK de depuración ARM64 generado automáticamente.
+            Incluye ejecución de pruebas unitarias y verificación del runtime nativo libgdx.so.
+            Rama: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+          files: release-assets/app-debug.apk
