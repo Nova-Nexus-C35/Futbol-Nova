@@ -118,3 +118,18 @@ La posesión colectiva se estima comparando la distancia del jugador propio y ri
 ### Aplicación propia
 
 Se añadió selección de objetivo de tiro de la IA orientada al poste contrario: el cálculo considera la posición horizontal del portero rival y la presión defensiva cercana, y limita el punto de mira al interior de la portería. La integración reutiliza la física de tiro existente; no se incorporó código ni dependencia de estos proyectos.
+
+
+## Revisión adicional para controles Android y movimiento de equipo — 2026-11-25
+
+- [libgdx/gdx-ai](https://github.com/libgdx/gdx-ai) — biblioteca Java del ecosistema libGDX para steering behaviors, formación, pathfinding, behavior trees y máquinas de estados. Se leyó el archivo LICENSE y declara Apache-2.0. Es compatible conceptualmente con el stack del proyecto y merece una prueba aislada cuando se refactorice el movimiento colectivo; **no se añadió como dependencia en este cambio** para evitar aumentar el runtime antes de medir una necesidad concreta.
+- [ssenegas/kickoff](https://github.com/ssenegas/kickoff) — reescritura Java/libGDX de Kick Off 2; sirve para comparar patrones de entrada, simulación y render en libGDX. No se verificó la licencia del repositorio en esta revisión: no copiar código ni recursos hasta comprobarla.
+- [erengaygusuz/fotbiler-football](https://github.com/erengaygusuz/fotbiler-football) — referencia de motor de fútbol 3D con 22 jugadores, IA táctica, reglas y estadísticas. No se integró código; revisar LICENSE, procedencia y dependencias antes de considerar cualquier reutilización.
+
+### Cambio propio aplicado
+
+El HUD del partido no dibujaba controles táctiles visibles, aunque el runtime ya recibía movimiento y acciones por zonas de pantalla. Se añadieron indicadores gráficos de joystick y botones de TIRO, PASE y ROBO, alineados con las zonas que procesa el input; el joystick limita su radio al área visible y su indicador respeta la orientación vertical de la pantalla. Los controles se muestran únicamente durante el juego activo. La implementación es propia y no incorpora código ni assets externos.
+
+### Pendiente de validación
+
+La compilación y las pruebas de CI de este commit están en ejecución. Aún falta comprobar tamaño/legibilidad y multitáctil en el Android físico del propietario; esta mejora no certifica por sí sola que los controles estén completos ni que el amistoso sea aceptado.
