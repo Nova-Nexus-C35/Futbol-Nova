@@ -290,14 +290,14 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             MatchSimulation.PlayerState state=lineup.get(i);
             float yaw=(float)Math.atan2(-state.forwardX,-state.forwardZ);
             if(state.active){
-                if(gltfPlayerSquad!=null){
+                // Keep the procedural representation current so a GLB render failure can
+                // fall back immediately without a frame of stale player transforms.
+                playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
+                if((i==0||i==11)&&goalkeeperRecoveryTimers[i]>0f)
+                    playerVisuals.get(i).setGoalkeeperDive(goalkeeperDiveDirections[i],
+                            Math.min(1f,goalkeeperRecoveryTimers[i]/0.78f));
+                if(gltfPlayerSquad!=null)
                     gltfPlayerSquad.updatePlayer(i,state.x,state.z,yaw,state.movementSpeed);
-                }else{
-                    playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
-                    if((i==0||i==11)&&goalkeeperRecoveryTimers[i]>0f)
-                        playerVisuals.get(i).setGoalkeeperDive(goalkeeperDiveDirections[i],
-                                Math.min(1f,goalkeeperRecoveryTimers[i]/0.78f));
-                }
             }
         }
 
@@ -320,11 +320,33 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         }
         modelBatch.render(ballInstance,environment);
         modelBatch.end();
-        if(gltfPlayerSquad!=null)gltfPlayerSquad.render(delta);
+        renderGltfPlayersOrFallback(delta);
 
         drawPitchMarkings();
         drawTouchControls();
         drawHud();
+    }
+
+    private void renderGltfPlayersOrFallback(float delta) {
+        if (gltfPlayerSquad == null) return;
+        try {
+            gltfPlayerSquad.render(delta);
+        } catch (RuntimeException error) {
+            Gdx.app.error("FutbolNova", "GLB renderer failed at runtime; switching to procedural players", error);
+            try {
+                gltfPlayerSquad.dispose();
+            } catch (RuntimeException disposeError) {
+                Gdx.app.error("FutbolNova", "Could not fully dispose failed GLB renderer", disposeError);
+            }
+            gltfPlayerSquad = null;
+            modelBatch.begin(camera);
+            for (int i = 0; i < playerVisuals.size() && i < matchSimulation.getPlayers().size(); i++) {
+                if (matchSimulation.getPlayers().get(i).active) {
+                    playerVisuals.get(i).render(modelBatch, environment);
+                }
+            }
+            modelBatch.end();
+        }
     }
 
     private final boolean[] pointerWasTouched = new boolean[20];
