@@ -26,6 +26,7 @@ public final class GltfPlayerSquad implements Disposable {
     private final SceneManager sceneManager;
     private final Array<Scene> players = new Array<>();
     private final String[] activeClips;
+    private final float modelScale;
 
     public GltfPlayerSquad(String assetPath, PerspectiveCamera camera, int playerCount, float modelScale) {
         if (assetPath == null || assetPath.trim().isEmpty()) {
@@ -52,10 +53,10 @@ public final class GltfPlayerSquad implements Disposable {
         keyLight.color.set(Color.WHITE);
         sceneManager.environment.add(keyLight);
 
+        this.modelScale = modelScale;
         activeClips = new String[playerCount];
         for (int i = 0; i < playerCount; i++) {
             Scene scene = new Scene(asset.scene);
-            scene.modelInstance.transform.setToScaling(modelScale);
             players.add(scene);
             sceneManager.addScene(scene);
             String idle = findClip(scene.modelInstance.animations, "idle", "stand");
@@ -74,7 +75,7 @@ public final class GltfPlayerSquad implements Disposable {
         Scene scene = players.get(index);
         scene.modelInstance.transform.setToTranslation(x, 0f, z)
                 .rotate(Vector3.Y, yawRadians * MathUtils.radiansToDegrees)
-                .scale(1f, 1f, 1f);
+                .scale(modelScale, modelScale, modelScale);
 
         String desired = movementSpeed > 2.8f
                 ? findClip(scene.modelInstance.animations, "sprint", "run")
