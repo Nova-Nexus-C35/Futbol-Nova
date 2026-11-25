@@ -155,7 +155,7 @@ Las pruebas añadidas ejercitan las reglas y los contratos del motor, pero no in
 - [x] Aplicar escala adaptativa de fuente y reorganizar el HUD en marcador, jugador, estado y tres líneas compactas de estadísticas. Se conservan los indicadores principales; el cambio no altera gameplay.
 - [ ] Validar visualmente el HUD en Android físico y en distintas relaciones de aspecto.
 - [x] Investigar repositorios públicos para modelos glTF/PBR, animación esquelética y simulación futbolística; decisiones y licencias registradas en Docs/REALISM_UPGRADE_RESEARCH_2026-11-25.md.
-- [ ] Crear prueba aislada de gdx-gltf 2.1.0 antes de incorporar la dependencia al APK.
+- [ ] Crear prueba aislada de gdx-gltf 2.3.0 antes de incorporar la dependencia al APK.
 - [ ] Sustituir gradualmente los futbolistas low-poly por modelos humanos 3D riggeados, originales o con licencia explícita, manteniendo fallback.
 - [ ] Implementar estados y transiciones de animación conectados a la simulación (carrera, frenado, giro, pase, tiro, entrada, caída, recuperación, portero y celebración).
 - [ ] Mejorar materiales PBR, césped, estadio, iluminación, sombras, público y redes con presupuestos de rendimiento Android.
