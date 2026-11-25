@@ -29,6 +29,35 @@ public final class MatchGameplayTest {
   assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(
           simulation.getPlayers(),player.x,-0.1f,player.z,0f));
  }
+ @Test public void possessionIgnoresNullAndInvalidPlayerCoordinates(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState nearest=players.get(9);
+  float x=nearest.x,z=nearest.z;
+  players.set(9,null);
+  players.get(8).x=Float.NaN;
+  players.get(8).z=Float.POSITIVE_INFINITY;
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(players,x,0.55f,z,0f));
+ }
+ @Test public void tackleSubstitutionAndRestartKeepPossessionAcquisitionConsistent(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  MatchSimulation.PlayerState owner=players.get(9),challenger=players.get(18);
+  owner.x=0f;owner.z=0f;owner.forwardX=0f;owner.forwardZ=-1f;
+  challenger.x=0.8f;challenger.z=0f;challenger.forwardX=-1f;challenger.forwardZ=0f;
+  MatchSimulation.TackleResult tackle=MatchGameplay.tackle(challenger,owner,1.7f);
+  assertNotNull(tackle);assertTrue(tackle.success);assertFalse(tackle.foul);
+  assertEquals(18,MatchGameplay.acquirePossession(players,challenger.x,0.55f,challenger.z,0f));
+  String outgoing=players.get(9).playerId;
+  String incoming=simulation.getBenchPlayers(true).get(0).id;
+  assertTrue(simulation.substitutePlayer(true,outgoing,incoming,1,false));
+  assertEquals(incoming,players.get(9).playerId);
+  assertEquals(9,MatchGameplay.acquirePossession(players,players.get(9).x,0.55f,players.get(9).z,0f));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(players,
+          players.get(9).x,0.55f,players.get(9).z,12f));
+  assertEquals(9,MatchGameplay.acquirePossession(players,
+          players.get(9).x,0.55f,players.get(9).z,0.5f));
+ }
  @Test public void dismissedPlayersCannotAcquireBallOrReceivePasses(){
   MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
   List<MatchSimulation.PlayerState> players=simulation.getPlayers();
