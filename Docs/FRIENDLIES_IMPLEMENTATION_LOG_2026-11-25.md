@@ -129,3 +129,29 @@ Alcance:
 - Artefacto: futbol-nova-android-arm64-debug, ID 15059376049, ZIP 3,497,329 bytes, SHA-256 8bfb2563f2c2491801aec06da0d71a9e6f951b6982d1e576c4f1f60a655661c3. APK dentro: 9,259,789 bytes. ZIP y APK se inspeccionaron; el APK contiene AndroidManifest.xml y lib/arm64-v8a/libgdx.so.
 - Este CI valida la compilación y pruebas unitarias automatizadas. No demuestra el funcionamiento táctil ni el partido completo en un teléfono físico.
 - Pendiente real: pruebas end-to-end de FutbolNovaGame para pase/tiro/robo/reanudación/gol, y prueba del APK en Android. No se marca Amistosos como terminado hasta completar ambas.
+
+
+## Primera integración opcional de jugadores GLB — 2026-11-25
+
+Investigación y dependencias:
+- Revisado mgsx-dev/gdx-gltf, tag 2.3.0, licencia Apache-2.0; documenta glTF 2.0, animaciones, PBR/IBL y SceneManager.
+- Añadido JitPack y dependencia com.github.mgsx-dev.gdx-gltf:gltf:2.3.0 al módulo Android.
+- Referencia complementaria: kendrekaran/striker-3d usa un GLB riggeado CC0 con AnimationMixer y fallback procedural. Solo se adoptó la idea arquitectónica de cargar un modelo y conservar fallback; no se copió su código JavaScript.
+
+Cambios de código:
+- Nuevo GltfPlayerSquad.java: carga un GLB local, comparte SceneAsset, crea escenas por jugador, mapea clips por nombres Idle/Stand, Walk/Jog y Run/Sprint, aplica transformaciones desde coordenadas de MatchSimulation y renderiza con SceneManager/PBR.
+- FutbolNovaGame.java intenta cargar models/players/active.glb. Si falta o falla, sigue con PlayerVisual procedural. Mantiene los transforms del fallback actualizados y captura errores de render GLB para volver al renderer procedural.
+- app/src/main/assets/models/players/README.md documenta formato, escala/orientación, offline, límites iniciales de huesos y fallback.
+
+Fixture y pruebas:
+- Añadido app/src/test/resources/gltf/fixtures/quaternius-player.glb desde kendrekaran/striker-3d/assets/player.glb; SHA de origen 2faab1ed245bbe2b28153151d3b301913a216f69.
+- Aviso de licencia CC0 1.0 incluido junto al fixture. Inspección del GLB: versión 2, 498212 bytes, 45 nodos, 1 skin de 31 articulaciones y 11 clips (incluye Man_Idle, Man_Run, Man_Walk).
+- Añadido GltfPlayerFixtureTest para verificar cabecera GLB, skin, clips y aviso CC0.
+- El fixture Quaternius es low-poly y se mantiene exclusivamente en recursos de test. NO es el arte realista final y no se activa en el juego.
+
+Verificación y límites:
+- El workflow Android CI se disparó en la ejecución 45700930177 para el commit de código 53f2dec1840c002ea6a6cab0cb400d4962dccf14. En el momento de este registro seguía en ejecución; no se afirma compilación aprobada hasta ver resultado.
+- Pendiente: resolver cualquier error de JitPack/API, pasar pruebas, instalar APK y probar en Android ARM64 físico.
+- Pendiente: conseguir/crear un futbolista humano de alta fidelidad con licencia clara y clips específicos de fútbol; el fixture actual solo demuestra estructura y licencia.
+- Pendiente: validar maxBones/Shader en GPU real, uniformes/equipaciones distintas, animaciones de balón-pie, portero, caídas y celebraciones.
+- No se declara completada la integración visual ni el modo Amistosos.
