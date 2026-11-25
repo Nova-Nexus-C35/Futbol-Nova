@@ -37,6 +37,28 @@ public final class MatchSimulationTest {
         s.update(Float.NaN,0f,0f,0f,0f);s.update(-1f,0f,0f,0f,0f);
         assertEquals(x,s.getPlayers().get(0).x,0.0001f);
     }
+    @Test public void ignoresNonFiniteBallAndControlledCoordinatesWithoutCorruptingLineup() {
+        MatchSimulation simulation=new MatchSimulation();
+        assertTrue(simulation.start("home","away"));
+        MatchSimulation.PlayerState controlled=simulation.getControlledPlayer();
+        MatchSimulation.PlayerState defender=simulation.getPlayers().get(2);
+        float controlledX=controlled.x,controlledZ=controlled.z;
+        float defenderX=defender.x,defenderZ=defender.z;
+        float defenderTargetX=defender.targetX,defenderTargetZ=defender.targetZ;
+
+        simulation.update(1f/60f,Float.NaN,0f,controlledX,controlledZ);
+        simulation.update(1f/60f,0f,Float.POSITIVE_INFINITY,controlledX,controlledZ);
+        simulation.update(1f/60f,0f,0f,Float.NaN,controlledZ);
+        simulation.update(1f/60f,0f,0f,controlledX,Float.NEGATIVE_INFINITY);
+
+        assertEquals(controlledX,controlled.x,0.0001f);
+        assertEquals(controlledZ,controlled.z,0.0001f);
+        assertEquals(defenderX,defender.x,0.0001f);
+        assertEquals(defenderZ,defender.z,0.0001f);
+        assertEquals(defenderTargetX,defender.targetX,0.0001f);
+        assertEquals(defenderTargetZ,defender.targetZ,0.0001f);
+    }
+
     @Test public void ballControlAndTackleRulesMatchOriginalThresholds() {
         assertTrue(MatchSimulation.canControlBall(1.1f,1.0f,3.9f));
         assertFalse(MatchSimulation.canControlBall(1.2f,1.0f,3.0f));
