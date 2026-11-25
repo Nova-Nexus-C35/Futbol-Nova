@@ -135,3 +135,14 @@ Este avance solo cubre la capa visual inicial de controles. No marca como comple
 - [ ] Validar el comportamiento real en Android; la inspección de código y CI no sustituyen la prueba táctil en el teléfono.
 
 La auditoría no certifica todavía la simulación completa: los puntos pendientes deben cerrarse antes de declarar Amistosos listo.
+
+
+## Continuidad de posesión: regresiones de nivel simulación — 2026-11-25
+
+- [x] La búsqueda de poseedor ignora entradas nulas y jugadores con coordenadas X/Z no finitas.
+- [x] Añadir cobertura de regresión para adquisición tras una entrada exitosa, sustitución en un índice estable y balón que vuelve a ser controlable después de una reanudación/tiro rápido.
+- [ ] Completar pruebas de integración del ciclo completo de balón dentro de FutbolNovaGame (pase, tiro, robo, sustitución, reanudación y gol).
+- [ ] CI para los cambios de esta sección.
+- [ ] Prueba táctil y de partido real en Android.
+
+Las pruebas añadidas ejercitan las reglas y los contratos del motor, pero no invocan directamente los métodos privados de renderizado/control de FutbolNovaGame; por eso no se marcan como integración end-to-end.
