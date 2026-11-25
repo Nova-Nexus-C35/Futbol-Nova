@@ -3,9 +3,19 @@ package com.novanexus.futbolnova;
 import com.badlogic.gdx.math.Vector3;
 import org.junit.Test;
 import java.util.List;
+import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 public final class MatchGameplayTest {
+ private static List<OriginalProjectData.PlayerRecord> testSquad(String prefix,String name){
+  List<OriginalProjectData.PlayerRecord> squad=new ArrayList<>();
+  for(int i=0;i<14;i++){
+   String position=i==0?"POR":(i<3?"DFC":(i<5?"LI":"MC"));
+   squad.add(new OriginalProjectData.PlayerRecord(prefix+i,name+" "+i,position,
+           70+i,new float[]{70f,75f}));
+  }
+  return squad;
+ }
  @Test public void possessionRequiresSlowLowBallNearPlayer(){
   MatchSimulation s=new MatchSimulation();assertTrue(s.start("home","away"));
   MatchSimulation.PlayerState p=s.getPlayers().get(9);
@@ -31,7 +41,7 @@ public final class MatchGameplayTest {
  }
  @Test public void possessionIgnoresNullAndInvalidPlayerCoordinates(){
   MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
-  List<MatchSimulation.PlayerState> players=simulation.getPlayers();
+  List<MatchSimulation.PlayerState> players=new ArrayList<>(simulation.getPlayers());
   MatchSimulation.PlayerState nearest=players.get(9);
   float x=nearest.x,z=nearest.z;
   players.set(9,null);
@@ -39,8 +49,13 @@ public final class MatchGameplayTest {
   players.get(8).z=Float.POSITIVE_INFINITY;
   assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(players,x,0.55f,z,0f));
  }
- @Test public void tackleSubstitutionAndRestartKeepPossessionAcquisitionConsistent(){
-  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+ @Test public void tackleSubstitutionAndBallReleaseKeepPossessionAcquisitionConsistent(){
+  List<OriginalProjectData.PlayerRecord> homeSquad=testSquad("H","Home");
+  List<OriginalProjectData.PlayerRecord> awaySquad=testSquad("A","Away");
+  MatchSimulation simulation=new MatchSimulation();
+  assertTrue(simulation.start(
+          new OriginalProjectData.TeamRoster("H","Home FC","league",1,homeSquad),
+          new OriginalProjectData.TeamRoster("A","Away FC","league",1,awaySquad)));
   List<MatchSimulation.PlayerState> players=simulation.getPlayers();
   MatchSimulation.PlayerState owner=players.get(9),challenger=players.get(18);
   owner.x=0f;owner.z=0f;owner.forwardX=1f;owner.forwardZ=0f;
