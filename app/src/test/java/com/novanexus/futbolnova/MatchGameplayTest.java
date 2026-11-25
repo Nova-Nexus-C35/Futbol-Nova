@@ -13,6 +13,22 @@ public final class MatchGameplayTest {
   assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(s.getPlayers(),p.x,2f,p.z,1f));
   assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(s.getPlayers(),p.x,0.55f,p.z,5f));
  }
+ @Test public void possessionRejectsNonFiniteOrNegativeBallState(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  MatchSimulation.PlayerState player=simulation.getPlayers().get(9);
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(
+          simulation.getPlayers(),Float.NaN,0.55f,player.z,0f));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(
+          simulation.getPlayers(),player.x,Float.POSITIVE_INFINITY,player.z,0f));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(
+          simulation.getPlayers(),player.x,0.55f,Float.NEGATIVE_INFINITY,0f));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(
+          simulation.getPlayers(),player.x,0.55f,player.z,Float.NaN));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(
+          simulation.getPlayers(),player.x,0.55f,player.z,-1f));
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.acquirePossession(
+          simulation.getPlayers(),player.x,-0.1f,player.z,0f));
+ }
  @Test public void dismissedPlayersCannotAcquireBallOrReceivePasses(){
   MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
   List<MatchSimulation.PlayerState> players=simulation.getPlayers();
