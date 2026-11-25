@@ -140,9 +140,9 @@ La auditoría no certifica todavía la simulación completa: los puntos pendient
 ## Continuidad de posesión: regresiones de nivel simulación — 2026-11-25
 
 - [x] La búsqueda de poseedor ignora entradas nulas y jugadores con coordenadas X/Z no finitas.
-- [x] Añadir cobertura de regresión para adquisición tras una entrada exitosa, sustitución en un índice estable y balón que vuelve a ser controlable después de una reanudación/tiro rápido.
+- [x] Añadir cobertura de regresión para adquisición tras una entrada exitosa, sustitución en un índice estable y rechazo/re-adquisición del balón según velocidad.
 - [ ] Completar pruebas de integración del ciclo completo de balón dentro de FutbolNovaGame (pase, tiro, robo, sustitución, reanudación y gol).
-- [ ] CI para los cambios de esta sección.
+- [x] CI Android para los cambios de esta sección: ejecución 45691426001 SUCCESS (123 pruebas, APK ARM64 y runtime nativo verificado).
 - [ ] Prueba táctil y de partido real en Android.
 
 Las pruebas añadidas ejercitan las reglas y los contratos del motor, pero no invocan directamente los métodos privados de renderizado/control de FutbolNovaGame; por eso no se marcan como integración end-to-end.
