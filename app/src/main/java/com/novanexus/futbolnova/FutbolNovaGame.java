@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private final Vector3 cameraFollowPosition = new Vector3();
     private final Vector3 cameraLookTarget = new Vector3();
     private final Vector3 touchMovement = new Vector3();
+    private final Matrix4 hudProjection = new Matrix4();
     private final float[] aiTackleCooldowns = new float[22];
     private final float[] goalkeeperRecoveryTimers = new float[22];
     private final float[] goalkeeperDiveDirections = new float[22];
@@ -297,6 +299,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         modelBatch.end();
 
         drawPitchMarkings();
+        drawTouchControls();
         drawHud();
     }
 
@@ -343,7 +346,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 if(movementPointer<0||movementPointer==pointer){
                     movementPointer=pointer;
                     movementStillDown=true;
-                    float radius=Math.max(1f,width*0.22f);
+                    float radius=Math.max(1f,Math.min(width*0.22f,height*0.38f));
                     float horizontal=(x-width*0.28f)/radius;
                     float vertical=(height*0.50f-y)/radius;
                     touchMovement.set(horizontal,0f,-vertical);
@@ -359,7 +362,10 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             }
             pointerWasTouched[pointer]=true;
         }
-        if(!movementStillDown)movementPointer=-1;
+        if(!movementStillDown){
+            movementPointer=-1;
+            touchMovement.setZero();
+        }
         matchActionPointerDown=matchActionDown;
     }
 
@@ -1051,6 +1057,56 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(matchClock.getPhase()==MatchClock.Phase.FULL_TIME&&Gdx.app!=null)
             font.draw(spriteBatch,"ACTAS GUARDADAS: "+MatchReportStore.count(Gdx.app.getPreferences("futbol_nova_match_reports")),18f,102f);
         else font.draw(spriteBatch,"ARRIBA CENTRO: CAMBIAR JUGADOR   ARRIBA DERECHA: PAUSA / CONTINUAR",18f,Gdx.graphics.getHeight()-48f);
+        spriteBatch.end();
+    }
+
+    /** Draws the same touch zones consumed by updateTouchControls so controls are discoverable. */
+    private void drawTouchControls(){
+        int width=Gdx.graphics.getWidth(),height=Gdx.graphics.getHeight();
+        if(width<=0||height<=0)return;
+
+        float stickX=width*0.28f,stickY=height*0.50f;
+        float stickRadius=Math.max(1f,Math.min(width*0.22f,height*0.38f));
+        float knobX=stickX+touchMovement.x*stickRadius*0.58f;
+        float knobY=stickY+touchMovement.z*stickRadius*0.58f;
+        float actionX=width*0.82f;
+        float actionRadius=Math.max(24f,Math.min(width*0.07f,height*0.105f));
+
+        hudProjection.setToOrtho2D(0f,0f,width,height);
+        shapeRenderer.setProjectionMatrix(hudProjection);
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA,GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.04f,0.08f,0.12f,0.34f);
+        shapeRenderer.circle(stickX,stickY,stickRadius);
+        shapeRenderer.setColor(0.12f,0.72f,0.88f,0.62f);
+        shapeRenderer.circle(knobX,knobY,stickRadius*0.30f);
+        float[] actionY={height*0.83f,height*0.50f,height*0.17f};
+        float[][] actionColors={{0.92f,0.30f,0.20f},{0.08f,0.62f,0.86f},{0.92f,0.66f,0.16f}};
+        for(int i=0;i<actionY.length;i++){
+            float[] color=actionColors[i];
+            shapeRenderer.setColor(color[0],color[1],color[2],0.52f);
+            shapeRenderer.circle(actionX,actionY[i],actionRadius);
+        }
+        shapeRenderer.end();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(1f,1f,1f,0.78f);
+        shapeRenderer.circle(stickX,stickY,stickRadius);
+        shapeRenderer.circle(knobX,knobY,stickRadius*0.30f);
+        for(float y:actionY)shapeRenderer.circle(actionX,y,actionRadius);
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        spriteBatch.begin();
+        float labelScale=font.getData().scaleX;
+        font.getData().setScale(Math.min(1.05f,Math.max(0.72f,width/900f)));
+        font.draw(spriteBatch,"MOVER",stickX-stickRadius*0.34f,stickY-stickRadius-12f);
+        font.draw(spriteBatch,"TIRO",actionX-actionRadius*0.45f,actionY[0]+5f);
+        font.draw(spriteBatch,"PASE",actionX-actionRadius*0.45f,actionY[1]+5f);
+        font.draw(spriteBatch,"ROBO",actionX-actionRadius*0.45f,actionY[2]+5f);
+        font.getData().setScale(labelScale);
         spriteBatch.end();
     }
 
