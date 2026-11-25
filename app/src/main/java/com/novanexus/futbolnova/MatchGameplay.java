@@ -11,7 +11,9 @@ public final class MatchGameplay {
 
     public static int acquirePossession(List<MatchSimulation.PlayerState> players,
             float ballX,float ballY,float ballZ,float ballSpeed) {
-        if(players==null || ballY>1.1f || ballSpeed>4f) return NO_OWNER;
+        if(players==null || !Float.isFinite(ballX) || !Float.isFinite(ballY)
+                || !Float.isFinite(ballZ) || !Float.isFinite(ballSpeed)
+                || ballY<0f || ballSpeed<0f || ballY>1.1f || ballSpeed>4f) return NO_OWNER;
         int best=NO_OWNER; float bestDistance=1.15f;
         for(int i=0;i<players.size();i++){
             MatchSimulation.PlayerState p=players.get(i);
