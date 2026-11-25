@@ -163,3 +163,17 @@ Las pruebas añadidas ejercitan las reglas y los contratos del motor, pero no in
 - [ ] Añadir pruebas de integración jugador–animación–balón y perfilado de FPS, memoria, temperatura y batería.
 
 **Nota de alcance:** el objetivo tipo FIFA es un objetivo de calidad, no una afirmación de paridad inmediata. La compilación CI del HUD aún debe completarse; no se marca como validado en dispositivo.
+
+
+## Pipeline de jugadores GLB opcional — 2026-11-25
+
+- [x] Añadir gdx-gltf 2.3.0 y repositorio JitPack al proyecto Android.
+- [x] Crear GltfPlayerSquad: carga local de GLB, escenas por jugador, transformaciones desde MatchSimulation, selección de Idle/Walk/Run y render PBR.
+- [x] Conectar FutbolNovaGame al renderer GLB opcional con fallback automático a PlayerVisual cuando falta el modelo o falla la carga.
+- [x] Incorporar fixture GLB CC0 de Quaternius solo en recursos de test; conservar aviso de licencia y probar cabecera/skin/clips.
+- [x] Documentar contrato del asset activo en app/src/main/assets/models/players/README.md.
+- [ ] Ejecutar CI; confirmar resolución JitPack, compilación Android y pruebas de fixture.
+- [ ] Proporcionar un GLB humano realista de producción en app/src/main/assets/models/players/active.glb; el fixture low-poly no es aceptable como arte final.
+- [ ] Verificar que el modelo real se ajusta a la cámara, escala, orientación, 24 huesos por draw y rendimiento del Android objetivo.
+- [ ] Implementar mapeo de animaciones futbolísticas (dribbling, control, pase, tiro, tackle, caída, portero y celebraciones) y sincronización balón-pie.
+- [ ] Activar renderer GLB por defecto solo después de validación en dispositivo y pruebas de estabilidad.
