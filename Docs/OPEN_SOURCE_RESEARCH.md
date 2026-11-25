@@ -133,3 +133,15 @@ El HUD del partido no dibujaba controles táctiles visibles, aunque el runtime y
 ### Pendiente de validación
 
 La compilación y las pruebas de CI de este commit están en ejecución. Aún falta comprobar tamaño/legibilidad y multitáctil en el Android físico del propietario; esta mejora no certifica por sí sola que los controles estén completos ni que el amistoso sea aceptado.
+
+
+## Revisión de alternativas para amistosos Android — 2026-11-25 (continuación)
+
+- [ssenegas/kickoff](https://github.com/ssenegas/kickoff) — Java + libGDX y licencia MIT verificada leyendo `LICENSE`. Es la referencia externa más cercana al runtime de Fútbol Nova; útil para contrastar ciclo de render/input y organización de juego 2D, pero no se copió código ni assets porque su diseño Kick Off 2 no equivale al partido 3D 11v11 de Nova.
+- [Geomancer86/Futtoboru](https://github.com/Geomancer86/Futtoboru) — alternativa Java/libGDX vinculada a gestión futbolística. Se verificó `LICENSE` GPL-3.0; se excluye reutilización directa por copyleft y porque su enfoque no resuelve el runtime 3D táctil de Amistosos.
+- [blurz17/blurz-native-football-](https://github.com/blurz17/blurz-native-football-) — referencia reciente de fútbol 3D Android con HUD táctil, joystick relativo a cámara y subsistema de entrenamiento. El README describe C++/SDL2/OpenGL ES/ODE/JNI y el archivo LICENSE declara GPLv3, mientras que el API de GitHub no expone SPDX reconocido (NOASSERTION). Se estudian conceptos de UX/controles solamente; no se incorpora código, assets ni dependencias por diferencia de stack y condiciones de licencia que requerirían revisión adicional.
+- [libgdx/libgdx](https://github.com/libgdx/libgdx) — framework base Java multiplataforma Android/desktop, Apache-2.0; se mantiene como referencia técnica primaria y no se sustituye el runtime.
+
+### Robustez de simulación
+
+Se detectó que `MatchSimulation.update` validaba el delta de tiempo, pero no validaba las coordenadas de balón y jugador controlado. Un NaN o infinito podía propagarse a posiciones y objetivos de IA, dañando el estado de todo el partido. Se añadió un rechazo temprano de coordenadas no finitas y una prueba de regresión que comprueba que posiciones y objetivos quedan intactos. Cambio propio; no usa código externo.
