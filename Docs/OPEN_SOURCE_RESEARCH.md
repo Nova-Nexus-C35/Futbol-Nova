@@ -145,3 +145,15 @@ La compilación y las pruebas de CI de este commit están en ejecución. Aún fa
 ### Robustez de simulación
 
 Se detectó que `MatchSimulation.update` validaba el delta de tiempo, pero no validaba las coordenadas de balón y jugador controlado. Un NaN o infinito podía propagarse a posiciones y objetivos de IA, dañando el estado de todo el partido. Se añadió un rechazo temprano de coordenadas no finitas y una prueba de regresión que comprueba que posiciones y objetivos quedan intactos. Cambio propio; no usa código externo.
+
+
+## Referencia adicional: motor de partido y posesión — 2026-11-25
+
+- [atas76/openengine](https://github.com/atas76/openengine) — motor de partidos de fútbol escrito en Java. Se leyó el README y el archivo LICENSE; la licencia declara MIT. Su enfoque documentado insiste en que las decisiones de los agentes y las tácticas produzcan resultados coherentes, con datos contextuales de jugadores y fases del partido. Es útil como referencia para diseñar contratos de simulación y separar entradas/salidas.
+- No se incorpora como dependencia: el pom.xml consultado compila con Java 18 y declara Maven, Spring, JDBC, SQLite, Jackson y Commons CSV; no es una integración directa con Java 17 + libGDX 1.14.2 + Android ARM64. No se copió código ni datos.
+- [modelence/open-soccer](https://github.com/modelence/open-soccer) — juego 11v11 de navegador con estados de posesión, reglas, controles y cámara broadcast; React/TypeScript/Canvas. Referencia conceptual de separación del motor, tipos, render y proyección, no compatible como runtime Android Java. No se copió código.
+- [ssenegas/kickoff](https://github.com/ssenegas/kickoff) sigue siendo la referencia más cercana al stack Java/libGDX; MIT verificada previamente. Su juego 2D retro no es una solución directa al partido 3D 11v11.
+
+### Aplicación propia tras la auditoría
+
+La adquisición de posesión ahora rechaza coordenadas no finitas, altura no válida y velocidad negativa/no finita del balón antes de buscar al jugador más cercano. Se agregaron pruebas de regresión para NaN, infinito y valores negativos. Es una defensa de entrada; no reemplaza futuras pruebas de continuidad de posesión durante pases, tiros, entradas, sustituciones y reinicios.
