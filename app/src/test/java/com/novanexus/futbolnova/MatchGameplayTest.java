@@ -43,7 +43,7 @@ public final class MatchGameplayTest {
   MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
   List<MatchSimulation.PlayerState> players=simulation.getPlayers();
   MatchSimulation.PlayerState owner=players.get(9),challenger=players.get(18);
-  owner.x=0f;owner.z=0f;owner.forwardX=0f;owner.forwardZ=-1f;
+  owner.x=0f;owner.z=0f;owner.forwardX=1f;owner.forwardZ=0f;
   challenger.x=0.8f;challenger.z=0f;challenger.forwardX=-1f;challenger.forwardZ=0f;
   MatchSimulation.TackleResult tackle=MatchGameplay.tackle(challenger,owner,1.7f);
   assertNotNull(tackle);assertTrue(tackle.success);assertFalse(tackle.foul);
