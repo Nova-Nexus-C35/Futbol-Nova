@@ -123,3 +123,15 @@ Este avance solo cubre la capa visual inicial de controles. No marca como comple
 - [x] Proteger el motor de simulación frente a coordenadas NaN/infinito del balón o del jugador controlado; el update descarta el frame inválido antes de modificar posiciones o decisiones de IA.
 - [x] Añadir prueba de regresión que comprueba que posiciones y objetivos de jugadores permanecen intactos ante coordenadas no finitas.
 - [ ] Validar con escenarios de partido reales que el balón nunca genera coordenadas no finitas y revisar telemetría si ocurre.
+
+
+## Auditoría jugador–balón–posesión — 2026-11-25
+
+- [x] Revisar sincronización del futbolista controlado al cambiar de jugador, iniciar segundo tiempo, reconstruir alineaciones, sustituir o expulsar; los puntos de cambio inspeccionados actualizan la posición de control.
+- [x] Revisar el anclaje del balón al poseedor y la liberación en tiro/pase/robo/reinicio; la lógica existente mantiene la posesión en el índice del jugador y ancla el balón durante el turno del poseedor.
+- [x] Rechazar estados no finitos o físicamente inválidos en la adquisición de posesión y cubrirlos con pruebas.
+- [ ] Añadir pruebas de integración para continuidad del balón y del índice de poseedor en pase, tiro, robo, sustitución y reinicio.
+- [ ] Ejecutar CI para el nuevo commit que contiene esta defensa y sus pruebas.
+- [ ] Validar el comportamiento real en Android; la inspección de código y CI no sustituyen la prueba táctil en el teléfono.
+
+La auditoría no certifica todavía la simulación completa: los puntos pendientes deben cerrarse antes de declarar Amistosos listo.
