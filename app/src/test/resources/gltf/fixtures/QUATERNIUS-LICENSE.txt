@@ -1,0 +1,17 @@
+------------------------------------------------------
+LowPoly Models by @Quaternius
+Consider supporting me on Patreon, even $1 helps me a lot!
+
+https://www.patreon.com/quaternius
+-------------------------------------------------------
+
+License:
+CC0 1.0 Universal (CC0 1.0) 
+Public Domain Dedication
+https://creativecommons.org/publicdomain/zero/1.0/
+
+
+Source repository: https://github.com/kendrekaran/striker-3d/blob/main/assets/player.glb
+Source asset SHA: 2faab1ed245bbe2b28153151d3b301913a216f69
+Original asset credit: Quaternius — Animated Men. CC0 1.0 Universal.
+Included only as an integration fixture; not approved as final realistic player art.
