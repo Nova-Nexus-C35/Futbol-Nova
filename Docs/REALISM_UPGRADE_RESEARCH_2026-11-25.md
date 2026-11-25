@@ -87,3 +87,32 @@ FutbolNovaGame.drawHud() ahora calcula escala adaptativa por resolución, separa
 - [ ] Revisar HUD en distintas relaciones de aspecto y densidades; CI no prueba legibilidad en teléfono.
 - [ ] Validar la prueba gdx-gltf antes de incorporar dependencia al runtime.
 - [ ] Ejecutar prueba física completa de Amistosos en Android.
+
+
+## Prueba concreta de pipeline GLB — 2026-11-25
+
+### gdx-gltf 2.3.0 incorporado como renderer opcional
+
+- Se verificó el tag público 2.3.0 de mgsx-dev/gdx-gltf y su módulo gltf/build.gradle.
+- La dependencia se añadió al módulo Android y JitPack al repositorio de dependencias.
+- El renderer nuevo GltfPlayerSquad carga un GLB local una sola vez, crea instancias de escena por jugador, selecciona clips por nombre (Idle/Stand, Walk/Jog, Run/Sprint), aplica posición/orientación desde MatchSimulation y renderiza mediante SceneManager PBR.
+- FutbolNovaGame intenta cargar models/players/active.glb; si el archivo no existe o falla, mantiene PlayerVisual procedural sin bloquear el partido.
+- El renderer es opcional y no descarga assets desde Internet.
+
+### Fixture de prueba CC0
+
+Se añadió app/src/test/resources/gltf/fixtures/quaternius-player.glb desde kendrekaran/striker-3d/assets/player.glb (blob original SHA 2faab1ed245bbe2b28153151d3b301913a216f69). Se comprobó su cabecera GLB 2.0, tamaño 498,212 bytes, 45 nodos, 1 skin con 31 articulaciones y 11 clips, incluyendo Man_Idle, Man_Run y Man_Walk. El archivo de licencia fuente confirma CC0 1.0 Universal y se conserva junto al fixture.
+
+Repositorio fuente: https://github.com/kendrekaran/striker-3d
+Licencia fuente: https://github.com/kendrekaran/striker-3d/blob/main/assets/LICENSE-quaternius.txt
+
+**Límite importante:** el modelo Quaternius es low-poly. Solo sirve como fixture de integración y NO es el futbolista realista final. No se copia a assets de producción ni se activa por defecto.
+
+### Verificación pendiente después de la integración
+
+- [ ] CI resuelve JitPack y compila GltfPlayerSquad con libGDX 1.14.2.
+- [ ] Pruebas JUnit verifican GLB 2.0, skin, clips Idle/Run y presencia del aviso CC0.
+- [ ] Conseguir o crear un modelo humano de mayor fidelidad con licencia verificable y clips futbolísticos (control de balón, pase, tiro, entrada, caída y portero).
+- [ ] Probar active.glb real en Android ARM64; validar shader PBR, límite de huesos por draw, texturas, orientación, escala, FPS, memoria, temperatura y context loss.
+- [ ] Añadir retargeting o perfiles de clips para acciones futbolísticas; la primera versión solo mapea locomoción por nombres.
+- [ ] Añadir animación de portero y sincronización pie-balón antes de activar el renderer como predeterminado.
