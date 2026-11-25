@@ -100,3 +100,21 @@ Investigación pública:
 - La ejecución CI 45689356818 terminó SUCCESS para el commit anterior 8235ca389d4a6d8c4973700706f69aaf04863fe4: pruebas, build Android ARM64 y verificación del runtime nativo completados.
 - Los cambios nuevos de adquisición de posesión y sus pruebas se escribieron después de esa ejecución. Necesitan una ejecución CI propia; no atribuirles todavía el resultado SUCCESS anterior.
 - Pendiente de pruebas de integración para continuidad en pases/tiros/robos/sustituciones/reinicios y de prueba física en Android.
+
+
+## Segunda pasada de continuidad de posesión — 2026-11-25
+
+Cambios de código:
+- MatchGameplay.acquirePossession ahora omite slots nulos y jugadores inactivos o con coordenadas X/Z no finitas, evitando que una entrada dañada rompa el cálculo de distancias.
+- MatchGameplayTest añade cobertura para listas con slots nulos/coordenadas inválidas y para el contrato de posesión después de una entrada exitosa, sustitución que conserva el índice de alineación y balón demasiado rápido que luego vuelve a velocidad controlable.
+- La prueba de entrada establece orientaciones opuestas correctas para distinguir una entrada limpia de una falta.
+
+Archivos:
+- app/src/main/java/com/novanexus/futbolnova/MatchGameplay.java
+- app/src/test/java/com/novanexus/futbolnova/MatchGameplayTest.java
+
+Alcance:
+- Son pruebas de reglas/contratos del motor de simulación; no son una prueba end-to-end de los métodos privados de FutbolNovaGame.
+- El ciclo completo de pase, tiro, robo, sustitución, reanudación y gol todavía necesita pruebas de integración que conduzcan el estado del partido.
+- El workflow .github/workflows/android-build.yml está configurado para ejecutarse al hacer push a esta rama. Este commit documental final también dispara una ejecución para validar todos los cambios anteriores de esta tanda.
+- No se ha instalado ni probado el APK en un teléfono real.
