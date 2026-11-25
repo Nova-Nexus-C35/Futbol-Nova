@@ -155,3 +155,5 @@ Verificación y límites:
 - Pendiente: conseguir/crear un futbolista humano de alta fidelidad con licencia clara y clips específicos de fútbol; el fixture actual solo demuestra estructura y licencia.
 - Pendiente: validar maxBones/Shader en GPU real, uniformes/equipaciones distintas, animaciones de balón-pie, portero, caídas y celebraciones.
 - No se declara completada la integración visual ni el modo Amistosos.
+
+- Revisión de coordenadas JitPack: la página del tag 2.3.0 indica com.github.mgsx-dev:gdx-gltf:2.3.0; app/build.gradle se corrigió a esa coordenada oficial. La resolución queda pendiente del siguiente CI.
