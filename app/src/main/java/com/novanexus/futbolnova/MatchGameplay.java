@@ -17,7 +17,7 @@ public final class MatchGameplay {
         int best=NO_OWNER; float bestDistance=1.15f;
         for(int i=0;i<players.size();i++){
             MatchSimulation.PlayerState p=players.get(i);
-            if(!p.active)continue;
+            if(p==null||!p.active||!Float.isFinite(p.x)||!Float.isFinite(p.z))continue;
             float d=distance(p.x,p.z,ballX,ballZ);
             if(d<=bestDistance){bestDistance=d;best=i;}
         }
