@@ -67,7 +67,7 @@ https://github.com/FlavioMili/Player12
 
 ## Próximos trabajos priorizados
 
-- [ ] Crear módulo/escena aislada de prueba para gdx-gltf 2.1.0 con GLB propio o CC0 claramente acreditado.
+- [ ] Crear módulo/escena aislada de prueba para gdx-gltf 2.3.0 con GLB propio o CC0 claramente acreditado.
 - [ ] Verificar skinning, clips, PBR, IBL, sombras, pérdida de contexto GL y dispose.
 - [ ] Medir APK, memoria, FPS, temperatura y tiempos de carga en Android objetivo.
 - [ ] Definir formato de jugador: esqueleto, nombres de huesos, escala, retargeting, estados y transiciones.
