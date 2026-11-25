@@ -1063,12 +1063,12 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     /** Draws the same touch zones consumed by updateTouchControls so controls are discoverable. */
     private void drawTouchControls(){
         int width=Gdx.graphics.getWidth(),height=Gdx.graphics.getHeight();
-        if(width<=0||height<=0)return;
+        if(width<=0||height<=0||!matchClock.canAcceptGameplayInput())return;
 
         float stickX=width*0.28f,stickY=height*0.50f;
         float stickRadius=Math.max(1f,Math.min(width*0.22f,height*0.38f));
         float knobX=stickX+touchMovement.x*stickRadius*0.58f;
-        float knobY=stickY+touchMovement.z*stickRadius*0.58f;
+        float knobY=stickY-touchMovement.z*stickRadius*0.58f;
         float actionX=width*0.82f;
         float actionRadius=Math.max(24f,Math.min(width*0.07f,height*0.105f));
 
