@@ -112,3 +112,37 @@ La referencia FIFA describe el nivel y la dirección de calidad deseados; no aut
 - PlayerAnimation mantiene funciones deterministas y limita la amplitud de zancada; entradas no finitas vuelven a una pose estable.
 - Se añadieron pruebas de reposo, alternancia positiva/negativa de zancada, amplitud máxima y entradas inválidas.
 - Limitación: siguen siendo mallas low-poly separadas y animación procedural básica. No hay esqueleto/skin, clips capturados, cinemática inversa, contacto pie-balón sincronizado ni animaciones de pase/tiro/caída/portero. No se considera animación de calidad moderna terminada.
+
+
+
+## Confirmación explícita del propietario — realismo visual tipo FIFA (2026-11-25)
+
+El propietario confirmó que desea un resultado **totalmente realista, comparable visualmente con FIFA/EA SPORTS FC**, y rechazó expresamente la apariencia mostrada en la captura del prototipo Android del 2026-11-25.
+
+### La captura actual no es el objetivo aceptable
+
+La imagen revisada muestra un estadio oscuro de geometría simple, jugadores low-poly muy pequeños, cámara excesivamente alejada y textos del HUD superpuestos. Sirve únicamente como evidencia del estado técnico actual; no debe presentarse como diseño final ni como nivel visual aprobado.
+
+### Estándar de calidad que debe perseguirse
+
+- Futbolistas humanos 3D de alta calidad, con anatomía, rostros, cabello, manos, botas y equipaciones detalladas; variedad corporal y facial.
+- Modelos articulados con esqueleto y animaciones de calidad deportiva: locomoción, aceleración, frenado, cambios de dirección, regates, pases, tiros, cabezazos, entradas, caídas, levantarse, atajadas y celebraciones.
+- Animación y contacto físico sincronizados con la simulación: pies apoyados, balón unido al gesto de golpeo, colisiones coherentes y ausencia de deslizamiento visual.
+- Campo con césped de apariencia natural, textura y variación, iluminación de día/noche, sombras, porterías y redes reactivas.
+- Estadio reconocible y detallado: gradas, público, banquillos, túneles, vallas LED, iluminación y ambiente de partido.
+- Cámara de retransmisión deportiva que encuadre la jugada y permita reconocer jugadores, balón y espacios tácticos; evitar la vista excesivamente lejana de la captura.
+- HUD moderno, limpio y adaptable: marcador, reloj, nombres/dorsales, indicador de jugador, radar y controles táctiles bien separados; prohibidos los textos amontonados o superpuestos.
+- Audio de estadio y efectos de partido con recursos originales o licencias compatibles.
+
+### Orden de trabajo y límites reales
+
+1. Mantener el modo Amistosos como prioridad funcional: no sacrificar controles, estabilidad ni simulación para producir una captura bonita.
+2. Diseñar una canalización de modelos 3D riggeados, materiales, texturas y clips de animación compatibles con el runtime actual.
+3. Sustituir progresivamente los futbolistas procedurales por modelos de calidad, manteniendo un fallback ligero para dispositivos limitados.
+4. Elevar la calidad del césped, estadio, público, iluminación, sombras, cámara y HUD.
+5. Perfilar y ofrecer niveles gráficos ajustables para Android ARM64; comprobar FPS sostenidos, memoria, temperatura y batería en el teléfono objetivo.
+6. Validar cada mejora en una compilación real ejecutada en Android. Una compilación CI o una escena procedural no certifica realismo ni rendimiento físico.
+
+La referencia FIFA/EA SPORTS FC expresa el estándar visual y de experiencia deseado, no una promesa de paridad técnica inmediata ni autorización para copiar sus marcas, interfaces, código o recursos protegidos. Usar identidad propia y recursos originales o debidamente licenciados.
+
+**Estado:** objetivo de realismo tipo FIFA confirmado por el propietario. La captura del 2026-11-25 queda clasificada como prototipo de baja fidelidad, no aceptado como resultado visual.
