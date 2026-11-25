@@ -45,7 +45,7 @@ public final class GltfPlayerSquad implements Disposable {
             throw new IllegalStateException("GLB has no renderable default scene: " + assetPath);
         }
 
-        sceneManager = new SceneManager();
+        sceneManager = new SceneManager(Math.max(24, asset.maxBones));
         sceneManager.setCamera(camera);
         sceneManager.setAmbientLight(0.72f);
         DirectionalLightEx keyLight = new DirectionalLightEx();
