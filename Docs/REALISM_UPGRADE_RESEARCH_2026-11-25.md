@@ -11,7 +11,7 @@ https://github.com/mgsx-dev/gdx-gltf
 
 - Licencia Apache-2.0, comprobada en LICENSE.
 - El README documenta glTF 2.0, múltiples animaciones, interpolación de keyframes, shape keys/morph targets, mapas normal, metallic/roughness, IBL/PBR, skybox y sombras.
-- Integración libGDX mediante JitPack y artefacto com.github.mgsx-dev.gdx-gltf:gltf.
+- Integración libGDX mediante JitPack y artefacto com.github.mgsx-dev:gdx-gltf.
 - El módulo gltf/build.gradle declara libGDX 1.9.11 y Java 7; el README indica que gdx-gltf 2.x requiere libGDX 1.9.11+. Esto sugiere compatibilidad de API, pero NO prueba compatibilidad binaria/Android con libGDX 1.14.2, Gradle actual, minSdk 28 ni GPU del teléfono.
 - Decisión: candidato prioritario, pero no añadir todavía al APK principal. Crear primero prueba aislada de GLB pequeño, skinning/animación, PBR, liberación de recursos y rendimiento ARM64.
 
@@ -116,3 +116,8 @@ Licencia fuente: https://github.com/kendrekaran/striker-3d/blob/main/assets/LICE
 - [ ] Probar active.glb real en Android ARM64; validar shader PBR, límite de huesos por draw, texturas, orientación, escala, FPS, memoria, temperatura y context loss.
 - [ ] Añadir retargeting o perfiles de clips para acciones futbolísticas; la primera versión solo mapea locomoción por nombres.
 - [ ] Añadir animación de portero y sincronización pie-balón antes de activar el renderer como predeterminado.
+
+
+### Corrección de coordenadas JitPack
+
+La página de JitPack consultada para el tag 2.3.0 publica como coordenada recomendada `com.github.mgsx-dev:gdx-gltf:2.3.0`. Se corrigió app/build.gradle para usar esa coordenada oficial, en lugar de la coordenada histórica de submódulo documentada en el README del repositorio. La compilación CI del commit actualizado debe confirmar que el artefacto se resuelve realmente.
