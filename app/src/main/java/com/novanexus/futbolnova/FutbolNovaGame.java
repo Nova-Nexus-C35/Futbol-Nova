@@ -1003,39 +1003,52 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void drawHud() {
+        int width=Gdx.graphics.getWidth(),height=Gdx.graphics.getHeight();
+        if(width<=0||height<=0)return;
         spriteBatch.begin();
+        float originalScale=font.getData().scaleX;
+        float hudScale=Math.max(0.68f,Math.min(1.05f,Math.min(width/1180f,height/720f)));
+        font.getData().setScale(hudScale);
+
         float matchSeconds=matchClock.getTotalElapsedSeconds();
         int matchMinute=(int)(matchSeconds/60f);
         String clock=String.format(java.util.Locale.US,"%02d:%02d",matchMinute,(int)(matchSeconds%60f));
-        font.draw(spriteBatch, matchSimulation.getHomeTeamName()+"  "+matchState.getHomeGoals()
-                +" - "+matchState.getAwayGoals()+"  "+matchSimulation.getAwayTeamName()+"  |  "+clock,
-                18f,Gdx.graphics.getHeight()-18f);
+        String scoreLine=matchSimulation.getHomeTeamName()+"  "+matchState.getHomeGoals()
+                +" - "+matchState.getAwayGoals()+"  "+matchSimulation.getAwayTeamName()+"  |  "+clock;
+        font.draw(spriteBatch,scoreLine,18f,height-18f);
+
         MatchSimulation.PlayerState activePlayer=matchSimulation.getControlledPlayer();
         if(activePlayer!=null)font.draw(spriteBatch,"JUGADOR: "+activePlayer.playerName
-                +"  #"+activePlayer.shirtNumber+"  "+activePlayer.role,
-                18f,Gdx.graphics.getHeight()-70f);
-        if(matchAdvantage.isActive())font.draw(spriteBatch,"LEY DE LA VENTAJA",18f,96f);
-        font.draw(spriteBatch,"TARJETAS A "+countTeamCards(true,false)+"-"+countTeamCards(false,false)
-                +"  ROJAS "+countTeamCards(true,true)+"-"+countTeamCards(false,true)
-                +"  JUGADORES "+matchSimulation.getActivePlayerCount(true)+"-"+matchSimulation.getActivePlayerCount(false),18f,78f);
-        font.draw(spriteBatch, "IZQUIERDA: MOVER   DERECHA: ARRIBA TIRO | CENTRO PASE | ABAJO ROBO", 18f, 28f);
-        font.draw(spriteBatch,"TIROS "+matchStatistics.getShots(true)+"-"+matchStatistics.getShots(false)
-                +"  PASES "+matchStatistics.getCompletedPasses(true)+"/"+matchStatistics.getPasses(true)+" ("+String.format(java.util.Locale.US,"%.0f",matchStatistics.getPassAccuracyPercent(true))+"%) - "+matchStatistics.getCompletedPasses(false)+"/"+matchStatistics.getPasses(false)+" ("+String.format(java.util.Locale.US,"%.0f",matchStatistics.getPassAccuracyPercent(false))+"%)"
-                +"  ENTRADAS "+matchStatistics.getTackles(true)+"-"+matchStatistics.getTackles(false)
-                +"  A PUERTA "+matchStatistics.getShotsOnTarget(true)+"-"+matchStatistics.getShotsOnTarget(false)
-                +"  PARADAS "+matchStatistics.getSaves(true)+"-"+matchStatistics.getSaves(false)
-                +"  FUERAS DE JUEGO "+matchStatistics.getOffsides(true)+"-"+matchStatistics.getOffsides(false),
-                18f,52f);
-        font.draw(spriteBatch,String.format(java.util.Locale.US,"POSESIÓN %.0f%% - %.0f%%",
-                matchStatistics.getPossessionPercent(true),matchStatistics.getPossessionPercent(false)),18f,40f);
+                +"  #"+activePlayer.shirtNumber+"  "+activePlayer.role,18f,height-42f);
+
         String phaseText;
         switch(matchClock.getPhase()){
-            case PRE_MATCH: phaseText="ARRIBA IZQ: EQUIPO LOCAL | CENTRO: VISITANTE | DERECHA: INICIAR"; break;
-            case HALF_TIME: phaseText="DESCANSO - ARRIBA IZQUIERDA: COMENZAR 2º TIEMPO"; break;
-            case FULL_TIME: phaseText="FINAL - ARRIBA IZQUIERDA: NUEVO PARTIDO"; break;
-            default: phaseText=matchClock.isPaused()?"PARTIDO PAUSADO - ARRIBA DERECHA PARA CONTINUAR":"ARRIBA CENTRO: CAMBIAR FUTBOLISTA | DERECHA: PAUSA";
+            case PRE_MATCH: phaseText="AMISTOSO | ARRIBA IZQ: EQUIPO LOCAL | CENTRO: VISITANTE | DERECHA: INICIAR"; break;
+            case HALF_TIME: phaseText="DESCANSO | ARRIBA IZQ: BANQUILLO | DERECHA: COMENZAR 2º TIEMPO"; break;
+            case FULL_TIME: phaseText="FINAL | ARRIBA IZQ: NUEVO PARTIDO"; break;
+            default: phaseText=matchClock.isPaused()
+                    ?"PARTIDO PAUSADO | ARRIBA DERECHA: CONTINUAR"
+                    :"CENTRO ARRIBA: CAMBIAR JUGADOR | DERECHA ARRIBA: PAUSA";
         }
-        if(!phaseText.isEmpty())font.draw(spriteBatch,phaseText,18f,Gdx.graphics.getHeight()*0.56f);
+        font.draw(spriteBatch,phaseText,18f,height-66f);
+        if(matchAdvantage.isActive())font.draw(spriteBatch,"LEY DE LA VENTAJA",18f,height-90f);
+
+        String discipline="TARJETAS "+countTeamCards(true,false)+"-"+countTeamCards(false,false)
+                +" | ROJAS "+countTeamCards(true,true)+"-"+countTeamCards(false,true)
+                +" | JUGADORES "+matchSimulation.getActivePlayerCount(true)+"-"+matchSimulation.getActivePlayerCount(false);
+        String attacking="TIROS "+matchStatistics.getShots(true)+"-"+matchStatistics.getShots(false)
+                +" | A PUERTA "+matchStatistics.getShotsOnTarget(true)+"-"+matchStatistics.getShotsOnTarget(false)
+                +" | PARADAS "+matchStatistics.getSaves(true)+"-"+matchStatistics.getSaves(false)
+                +" | ENTRADAS "+matchStatistics.getTackles(true)+"-"+matchStatistics.getTackles(false);
+        String passing="PASES "+matchStatistics.getCompletedPasses(true)+"/"+matchStatistics.getPasses(true)
+                +"-"+matchStatistics.getCompletedPasses(false)+"/"+matchStatistics.getPasses(false)
+                +" | FUERAS "+matchStatistics.getOffsides(true)+"-"+matchStatistics.getOffsides(false)
+                +" | POSESIÓN "+String.format(java.util.Locale.US,"%.0f-%.0f",
+                matchStatistics.getPossessionPercent(true),matchStatistics.getPossessionPercent(false))+"%";
+        font.draw(spriteBatch,discipline,18f,76f);
+        font.draw(spriteBatch,attacking,18f,52f);
+        font.draw(spriteBatch,passing,18f,28f);
+
         if(substitutionMode){
             List<OriginalProjectData.PlayerRecord> bench=matchSimulation.getBenchPlayers(substitutionHomeTeam);
             int firstOutgoing=substitutionHomeTeam?1:12;
@@ -1045,18 +1058,18 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                     ?matchSimulation.getPlayers().get(substitutionOutgoingIndex).playerName:"—";
             String incomingName=substitutionIncomingIndex>=0&&substitutionIncomingIndex<bench.size()
                     ?bench.get(substitutionIncomingIndex).name:"—";
-            font.draw(spriteBatch,"CAMBIOS "+teamLabel+" | IZQ: TITULAR ("+outgoingName+") | CENTRO: SUPLENTE ("+incomingName+") | DER: CONFIRMAR",
-                    18f,Gdx.graphics.getHeight()*0.48f);
-            font.draw(spriteBatch,"ESQUINA INFERIOR IZQ: CAMBIAR EQUIPO | CAMPO IZQ: CERRAR | CAMPO DER: CONTINUAR | CAMBIOS "+matchSimulation.getSubstitutionsUsed(substitutionHomeTeam)+"/5",
-                    18f,Gdx.graphics.getHeight()*0.44f);
+            font.draw(spriteBatch,"CAMBIOS "+teamLabel+" | TITULAR: "+outgoingName+" | SUPLENTE: "+incomingName+" | CONFIRMAR A LA DERECHA",
+                    18f,height*0.48f);
+            font.draw(spriteBatch,"CAMBIOS USADOS: "+matchSimulation.getSubstitutionsUsed(substitutionHomeTeam)+"/5 | ESQUINA INFERIOR IZQ: CAMBIAR EQUIPO",
+                    18f,height*0.44f);
         }else if(matchClock.isPaused()||matchClock.getPhase()==MatchClock.Phase.HALF_TIME){
-            font.draw(spriteBatch,"ARRIBA IZQ: BANQUILLO / CAMBIOS",18f,Gdx.graphics.getHeight()*0.48f);
+            font.draw(spriteBatch,"ARRIBA IZQ: BANQUILLO / CAMBIOS",18f,height*0.48f);
         }
-        if(matchClock.getPhase()==MatchClock.Phase.PRE_MATCH)
-            font.draw(spriteBatch,"LOCAL: "+matchSimulation.getHomeTeamName()+"   VISITANTE: "+matchSimulation.getAwayTeamName(),18f,Gdx.graphics.getHeight()-48f);
         if(matchClock.getPhase()==MatchClock.Phase.FULL_TIME&&Gdx.app!=null)
-            font.draw(spriteBatch,"ACTAS GUARDADAS: "+MatchReportStore.count(Gdx.app.getPreferences("futbol_nova_match_reports")),18f,102f);
-        else font.draw(spriteBatch,"ARRIBA CENTRO: CAMBIAR JUGADOR   ARRIBA DERECHA: PAUSA / CONTINUAR",18f,Gdx.graphics.getHeight()-48f);
+            font.draw(spriteBatch,"ACTAS GUARDADAS: "+MatchReportStore.count(Gdx.app.getPreferences("futbol_nova_match_reports")),
+                    18f,100f);
+
+        font.getData().setScale(originalScale);
         spriteBatch.end();
     }
 
