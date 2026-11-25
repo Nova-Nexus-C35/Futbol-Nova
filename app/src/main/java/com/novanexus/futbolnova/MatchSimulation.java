@@ -254,7 +254,9 @@ public final class MatchSimulation {
     }
 
     public void update(float deltaSeconds,float ballX,float ballZ,float controlledX,float controlledZ) {
-        if (players.size()!=22 || !Float.isFinite(deltaSeconds) || deltaSeconds<=0f) return;
+        if (players.size()!=22 || !Float.isFinite(deltaSeconds) || deltaSeconds<=0f
+                || !Float.isFinite(ballX) || !Float.isFinite(ballZ)
+                || !Float.isFinite(controlledX) || !Float.isFinite(controlledZ)) return;
         float delta=Math.min(deltaSeconds,0.05f);
         PlayerState controlled=getControlledPlayer();
         if(controlled==null||!controlled.active)return;
