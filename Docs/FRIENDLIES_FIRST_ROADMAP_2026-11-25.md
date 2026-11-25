@@ -106,3 +106,13 @@ Manager, Leyenda, Entrenador, temporadas, ligas y copas completas, mercado de fi
 - 2026-11-25: decisión de priorizar Amistosos confirmada por el propietario.
 - 2026-11-25: código de selección, reloj, controles, estadísticas, guardado e historial inspeccionado en la rama indicada.
 - Pendiente: auditoría interactiva en dispositivo Android; esta nota no afirma que el modo esté terminado ni que se haya probado físicamente.
+
+
+## Avance de implementación — 2026-11-25
+
+- [x] Dibujar joystick virtual y botones visibles TIRO/PASE/ROBO durante el juego activo, usando las mismas zonas de pantalla que consume el input.
+- [x] Ajustar el radio del joystick a las dimensiones reales de pantalla y corregir el sentido visual vertical del indicador.
+- [ ] Probar en Android físico la legibilidad, el alcance con pulgares, el movimiento diagonal y el multitáctil movimiento+acción.
+- [ ] Confirmar por CI la compilación y todas las pruebas tras el cambio.
+
+Este avance solo cubre la capa visual inicial de controles. No marca como completados el joystick analógico calibrado, la reasignación, la asistencia contextual, ni la aceptación del partido en dispositivo.
