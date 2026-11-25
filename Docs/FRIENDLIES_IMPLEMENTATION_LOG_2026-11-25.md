@@ -45,3 +45,29 @@ Archivo: `app/src/main/java/com/novanexus/futbolnova/FutbolNovaGame.java`
 ## Límites
 
 Este cambio no completa el modo Amistosos. No modifica `main`, no cierra ni fusiona PR #2 y no declara jugabilidad verificada en dispositivo.
+
+
+## Segundo bloque aplicado — validación de coordenadas
+
+Archivo: `app/src/main/java/com/novanexus/futbolnova/MatchSimulation.java`
+
+- `update` ahora rechaza frames cuando delta, coordenadas del balón o coordenadas del futbolista controlado no son valores finitos.
+- El rechazo sucede antes de mover al futbolista, recalcular la IA o aplicar separación, evitando que NaN/infinito contamine las 22 posiciones y objetivos.
+
+Prueba: `app/src/test/java/com/novanexus/futbolnova/MatchSimulationTest.java`
+
+- Se añadió una prueba que inyecta NaN e infinitos en las coordenadas de balón y controladas, y verifica que posiciones y objetivos previos no cambian.
+
+## Investigación complementaria
+
+- `ssenegas/kickoff`: Java/libGDX, MIT verificada; referencia de arquitectura/entrada, sin código reutilizado.
+- `Geomancer86/Futtoboru`: Java/libGDX, GPL-3.0 verificada; se excluye código por licencia/enfoque.
+- `blurz17/blurz-native-football-`: C++/SDL2/ODE/JNI, README describe controles táctiles Android; LICENSE declara GPLv3, API informa NOASSERTION. Solo se toma como referencia conceptual, no se integra.
+- `libgdx/libgdx`: Apache-2.0, framework base mantenido.
+
+## Estado de CI y APK del bloque anterior
+
+- La ejecución de Android Actions `45688820438`, intento 2, para el commit `2c576181b0a240fa9f0345eeb3734670dcfdccc0` terminó SUCCESS: tests, build ARM64, verificación del runtime nativo y subida del artefacto.
+- Artefacto `futbol-nova-android-arm64-debug`, ZIP de 3,497,242 bytes, con `app-debug.apk` de 9,259,789 bytes. Expira el 2026-12-09. Este APK corresponde al bloque anterior de controles visibles; no contiene todavía el nuevo guard de coordenadas.
+- El nuevo commit de validación de coordenadas requiere su propia ejecución de CI antes de considerar su APK listo.
+- Ningún APK ha sido instalado ni probado físicamente por el propietario en esta sesión.
