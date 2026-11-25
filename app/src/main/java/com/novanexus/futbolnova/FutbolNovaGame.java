@@ -44,6 +44,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private TeamSelection teamSelection;
     private final List<Model> ownedModels = new ArrayList<>();
     private final List<PlayerVisual> playerVisuals = new ArrayList<>();
+    private GltfPlayerSquad gltfPlayerSquad;
     private final List<ModelInstance> environmentModels = new ArrayList<>();
     private final Vector3 ballPosition = new Vector3(0f, BALL_RADIUS, 0f);
     private final Vector3 ballVelocity = new Vector3();
@@ -110,12 +111,28 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         environment.add(new DirectionalLight().set(0.85f, 0.85f, 0.85f, -0.4f, -1f, -0.25f));
 
         createProceduralPitchAndTeams();
+        tryLoadGltfPlayers();
         restoreSavedMatch();
         try {
             OriginalProjectData.Summary summary = OriginalProjectData.loadBundledSummary();
             Gdx.app.log("FutbolNova", "Original project data loaded: " + summary);
         } catch (RuntimeException error) {
             Gdx.app.error("FutbolNova", "Original project data could not be loaded", error);
+        }
+    }
+
+    private void tryLoadGltfPlayers() {
+        if (!Gdx.files.internal(GltfPlayerSquad.DEFAULT_ASSET).exists()) {
+            Gdx.app.log("FutbolNova", "No active GLB player asset; keeping procedural fallback");
+            return;
+        }
+        try {
+            gltfPlayerSquad = new GltfPlayerSquad(
+                    GltfPlayerSquad.DEFAULT_ASSET, camera, matchSimulation.getPlayers().size(), 1f);
+            Gdx.app.log("FutbolNova", "Loaded animated GLB player squad: " + gltfPlayerSquad.size());
+        } catch (RuntimeException error) {
+            gltfPlayerSquad = null;
+            Gdx.app.error("FutbolNova", "GLB player asset failed; keeping procedural fallback", error);
         }
     }
 
@@ -273,10 +290,14 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             MatchSimulation.PlayerState state=lineup.get(i);
             float yaw=(float)Math.atan2(-state.forwardX,-state.forwardZ);
             if(state.active){
-                playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
-                if((i==0||i==11)&&goalkeeperRecoveryTimers[i]>0f)
-                    playerVisuals.get(i).setGoalkeeperDive(goalkeeperDiveDirections[i],
-                            Math.min(1f,goalkeeperRecoveryTimers[i]/0.78f));
+                if(gltfPlayerSquad!=null){
+                    gltfPlayerSquad.updatePlayer(i,state.x,state.z,yaw,state.movementSpeed);
+                }else{
+                    playerVisuals.get(i).update(state.x,state.z,yaw,animationClock,state.movementSpeed);
+                    if((i==0||i==11)&&goalkeeperRecoveryTimers[i]>0f)
+                        playerVisuals.get(i).setGoalkeeperDive(goalkeeperDiveDirections[i],
+                                Math.min(1f,goalkeeperRecoveryTimers[i]/0.78f));
+                }
             }
         }
 
@@ -293,10 +314,13 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         modelBatch.begin(camera);
         modelBatch.render(fieldInstance,environment);
         for(ModelInstance structure:environmentModels)modelBatch.render(structure,environment);
-        for(int i=0;i<playerVisuals.size()&&i<matchSimulation.getPlayers().size();i++)
-            if(matchSimulation.getPlayers().get(i).active)playerVisuals.get(i).render(modelBatch,environment);
+        if(gltfPlayerSquad==null){
+            for(int i=0;i<playerVisuals.size()&&i<matchSimulation.getPlayers().size();i++)
+                if(matchSimulation.getPlayers().get(i).active)playerVisuals.get(i).render(modelBatch,environment);
+        }
         modelBatch.render(ballInstance,environment);
         modelBatch.end();
+        if(gltfPlayerSquad!=null)gltfPlayerSquad.render(delta);
 
         drawPitchMarkings();
         drawTouchControls();
@@ -1215,6 +1239,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         saveCompletedMatchReport();
         if (disposed) return;
         disposed = true;
+        if (gltfPlayerSquad != null) gltfPlayerSquad.dispose();
         if (modelBatch != null) modelBatch.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
         if (spriteBatch != null) spriteBatch.dispose();
