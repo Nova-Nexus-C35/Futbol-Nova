@@ -299,7 +299,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                     playerVisuals.get(i).setGoalkeeperDive(goalkeeperDiveDirections[i],
                             Math.min(1f,goalkeeperRecoveryTimers[i]/0.78f));
                 if(gltfPlayerSquad!=null)
-                    gltfPlayerSquad.updatePlayer(i,state.x,state.z,yaw,state.movementSpeed);
+                    gltfPlayerSquad.updatePlayer(i,state.x,state.z,yaw,state.movementSpeed,
+                            possessionOwnerIndex == i);
             }else if(gltfPlayerSquad!=null){
                 gltfPlayerSquad.setPlayerActive(i,false);
             }
