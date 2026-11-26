@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ara3dgen.com/schemas/character.v1.json",
+  "kind": "ara-character",
+  "version": 1,
+  "preset": "The Footballer",
+  "params": {
+    "name": "Futbol Nova - Visitante",
+    "expression": "determined",
+    "garmentStyles": {
+      "football_shirt": {
+        "pattern": "solid",
+        "color": "#c62828",
+        "color2": "#ffffff",
+        "number": 10
+      },
+      "resort_shorts": {
+        "pattern": "solid",
+        "color": "#ffffff",
+        "color2": "#c62828"
+      },
+      "sport_socks": {
+        "pattern": "rib",
+        "color": "#c62828",
+        "color2": "#ffffff"
+      }
+    }
+  }
+}
