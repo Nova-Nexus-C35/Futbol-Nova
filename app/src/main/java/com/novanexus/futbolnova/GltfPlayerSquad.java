@@ -89,6 +89,12 @@ public final class GltfPlayerSquad implements Disposable {
 
     /** Updates one player from authoritative match coordinates and velocity. */
     public void updatePlayer(int index, float x, float z, float yawRadians, float movementSpeed) {
+        updatePlayer(index, x, z, yawRadians, movementSpeed, false);
+    }
+
+    /** Uses a dedicated looping dribble clip when the asset provides one; otherwise locomotion remains the safe fallback. */
+    public void updatePlayer(int index, float x, float z, float yawRadians,
+                             float movementSpeed, boolean carryingBall) {
         if (index < 0 || index >= players.size
                 || !Float.isFinite(x) || !Float.isFinite(z)
                 || !Float.isFinite(yawRadians) || !Float.isFinite(movementSpeed)
@@ -100,11 +106,16 @@ public final class GltfPlayerSquad implements Disposable {
 
         if (scene.animationController != null && scene.animationController.inAction) return;
         String locomotion = PlayerAnimationPolicy.locomotionHint(movementSpeed);
-        String desired = "sprint".equals(locomotion)
-                ? findClip(scene.modelInstance.animations, "sprint", "run")
-                : "walk".equals(locomotion)
-                ? findClip(scene.modelInstance.animations, "walk", "jog", "run")
-                : findClip(scene.modelInstance.animations, "idle", "stand");
+        String desired = carryingBall && movementSpeed > 0.25f
+                ? findClip(scene.modelInstance.animations, "dribble", "soccer_dribble", "ball carry")
+                : null;
+        if (desired == null) {
+            desired = "sprint".equals(locomotion)
+                    ? findClip(scene.modelInstance.animations, "sprint", "run")
+                    : "walk".equals(locomotion)
+                    ? findClip(scene.modelInstance.animations, "walk", "jog", "run")
+                    : findClip(scene.modelInstance.animations, "idle", "stand");
+        }
         if (desired != null && !desired.equals(activeClips[index])) play(scene, index, desired);
     }
 
