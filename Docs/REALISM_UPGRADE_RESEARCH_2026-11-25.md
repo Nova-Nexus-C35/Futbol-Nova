@@ -150,3 +150,8 @@ Referencias: https://github.com/olatunde85/3d-gen/blob/main/docs/animations.md ;
 ### Actualización de versión Ara CLI
 
 La versión 0.11.0 falló en CI con `Unknown animation "soccer_shoot"`. Se comprobó el paquete publicado en el repositorio oficial: `packages/cli/package.json` declara 0.18.1 y su changelog tiene fecha 2026-11-25. Ambos workflows se fijaron ahora en 0.18.1, que corresponde al catálogo deportivo actual. La validación CI queda pendiente.
+
+
+### Corrección de dependencia gdx-gltf tras Android CI — 2026-11-26
+
+La primera compilación con Ara GLB encontró clases duplicadas porque `com.github.mgsx-dev:gdx-gltf:2.3.0` resuelve el proyecto agregado, que incluye los módulos `desktop` e `ibl-composer` junto al runtime de libGDX. Se revisaron `README.md`, `settings.gradle` y `gltf/build.gradle` del tag público 2.3.0: el README oficial recomienda la dependencia del submódulo `com.github.mgsx-dev.gdx-gltf:gltf:2.3.0`. Se corrigió `app/build.gradle` a esa coordenada core, que depende de libGDX pero no añade los módulos desktop/IBL. Recompilación pendiente.
