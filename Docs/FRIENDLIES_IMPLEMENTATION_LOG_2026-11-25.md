@@ -188,3 +188,5 @@ Estado de verificación:
 - Se inspeccionó `packages/cli/package.json` y `packages/cli/CHANGELOG.md` del repositorio oficial: la versión actual es 0.18.1 (2026-11-25), que incluye la evolución reciente del catálogo y exportador.
 - Se actualizó la versión fijada de ambos workflows a 0.18.1 y la clave de caché. Se mantiene la lista de IDs deportivos, el preset The Footballer y el rig game_lite.
 - Pendiente: el siguiente CI debe demostrar que los IDs se reconocen y que se generan ambos GLB; no se marca como resuelto hasta ver el resultado.
+
+- CI con GLB generados falló en `:app:checkDebugDuplicateClasses`: la coordenada agregada `com.github.mgsx-dev:gdx-gltf:2.3.0` incorporó `desktop` e `ibl-composer` y duplicó clases libGDX. Se consultó el README/build del tag 2.3.0 y se corrigió a `com.github.mgsx-dev.gdx-gltf:gltf:2.3.0`, el submódulo runtime recomendado oficialmente. Pendiente confirmar con nuevo CI.
