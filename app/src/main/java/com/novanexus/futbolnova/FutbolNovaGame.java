@@ -122,14 +122,16 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     }
 
     private void tryLoadGltfPlayers() {
-        if (!Gdx.files.internal(GltfPlayerSquad.DEFAULT_ASSET).exists()) {
-            Gdx.app.log("FutbolNova", "No active GLB player asset; keeping procedural fallback");
+        if (!Gdx.files.internal(GltfPlayerSquad.HOME_ASSET).exists()
+                || !Gdx.files.internal(GltfPlayerSquad.AWAY_ASSET).exists()) {
+            Gdx.app.log("FutbolNova", "Home/away GLB models are not both available; keeping procedural fallback");
             return;
         }
         try {
             gltfPlayerSquad = new GltfPlayerSquad(
-                    GltfPlayerSquad.DEFAULT_ASSET, camera, matchSimulation.getPlayers().size(), 1f);
-            Gdx.app.log("FutbolNova", "Loaded animated GLB player squad: " + gltfPlayerSquad.size());
+                    GltfPlayerSquad.HOME_ASSET, GltfPlayerSquad.AWAY_ASSET,
+                    camera, MatchSimulation.PLAYERS_PER_TEAM, 1f);
+            Gdx.app.log("FutbolNova", "Loaded home/away GLB player squads: " + gltfPlayerSquad.size());
         } catch (RuntimeException error) {
             gltfPlayerSquad = null;
             Gdx.app.error("FutbolNova", "GLB player asset failed; keeping procedural fallback", error);
