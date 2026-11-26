@@ -46,7 +46,11 @@ public final class PlayerAnimationPolicy {
     }
 
     private static boolean containsClipToken(String id, String token) {
-        return token != null && token.length() >= 3 && id.contains(token);
+        if (token == null || token.length() < 3) return false;
+        // "stand" is a prefix of "standing tackle", not an idle-pose synonym.
+        if ("stand".equals(token))
+            return id.equals("stand") || id.startsWith("standidle") || id.startsWith("standloop");
+        return id.contains(token);
     }
 
     private static String normalizeClipName(String value) {
