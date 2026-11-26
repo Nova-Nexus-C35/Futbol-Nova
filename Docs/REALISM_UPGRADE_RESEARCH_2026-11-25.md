@@ -187,3 +187,22 @@ Fuentes:
 - https://github.com/tshrjn/openFIFA
 - https://github.com/Kinemiq/free-game-animations
 - https://github.com/Adem-maker600/football-3d-game
+
+## Referencia adicional de controlador de animaciones — 2026-11-26
+
+### kendrekaran/striker-3d — arquitectura de personaje separada de simulación
+- Repositorio público: https://github.com/kendrekaran/striker-3d
+- El README describe un jugador cuyo movimiento/posesión/velocidad pertenecen al modelo de juego, mientras que el modelo GLB y AnimationMixer solo representan el estado; usa una máquina de estados idle/jog/sprint/dribble/kick/tackle/celebrate y fallback procedural.
+- El repositorio acredita el modelo Quaternius usado como fixture con CC0 1.0 en assets/LICENSE-quaternius.txt. No se importó ni copió código Three.js; la arquitectura se tomó como referencia, no como dependencia.
+- Decisión para Nova: mantener MatchSimulation como autoridad y usar GltfPlayerSquad únicamente para representar estados y acciones.
+
+### API oficial libGDX AnimationController — acciones de una sola ejecución
+- Fuente: https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/graphics/g3d/utils/AnimationController.java
+- La API documenta `action(id, 1, speed, listener, transitionTime)` para superponer una acción finita sobre locomoción y volver a la animación base en cola; `animate(id, -1, speed, listener, transitionTime)` permite cambiar locomoción con transición.
+- Se sustituyó el bloqueo temporal manual de acciones en GltfPlayerSquad por el mecanismo nativo `inAction`/`action` y se añadieron transiciones de locomoción. Esto evita que una acción se repita indefinidamente o que la locomoción la corte en el siguiente frame.
+
+### Catálogo oficial Ara — límite identificado
+- Fuente: https://ara3dgen.com/docs/animations/
+- El catálogo contiene acciones de fútbol para tiro, pase, recepción, control de pecho, cabezazo, entradas, portero, saque de banda y celebración.
+- El catálogo revisado no lista una animación específica de conducción/dribbling con balón. Nova no debe etiquetar Run/Walk como dribbling real: queda pendiente crear/importar un clip propio compatible mediante un content pack y comprobar sincronización pie-balón.
+- El código y las animaciones que se usen deben conservar su licencia y procedencia; no se importan clips de juegos comerciales ni los recursos extraídos que aparecen en otros prototipos.
