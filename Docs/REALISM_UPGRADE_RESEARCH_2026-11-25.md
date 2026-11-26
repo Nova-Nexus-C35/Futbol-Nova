@@ -206,3 +206,28 @@ Fuentes:
 - El catálogo contiene acciones de fútbol para tiro, pase, recepción, control de pecho, cabezazo, entradas, portero, saque de banda y celebración.
 - El catálogo revisado no lista una animación específica de conducción/dribbling con balón. Nova no debe etiquetar Run/Walk como dribbling real: queda pendiente crear/importar un clip propio compatible mediante un content pack y comprobar sincronización pie-balón.
 - El código y las animaciones que se usen deben conservar su licencia y procedencia; no se importan clips de juegos comerciales ni los recursos extraídos que aparecen en otros prototipos.
+## Nuevas alternativas públicas de animación y producción 3D — 2026-11-26
+
+### Kinemiq/free-game-animations — paquete humanoide CC0
+- Repositorio: https://github.com/Kinemiq/free-game-animations
+- LICENSE comprobada: CC0 1.0. README declara 35 clips humanoides GLB/FBX, un esqueleto común, locomoción, saltos, reacciones, caída/levantarse y emotes. No se listan acciones específicas de fútbol en el paquete CC0 de 35 clips.
+- Uso posible: clips auxiliares genéricos solo tras comprobar compatibilidad/retargeting con el rig Ara y conservar la licencia CC0. No resuelve el dribbling ni reemplaza el catálogo de fútbol Ara.
+
+### Sheggyb/AnimStudio — herramienta para crear/retargetear clips
+- Repositorio: https://github.com/Sheggyb/AnimStudio
+- LICENSE comprobada: AGPL-3.0 para el código de la herramienta; no integrar su código en el APK Nova sin evaluar obligaciones copyleft. README indica que los archivos y animaciones creados por el usuario pertenecen al usuario, y admite packs GLB/FBX, Mixamo y Quaternius.
+- Uso posible: herramienta externa de autoría para producir un content pack propio (por ejemplo dribbling y control orientado) y exportarlo a GLB; auditar por separado la licencia de cada pack importado.
+
+### tshrjn/openFIFA — referencia de alcance, arte y procedencia
+- Repositorio: https://github.com/tshrjn/openFIFA
+- API GitHub no declara licencia para el repositorio (`license: null`); no copiar código. README y `docs/ASSETS.md` documentan una ruta Unity/Quaternius/Mixamo y `THIRD_PARTY_NOTICES.md` registra MakeHuman/MPFB y Kokoro.
+- Uso posible: comparar necesidades de estadios, cámara broadcast, uniformes y un inventario formal de assets. Cada recurso se revisa por separado; no asumir que todo el repositorio tiene una licencia única.
+
+### Seyamalam/blood-league-kickoff — referencia de rendimiento y auditoría de assets
+- Repositorio: https://github.com/Seyamalam/blood-league-kickoff
+- API GitHub no declara licencia (`license: null`); no reutilizar código. Su documentación pública incluye inventario y créditos de assets, además de ejemplos de GLB CC0 Quaternius y mapas de césped CC0.
+- Uso posible: estudiar el registro de origen/licencia/hash de cada recurso y optimización de render, no incorporar su código TypeScript ni recursos sin revisión individual.
+
+### Conclusión de alternativas
+- El clip específico de dribbling sigue siendo el hueco principal del catálogo Ara revisado. Las opciones compatibles son: crear una animación original en Blender/AnimStudio y retargetearla al rig Ara; grabar una acción con motion capture propio; o localizar un clip de fútbol con licencia explícita que permita redistribución dentro del juego.
+- No añadir una dependencia externa ni importar paquetes completos solo por ser públicos. Cada incorporación futura debe incluir URL de origen, hash, licencia, atribución y prueba de retargeting.
