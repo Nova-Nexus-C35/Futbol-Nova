@@ -77,7 +77,7 @@ public final class GltfPlayerSquad implements Disposable {
             Scene scene = new Scene(teamAsset.scene);
             players.add(scene);
             sceneManager.addScene(scene);
-            String idle = findClip(scene.modelInstance.animations, "idle", "stand");
+            String idle = findClip(scene.modelInstance.animations, "idle");
             if (idle == null) idle = firstClip(scene.modelInstance.animations);
             play(scene, i, idle);
         }
@@ -151,9 +151,8 @@ public final class GltfPlayerSquad implements Disposable {
         if (animations == null) return null;
         for (Animation animation : animations) {
             if (animation.id == null) continue;
-            String id = animation.id.toLowerCase(java.util.Locale.ROOT);
             for (String hint : hints) {
-                if (id.contains(hint.toLowerCase(java.util.Locale.ROOT))) return animation.id;
+                if (PlayerAnimationPolicy.clipNameMatches(animation.id, hint)) return animation.id;
             }
         }
         return null;
