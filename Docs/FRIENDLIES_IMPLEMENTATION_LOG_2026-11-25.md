@@ -219,3 +219,20 @@ Archivo: `app/src/main/java/com/novanexus/futbolnova/GltfPlayerSquad.java`
 - No se ha validado el render GLB en GPU/Android físico, el rendimiento de 22 jugadores ni el tamaño de APK.
 - Los clips de fútbol se solicitan en el generador, pero falta comprobar sus nombres exactos, duración, retargeting y conexión con eventos de gameplay.
 - El proyecto sigue siendo una vertical slice 3D en desarrollo, no un simulador con paridad FIFA.
+
+
+## Resultado verificado Android CI 410 — 2026-11-26
+
+- Workflow run: `45767716572` — conclusión `success`.
+- Commit probado: `4453b9eb225872bc9402bc0cb06c6f3a8b94e022`.
+- Job Android: success. Pasos completados: generación Ara de modelos local/visitante, validación GLB y clips, commit de assets, Java 17, Android SDK, pruebas unitarias, APK ARM64, verificación del runtime nativo y empaquetado de modelos.
+- Job publish-release: success.
+- Artefacto modelos: `futbol-nova-realistic-player-models`, 17,532,787 bytes, SHA-256 `5be62fb6efd591db3b7edffdc161f743212613d0c1bee5476e4d72e3f06359f2`.
+- Artefacto APK: `futbol-nova-android-arm64-debug`, 20,022,862 bytes, SHA-256 `ddaf5b934e659eded47856f5af59a866a101276473483b207f141121791e6fcb`.
+- Release permanente: [debug-410](https://github.com/Nova-Nexus-C35/Futbol-Nova/releases/tag/debug-410), asset `app-debug.apk`, 26,643,671 bytes, SHA-256 `562b8191ae591b85d4245c7a7454907efa74a21c82b8f9f9732706b3e69443ed`.
+- Recursos de modelos local/visitante presentes en `app/src/main/assets/models/players/home.glb` y `away.glb`.
+- Descarga Android: https://github.com/Nova-Nexus-C35/Futbol-Nova/releases/download/debug-410/app-debug.apk
+
+## Interpretación y límites
+
+CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron generados/validados por el workflow, que el runtime ARM64 y los modelos se empaquetaron y que el APK se publicó. Esto NO demuestra por sí solo que el aspecto sea de nivel FIFA, que los 22 jugadores se animen correctamente en un partido real, ni que el rendimiento sea estable en un teléfono físico. Se mantiene pendiente la prueba visual y de gameplay en dispositivo Android, el contacto sincronizado balón/pie, la animación futbolística completa, el estadio detallado y la aceptación end-to-end del modo Amistosos.
