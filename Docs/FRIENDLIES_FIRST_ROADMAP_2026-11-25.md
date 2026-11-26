@@ -223,3 +223,10 @@ No aceptar como entrega final una cancha 3D con personajes simples ni un prototi
 - [ ] Completar pruebas end-to-end de amistoso y aceptación física antes de declarar Amistosos terminado.
 
 Criterio de aceptación final: un partido completo 11v11 en 3D, con controles táctiles, animaciones humanas de fútbol, balón con físicas y presentación de estadio/cámara de simulador moderno. La comparación con FIFA es el estándar de objetivo, no una afirmación de paridad gráfica ya conseguida.
+
+### Integración parcial de acciones futbolísticas — 2026-11-26
+
+- El renderer GLB ya recibía Idle/Walk/Run y las acciones del jugador controlado (tiro, pase y entrada).
+- Se amplió la integración en FutbolNovaGame: el receptor ejecuta `soccer_receive` al completar el pase; los jugadores de IA ejecutan `soccer_shoot`, `soccer_pass` y `standing_tackle` en sus eventos; el portero usa `keeper_catch` o `keeper_dive_left/right`, con fallback a `keeper_punch`.
+- Los nombres solicitados por el generador se comprobaron en `.github/workflows/generate-football-players.yml`; el selector busca coincidencias parciales sin asumir mayúsculas exactas.
+- Esto cierra una primera conexión de eventos, no el sistema completo: aún faltan control/dribbling continuo, cabecera, despeje, saque de banda, caídas, celebraciones, sincronización temporal del contacto pie-balón y pruebas visuales de cada clip.
