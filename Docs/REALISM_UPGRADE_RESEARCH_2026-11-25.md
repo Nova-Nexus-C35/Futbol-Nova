@@ -138,10 +138,15 @@ Hallazgos comprobados en el README y documentación pública:
 
 Decisión aplicada en Fútbol Nova:
 - Dos especificaciones versionables: `Assets/Players/characters/home.json` (azul) y `away.json` (rojo), ambas basadas en `The Footballer`.
-- Nuevo workflow `.github/workflows/generate-football-players.yml`: fija Ara CLI 0.11.0, genera GLB de detalle alto con locomoción y clips futbolísticos, valida GLB 2.0/skin/animaciones y guarda `home.glb` y `away.glb` en la rama de desarrollo.
+- Nuevo workflow `.github/workflows/generate-football-players.yml`: fija Ara CLI 0.18.1, genera GLB de detalle alto con locomoción y clips futbolísticos, valida GLB 2.0/skin/animaciones y guarda `home.glb` y `away.glb` en la rama de desarrollo.
 - `GltfPlayerSquad` carga los dos assets y asigna los primeros 11 al equipo local y los siguientes 11 al visitante; mantiene locomoción y permite disparar clips de acción con bloqueo temporal para que no se cancelen al frame siguiente.
 - `FutbolNovaGame` conecta TIRO, PASE y ROBO con `soccer_shoot`, `soccer_pass` y `standing_tackle`; los jugadores inactivos se ocultan conservando índices estables.
 
 Referencias: https://github.com/olatunde85/3d-gen/blob/main/docs/animations.md ; https://github.com/olatunde85/3d-gen/blob/main/docs/cli.md ; https://github.com/olatunde85/3d-gen/blob/main/scripts/ASSETS_LICENSE.txt
 
 **Límite:** los GLB de producción aún dependen de que el workflow se ejecute correctamente. Hasta que existan en la rama, pase CI Android y se prueben en dispositivo, el renderer conservará el fallback procedural y no se declara alcanzado el nivel visual FIFA.
+
+
+### Actualización de versión Ara CLI
+
+La versión 0.11.0 falló en CI con `Unknown animation "soccer_shoot"`. Se comprobó el paquete publicado en el repositorio oficial: `packages/cli/package.json` declara 0.18.1 y su changelog tiene fecha 2026-11-25. Ambos workflows se fijaron ahora en 0.18.1, que corresponde al catálogo deportivo actual. La validación CI queda pendiente.
