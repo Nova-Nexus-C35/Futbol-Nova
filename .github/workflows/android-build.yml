@@ -23,6 +23,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Set up Node.js for Ara 3D Gen
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Cache Ara character data
+        uses: actions/cache@v4
+        with:
+          path: .ara3d-cache
+          key: ara3d-data-0.11.0
+      - name: Generate realistic home and away footballers
+        env:
+          ARA3D_CACHE: ${{ github.workspace }}/.ara3d-cache
+          ARA3D_VERSION: '0.11.0'
+          FOOTBALL_CLIPS: 'idle,walk,run,soccer_shoot,soccer_pass,soccer_side_pass_left,soccer_side_pass_forward,soccer_side_pass_right,soccer_receive,soccer_header,soccer_jump_header,soccer_chest_control,standing_tackle,slide_tackle,keeper_ready,keeper_catch,keeper_punch,keeper_dive_left,keeper_dive_right,keeper_low_dive_left,keeper_low_dive_right,ball_pick_up,ball_bounce,throw_side_right,throw_side_left,throw_two_hands,throw_in,throw_low_right,throw_low_left,siu_celebration'
+        run: |
+          npx -y "ara3d@${ARA3D_VERSION}" export --params Assets/Players/characters/home.json --formats glb --detail high --animations "${FOOTBALL_CLIPS}" --out /tmp/nova-home
+          npx -y "ara3d@${ARA3D_VERSION}" export --params Assets/Players/characters/away.json --formats glb --detail high --animations "${FOOTBALL_CLIPS}" --out /tmp/nova-away
+          mkdir -p app/src/main/assets/models/players
+          cp "$(find /tmp/nova-home -maxdepth 1 -type f -name '*.glb' -print -quit)" app/src/main/assets/models/players/home.glb
+          cp "$(find /tmp/nova-away -maxdepth 1 -type f -name '*.glb' -print -quit)" app/src/main/assets/models/players/away.glb
+          test -s app/src/main/assets/models/players/home.glb
+          test -s app/src/main/assets/models/players/away.glb
+      - name: Commit generated player assets to the development branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/rebuild/libgdx-android-2026-11-22'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/assets/models/players/home.glb app/src/main/assets/models/players/away.glb
+          if ! git diff --cached --quiet; then
+            git commit -m "Add generated high-detail home and away footballers"
+            git push origin HEAD:rebuild/libgdx-android-2026-11-22
+          fi
       - name: Set up Java 17
         uses: actions/setup-java@v5
         with:
