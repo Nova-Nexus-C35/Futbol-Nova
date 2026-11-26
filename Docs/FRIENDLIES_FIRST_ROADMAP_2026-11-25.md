@@ -252,3 +252,9 @@ Criterio de aceptación final: un partido completo 11v11 en 3D, con controles t�
 
 - El exportador puede guardar IDs (`soccer_shoot`) mientras el juego solicita etiquetas (`Shoot (football)`). Se añadió normalización y alias de prefijos en `PlayerAnimationPolicy.clipNameMatches`; el mapeo ya no depende de coincidencia literal de toda la etiqueta.
 - Se quitó `stand` como fallback de Idle para evitar que una animación `Standing tackle` se confunda con una pose de pie.
+### Soporte de clip de dribbling cuando exista en el asset — 2026-11-26
+
+- [x] Pasar el índice de poseedor real desde `FutbolNovaGame` a `GltfPlayerSquad.updatePlayer`.
+- [x] Si el futbolista tiene posesión y se desplaza, priorizar un clip looping `dribble`/`soccer_dribble`/`ball carry`; si el GLB no lo incluye, volver a locomoción walk/run sin romper el partido.
+- [x] Añadir prueba de reconocimiento de nombres de clip de dribbling.
+- [ ] Crear e incorporar un clip de conducción original/licenciado y medir contacto pie-balón; el GLB actual no se debe anunciar como si ya incluyera ese clip.
