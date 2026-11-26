@@ -230,3 +230,17 @@ Criterio de aceptación final: un partido completo 11v11 en 3D, con controles t�
 - Se amplió la integración en FutbolNovaGame: el receptor ejecuta `soccer_receive` al completar el pase; los jugadores de IA ejecutan `soccer_shoot`, `soccer_pass` y `standing_tackle` en sus eventos; el portero usa `keeper_catch` o `keeper_dive_left/right`, con fallback a `keeper_punch`.
 - Los nombres solicitados por el generador se comprobaron en `.github/workflows/generate-football-players.yml`; el selector busca coincidencias parciales sin asumir mayúsculas exactas.
 - Esto cierra una primera conexión de eventos, no el sistema completo: aún faltan control/dribbling continuo, cabecera, despeje, saque de banda, caídas, celebraciones, sincronización temporal del contacto pie-balón y pruebas visuales de cada clip.
+## Integración ampliada de animaciones de partido — 2026-11-26
+
+- [x] Sustituir el temporizador manual de acciones por `AnimationController.action(..., loopCount=1, ...)`: las acciones GLB son de una sola ejecución y regresan a la locomoción en cola.
+- [x] Aplicar transiciones `animate(..., loopCount=-1, ...)` al cambiar entre Idle/Walk/Run.
+- [x] Crear `PlayerAnimationPolicy` y pruebas JUnit para bandas de locomoción, tackle de pie/deslizante, control aéreo y acciones de portero.
+- [x] Seleccionar slide tackle cuando la velocidad de aproximación alcanza el umbral configurado; de lo contrario, standing tackle.
+- [x] Seleccionar chest control/header según altura de balón al ganar una posesión aérea o completar una recepción.
+- [x] Conectar throw-in con el jugador de campo activo más cercano del equipo beneficiado.
+- [x] Activar celebración de hasta seis jugadores de campo del equipo que marca.
+- [x] Fortalecer ambos workflows para rechazar GLB que no contengan Idle/Walk/Run, tiro, pase, recepción, header, chest control, standing/slide tackle, catch/punch/dive de portero, throw-in y celebración.
+- [ ] Crear clip específico de dribbling/conducción: no aparece en el catálogo deportivo Ara revisado; usar content pack propio o fuente con licencia compatible.
+- [ ] Medir el instante de contacto de cada animación y sincronizar pie-balón, root motion, velocidad y posición; no asumir que la duración aproximada equivale al contacto.
+- [ ] Probar todas las transiciones y las 22 instancias en Android ARM64 físico, con FPS, memoria, temperatura y estabilidad de contexto GL.
+- [ ] Revisar visualmente escala, orientación, uniformes, calidad de piel/materiales, sombras y lectura de animaciones en cámara broadcast.
