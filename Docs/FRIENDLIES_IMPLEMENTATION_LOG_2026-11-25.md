@@ -267,3 +267,8 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - `PlayerAnimationPolicy.clipNameMatches` normaliza separadores, elimina descriptores entre paréntesis y reconoce prefijos `soccer`, `keeper` y `goalkeeper`. Se conecta a `GltfPlayerSquad.findClip`.
 - Se añadieron pruebas para shoot/pass, dive, standing tackle, null y falso positivo `stand`; el fallback Idle ya no usa `stand`.
 - Ajuste adicional del selector: se bloqueó el falso positivo del alias `stand` contra `Standing tackle`; el alias solo acepta una pose `Stand`/`Stand idle` real. El código y la prueba de regresión quedaron guardados.
+### Separación de generación de assets y CI Android — 2026-11-26
+
+- `.github/workflows/generate-football-players.yml` conserva la generación manual, validación de clips y commit de los GLB.
+- `.github/workflows/android-build.yml` ya no vuelve a generar modelos en cada push: valida los dos GLB versionados y ejecuta pruebas/compilación ARM64. Esto reduce tiempo y evita que la generación de arte cancele repetidamente la compilación de código.
+- La ejecución de Android CI del nuevo workflow debe terminar sobre el último commit antes de dar la compilación por válida.
