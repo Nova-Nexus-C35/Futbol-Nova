@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      ARA3D_VERSION: '0.11.0'
+      ARA3D_VERSION: '0.18.1'
       ARA3D_CACHE: ${{ github.workspace }}/.ara3d-cache
       FOOTBALL_CLIPS: 'idle,walk,run,soccer_shoot,soccer_pass,soccer_side_pass_left,soccer_side_pass_forward,soccer_side_pass_right,soccer_receive,soccer_header,soccer_jump_header,soccer_chest_control,standing_tackle,slide_tackle,keeper_ready,keeper_catch,keeper_punch,keeper_dive_left,keeper_dive_right,keeper_low_dive_left,keeper_low_dive_right,ball_pick_up,ball_bounce,throw_side_right,throw_side_left,throw_two_hands,throw_in,throw_low_right,throw_low_left,siu_celebration'
     steps:
