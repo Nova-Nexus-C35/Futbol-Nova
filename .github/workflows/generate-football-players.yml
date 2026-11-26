@@ -1,0 +1,106 @@
+name: Generate realistic football player models
+
+on:
+  push:
+    branches:
+      - rebuild/libgdx-android-2026-11-22
+    paths:
+      - 'Assets/Players/characters/**'
+      - '.github/workflows/generate-football-players.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: football-player-models-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      ARA3D_VERSION: '0.11.0'
+      ARA3D_CACHE: ${{ github.workspace }}/.ara3d-cache
+      FOOTBALL_CLIPS: 'idle,walk,run,soccer_shoot,soccer_pass,soccer_side_pass_left,soccer_side_pass_forward,soccer_side_pass_right,soccer_receive,soccer_header,soccer_jump_header,soccer_chest_control,standing_tackle,slide_tackle,keeper_ready,keeper_catch,keeper_punch,keeper_dive_left,keeper_dive_right,keeper_low_dive_left,keeper_low_dive_right,ball_pick_up,ball_bounce,throw_side_right,throw_side_left,throw_two_hands,throw_in,throw_low_right,throw_low_left,siu_celebration'
+    steps:
+      - name: Checkout development branch
+        uses: actions/checkout@v4
+        with:
+          ref: rebuild/libgdx-android-2026-11-22
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache Ara character data
+        uses: actions/cache@v4
+        with:
+          path: .ara3d-cache
+          key: ara3d-data-${{ env.ARA3D_VERSION }}
+
+      - name: Generate home-team GLB
+        run: |
+          npx -y "ara3d@${ARA3D_VERSION}" export \
+            --params Assets/Players/characters/home.json \
+            --formats glb --detail high --animations "${FOOTBALL_CLIPS}" \
+            --out /tmp/nova-home
+          model="$(find /tmp/nova-home -maxdepth 1 -type f -name '*.glb' -print -quit)"
+          test -n "$model"
+          mkdir -p app/src/main/assets/models/players
+          cp "$model" app/src/main/assets/models/players/home.glb
+
+      - name: Generate away-team GLB
+        run: |
+          npx -y "ara3d@${ARA3D_VERSION}" export \
+            --params Assets/Players/characters/away.json \
+            --formats glb --detail high --animations "${FOOTBALL_CLIPS}" \
+            --out /tmp/nova-away
+          model="$(find /tmp/nova-away -maxdepth 1 -type f -name '*.glb' -print -quit)"
+          test -n "$model"
+          cp "$model" app/src/main/assets/models/players/away.glb
+
+      - name: Validate generated GLB files
+        run: |
+          python - <<'PY'
+          import json, struct
+          from pathlib import Path
+          for name in ('home.glb', 'away.glb'):
+              p = Path('app/src/main/assets/models/players') / name
+              data = p.read_bytes()
+              magic, version, length, chunk_length, chunk_type = struct.unpack_from('<5I', data, 0)
+              assert magic == 0x46546c67 and version == 2 and length == len(data), name
+              assert chunk_type == 0x4e4f534a and 20 + chunk_length <= len(data), name
+              doc = json.loads(data[20:20 + chunk_length].decode('utf-8').rstrip(' \\t\\r\\n\\0'))
+              assert doc.get('skins'), f'{name}: no skin'
+              assert doc.get('animations'), f'{name}: no animations'
+              ids = {a.get('name', '') for a in doc['animations']}
+              assert any('soccer_shoot' in x.lower() for x in ids), f'{name}: missing soccer_shoot clip'
+              assert any('soccer_pass' in x.lower() for x in ids), f'{name}: missing soccer_pass clip'
+              print(f'{name}: {len(data)} bytes, {len(doc.get("nodes", []))} nodes, {len(doc["skins"])} skins, {len(ids)} clips')
+          PY
+
+      - name: Commit generated player models to development branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/assets/models/players/home.glb app/src/main/assets/models/players/away.glb
+          if git diff --cached --quiet; then
+            echo "Generated models are unchanged."
+            exit 0
+          fi
+          git commit -m "Add generated realistic home and away footballer models"
+          git push origin HEAD:rebuild/libgdx-android-2026-11-22
+
+      - name: Upload generated models for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: futbol-nova-realistic-player-models
+          path: |
+            app/src/main/assets/models/players/home.glb
+            app/src/main/assets/models/players/away.glb
+          if-no-files-found: error
+          retention-days: 30
