@@ -256,3 +256,8 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - Límite identificado: el catálogo Ara consultado no ofrece clip específico de dribbling. No se simula que Run/Walk sea dribbling; se registra como tarea para un content pack propio/licenciado.
 - Pendiente de CI para los commits nuevos; el éxito del proceso 414 corresponde al código anterior a esta ampliación. No declarar la nueva compilación hasta que el run del último commit termine.
 - Pendiente validar el contacto pie-balón por fase de animación, duración/retargeting real, rendimiento de 22 instancias y calidad visual en teléfono Android físico.
+### Corrección de coherencia del control aéreo — 2026-11-26
+
+- Revisión de `MatchGameplay.acquirePossession` detectó un límite vertical de 1.1 m; el umbral anterior de header 1.65 m no podía dispararse nunca.
+- Se ajustó `PlayerAnimationPolicy`: chest control desde 0.65 m, header desde 0.98 m y rechazo explícito por encima de 1.1 m. Se añadieron pruebas de límite inferior/superior.
+- `soccer_jump_header` queda pendiente hasta que exista salto del jugador y contacto aéreo físicamente sincronizado; no se finge esa capacidad.
