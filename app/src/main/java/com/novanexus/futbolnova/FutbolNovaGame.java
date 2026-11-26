@@ -649,7 +649,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void performShot(){
         if(possessionOwnerIndex!=matchSimulation.getControlledPlayerIndex())return;
         if(gltfPlayerSquad!=null)
-            gltfPlayerSquad.playAction(matchSimulation.getControlledPlayerIndex(),"soccer_shoot");
+            gltfPlayerSquad.playAction(matchSimulation.getControlledPlayerIndex(),"Shoot (football)");
         clearPendingPass();
         pendingOffsideReceiver=MatchGameplay.NO_OWNER;
         float attackSign=matchSimulation.homeAttacksNegativeZ()?-1f:1f;
@@ -662,7 +662,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
     private void performPass(){
         if(possessionOwnerIndex!=matchSimulation.getControlledPlayerIndex())return;
         if(gltfPlayerSquad!=null)
-            gltfPlayerSquad.playAction(matchSimulation.getControlledPlayerIndex(),"soccer_pass");
+            gltfPlayerSquad.playAction(matchSimulation.getControlledPlayerIndex(),"Pass (straight)");
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
         MatchGameplay.PassTargetDecision passDecision=MatchGameplay.findForwardPassDecision(
                 lineup,matchSimulation.getControlledPlayerIndex(),controlledPosition.x,controlledPosition.z,
@@ -704,7 +704,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         MatchSimulation.PlayerState attacker=lineup.get(matchSimulation.getControlledPlayerIndex()),target=lineup.get(possessionOwnerIndex);
         if(target.homeTeam)return;
         if(gltfPlayerSquad!=null)
-            gltfPlayerSquad.playAction(matchSimulation.getControlledPlayerIndex(),"standing_tackle");
+            gltfPlayerSquad.playAction(matchSimulation.getControlledPlayerIndex(),"Standing tackle");
         MatchSimulation.TackleResult result=MatchGameplay.tackle(attacker,target,1.7f);tackleCooldown=0.75f;
         if(result!=null&&result.success){matchStatistics.recordTackle(attacker.playerId,true,matchClock.getTotalElapsedSeconds());possessionOwnerIndex=matchSimulation.getControlledPlayerIndex();lastTouchHome=true;}
         else if(result!=null&&result.foul){
