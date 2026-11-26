@@ -198,3 +198,24 @@ Estado de verificación:
 - Se modificó `app/build.gradle` añadiendo `android.packaging.resources.pickFirsts += ['net/mgsx/gltf/shaders/**']`, limitado al directorio de shaders de gdx-gltf para no descartar recursos generales ni clases.
 - Commit de corrección: `24f851c816a6d7fee271cea86564aaedcf59f56e`.
 - Pendiente: ejecutar CI posterior a este commit; comprobar `testDebugUnitTest`, `assembleDebug`, los tres archivos empaquetados (runtime ARM64 + home/away GLB) y cualquier conflicto adicional. La ejecución anterior sigue siendo FALLIDA y no valida esta corrección.
+
+
+## Endurecimiento del renderer GLB — 2026-11-26
+
+Archivo: `app/src/main/java/com/novanexus/futbolnova/GltfPlayerSquad.java`
+
+- `updatePlayer` rechaza índices inválidos, coordenadas X/Z no finitas, orientación no finita, velocidad no finita o negativa antes de modificar la transformación de una instancia.
+- `render` convierte delta no finito en cero y mantiene el límite de 50 ms para evitar contaminar el reloj de animación.
+- Se conserva el sistema de animaciones, el mapeo desde MatchSimulation y el fallback procedural controlado por FutbolNovaGame.
+- Commit: `f338f2815e2fa4af7845bd7ef3e48015bcac481f`.
+- Relectura desde GitHub al commit confirma ambos guardas.
+- GitHub Actions Android CI: run `45767673346`, estado `queued` al registrar esta nota. No atribuir todavía éxito de compilación ni de pruebas.
+- Rama activa confirmada: `rebuild/libgdx-android-2026-11-22`; HEAD `f338f2815e2fa4af7845bd7ef3e48015bcac481f`. `main` sigue en `5fca4bfe000b79a82551c6204ff7c34e34af1c41`.
+
+## Alcance todavía no validado
+
+- No se ha confirmado aún que el workflow Ara haya generado y guardado `home.glb` y `away.glb`.
+- No se ha verificado la calidad visual, escala, orientación ni compatibilidad real de los modelos.
+- No se ha validado el render GLB en GPU/Android físico, el rendimiento de 22 jugadores ni el tamaño de APK.
+- Los clips de fútbol se solicitan en el generador, pero falta comprobar sus nombres exactos, duración, retargeting y conexión con eventos de gameplay.
+- El proyecto sigue siendo una vertical slice 3D en desarrollo, no un simulador con paridad FIFA.
