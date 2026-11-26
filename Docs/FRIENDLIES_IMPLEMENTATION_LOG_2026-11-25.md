@@ -246,3 +246,13 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - Relectura de GitHub tras el commit confirmó las cinco conexiones nuevas.
 - El workflow Android CI se disparó por los cambios documentales posteriores; pendiente esperar y revisar sus jobs. No afirmar todavía que el nuevo código compile.
 - Pendiente: animación de conducción/control, cabeceras, despejes, saques, caídas y celebraciones; comprobar la duración real y transición de los clips; sincronización exacta del pie con el balón; prueba en GPU y teléfono Android físico. No se declara FIFA-like ni Amistosos terminado.
+## Integración ampliada del controlador GLB y cobertura de acciones — 2026-11-26
+
+- Añadido `PlayerAnimationPolicy.java` con decisiones puras para locomoción, tackle de pie/deslizante, chest control/header y acciones de portero. Pruebas `PlayerAnimationPolicyTest.java` cubren umbrales y valores no finitos.
+- `GltfPlayerSquad.java` ahora usa `AnimationController.action` de libGDX para acciones de una ejecución, evita que una acción sea sustituida por locomoción mientras está activa y usa `animate` con transición de 0.16 s para cambios Idle/Walk/Run. Se eliminó el temporizador manual aproximado.
+- `FutbolNovaGame.java` conecta slide tackle según velocidad del defensor, control de pecho/cabezazo según altura del balón, throw-in con el jugador de campo más cercano y celebración de hasta seis jugadores del equipo anotador. Se conserva la simulación y el control de posesión actuales.
+- Ambos workflows ahora validan los clips esenciales para evitar publicar un GLB que solo tenga tiro/pase pero carezca de acciones requeridas.
+- Investigación adicional: `kendrekaran/striker-3d` inspira la separación simulación/representación y acredita el fixture Quaternius con CC0; no se copió su código Three.js. La API oficial de libGDX confirma el uso de `action` y `animate`.
+- Límite identificado: el catálogo Ara consultado no ofrece clip específico de dribbling. No se simula que Run/Walk sea dribbling; se registra como tarea para un content pack propio/licenciado.
+- Pendiente de CI para los commits nuevos; el éxito del proceso 414 corresponde al código anterior a esta ampliación. No declarar la nueva compilación hasta que el run del último commit termine.
+- Pendiente validar el contacto pie-balón por fase de animación, duración/retargeting real, rendimiento de 22 instancias y calidad visual en teléfono Android físico.
