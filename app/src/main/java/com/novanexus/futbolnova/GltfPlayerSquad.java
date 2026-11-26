@@ -15,37 +15,53 @@ import net.mgsx.gltf.scene3d.scene.SceneAsset;
 import net.mgsx.gltf.scene3d.scene.SceneManager;
 
 /**
- * Optional GLB-backed squad renderer. A single source SceneAsset is shared by
- * per-player Scene instances; match state remains owned by MatchSimulation.
- * If the asset is absent or fails to load, FutbolNovaGame keeps PlayerVisual.
+ * Optional GLB-backed two-team renderer. Home and away assets are loaded once,
+ * then shared by independent Scene instances. Match coordinates remain authoritative.
+ * Any asset/load/render failure is handled by FutbolNovaGame's procedural fallback.
  */
 public final class GltfPlayerSquad implements Disposable {
-    public static final String DEFAULT_ASSET = "models/players/active.glb";
+    public static final String HOME_ASSET = "models/players/home.glb";
+    public static final String AWAY_ASSET = "models/players/away.glb";
 
-    private final SceneAsset asset;
+    private final SceneAsset homeAsset;
+    private final SceneAsset awayAsset;
     private final SceneManager sceneManager;
     private final Array<Scene> players = new Array<>();
     private final String[] activeClips;
     private final float modelScale;
 
-    public GltfPlayerSquad(String assetPath, PerspectiveCamera camera, int playerCount, float modelScale) {
-        if (assetPath == null || assetPath.trim().isEmpty()) {
-            throw new IllegalArgumentException("GLB asset path is required");
+    public GltfPlayerSquad(String homePath, String awayPath, PerspectiveCamera camera,
+                           int playersPerTeam, float modelScale) {
+        if (homePath == null || homePath.trim().isEmpty()
+                || awayPath == null || awayPath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Both home and away GLB asset paths are required");
         }
-        if (camera == null || playerCount < 1 || !Float.isFinite(modelScale) || modelScale <= 0f) {
+        if (camera == null || playersPerTeam < 1 || !Float.isFinite(modelScale) || modelScale <= 0f) {
             throw new IllegalArgumentException("Invalid GLB squad configuration");
         }
-        if (!Gdx.files.internal(assetPath).exists()) {
-            throw new IllegalStateException("GLB player asset not found: " + assetPath);
+        if (!Gdx.files.internal(homePath).exists() || !Gdx.files.internal(awayPath).exists()) {
+            throw new IllegalStateException("Both home and away GLB assets must be bundled");
         }
 
-        asset = new GLTFLoader().load(Gdx.files.internal(assetPath));
-        if (asset == null || asset.scene == null || asset.scene.model == null) {
-            if (asset != null) asset.dispose();
-            throw new IllegalStateException("GLB has no renderable default scene: " + assetPath);
+        SceneAsset loadedHome = new GLTFLoader().load(Gdx.files.internal(homePath));
+        SceneAsset loadedAway = null;
+        try {
+            if (loadedHome == null || loadedHome.scene == null || loadedHome.scene.model == null) {
+                throw new IllegalStateException("Home GLB has no renderable default scene");
+            }
+            loadedAway = new GLTFLoader().load(Gdx.files.internal(awayPath));
+            if (loadedAway == null || loadedAway.scene == null || loadedAway.scene.model == null) {
+                throw new IllegalStateException("Away GLB has no renderable default scene");
+            }
+        } catch (RuntimeException error) {
+            if (loadedAway != null) loadedAway.dispose();
+            if (loadedHome != null) loadedHome.dispose();
+            throw error;
         }
+        homeAsset = loadedHome;
+        awayAsset = loadedAway;
 
-        sceneManager = new SceneManager(Math.max(24, asset.maxBones));
+        sceneManager = new SceneManager(Math.max(24, Math.max(homeAsset.maxBones, awayAsset.maxBones)));
         sceneManager.setCamera(camera);
         sceneManager.setAmbientLight(0.72f);
         DirectionalLightEx keyLight = new DirectionalLightEx();
@@ -54,9 +70,11 @@ public final class GltfPlayerSquad implements Disposable {
         sceneManager.environment.add(keyLight);
 
         this.modelScale = modelScale;
-        activeClips = new String[playerCount];
-        for (int i = 0; i < playerCount; i++) {
-            Scene scene = new Scene(asset.scene);
+        int totalPlayers = playersPerTeam * 2;
+        activeClips = new String[totalPlayers];
+        for (int i = 0; i < totalPlayers; i++) {
+            SceneAsset teamAsset = i < playersPerTeam ? homeAsset : awayAsset;
+            Scene scene = new Scene(teamAsset.scene);
             players.add(scene);
             sceneManager.addScene(scene);
             String idle = findClip(scene.modelInstance.animations, "idle", "stand");
@@ -82,12 +100,19 @@ public final class GltfPlayerSquad implements Disposable {
                 : movementSpeed > 0.25f
                 ? findClip(scene.modelInstance.animations, "walk", "jog", "run")
                 : findClip(scene.modelInstance.animations, "idle", "stand");
-        if (desired != null && !desired.equals(activeClips[index])) {
-            play(scene, index, desired);
-        }
+        if (desired != null && !desired.equals(activeClips[index])) play(scene, index, desired);
     }
 
-    /** Advances skeletal animation and renders the complete GLB-backed squad. */
+    /** Starts a football action clip if it exists in this player's GLB. */
+    public boolean playAction(int index, String clipHint) {
+        if (index < 0 || index >= players.size || clipHint == null || clipHint.trim().isEmpty()) return false;
+        Scene scene = players.get(index);
+        String clip = findClip(scene.modelInstance.animations, clipHint);
+        if (clip == null) return false;
+        play(scene, index, clip);
+        return true;
+    }
+
     public void render(float delta) {
         sceneManager.update(Math.max(0f, Math.min(delta, 0.05f)));
         sceneManager.render();
@@ -109,7 +134,7 @@ public final class GltfPlayerSquad implements Disposable {
             if (animation.id == null) continue;
             String id = animation.id.toLowerCase(java.util.Locale.ROOT);
             for (String hint : hints) {
-                if (id.contains(hint)) return animation.id;
+                if (id.contains(hint.toLowerCase(java.util.Locale.ROOT))) return animation.id;
             }
         }
         return null;
@@ -118,6 +143,7 @@ public final class GltfPlayerSquad implements Disposable {
     @Override
     public void dispose() {
         sceneManager.dispose();
-        asset.dispose();
+        homeAsset.dispose();
+        awayAsset.dispose();
     }
 }
