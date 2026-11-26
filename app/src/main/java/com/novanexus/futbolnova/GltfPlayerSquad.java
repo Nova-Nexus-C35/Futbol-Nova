@@ -94,7 +94,7 @@ public final class GltfPlayerSquad implements Disposable {
         if (index < 0 || index >= players.size) return;
         Scene scene = players.get(index);
         scene.modelInstance.transform.setToTranslation(x, 0f, z)
-                .rotate(Vector3.Y, yawRadians * MathUtils.radiansToDegrees)
+                .rotate(Vector3.Y, yawRadians * MathUtils.radiansToDegrees + 180f)
                 .scale(modelScale, modelScale, modelScale);
 
         if (actionLockSeconds[index] > 0f) return;
