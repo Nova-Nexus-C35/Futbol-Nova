@@ -11,9 +11,9 @@ Los modelos se generan desde `Assets/Players/characters/home.json` y `away.json`
 
 - GLB glTF 2.0, eje vertical Y.
 - Malla skinned con nodo `skin` y pesos de vértices válidos.
-- Esqueleto con un máximo inicial de 24 huesos por draw para el perfil GLES2 más conservador; si el modelo supera el límite, dividir/optimizar las mallas antes de elevar el presupuesto.
+- Esqueleto con un máximo objetivo inicial de 25 huesos por draw para el perfil GLES2 más conservador; si el modelo supera el límite, dividir/optimizar las mallas antes de elevar el presupuesto.
 - Clips esperados: locomoción (`idle`, `walk`, `run`) y fútbol (`soccer_shoot`, `soccer_pass`, pases laterales, recepción, control de pecho, cabezazo, tackle, entradas, portero, saque de banda y celebración).
-- Escala y origen revisados para altura aproximada de 1.8 unidades, pies en Y=0 y orientación frontal hacia -Z.
+- Escala y origen revisados para altura aproximada de 1.8 unidades, pies en Y=0 y orientación de origen +Z (Ara); el renderer aplica el giro de 180° necesario para las coordenadas de juego.
 - Texturas incluidas dentro del GLB o rutas relativas empaquetadas. No depender de red.
 
 ## Fallback y seguridad
@@ -32,3 +32,8 @@ Licencia y procedencia: `app/src/test/resources/gltf/fixtures/QUATERNIUS-LICENSE
 Ara 3D Gen: https://github.com/olatunde85/3d-gen (código MIT). Los modelos base MakeHuman son CC0 1.0. Las animaciones deportivas forman parte de los datos de movimiento CMU Graphics Lab: se permite su uso incluso en productos comerciales, pero los datos no se pueden revender directamente ni siquiera convertidos. Mantener los avisos/licencias incluidos en el export y revisar el ZIP antes de publicar APK o assets por separado.
 
 El pipeline genera los GLB en GitHub Actions y los guarda en esta rama. No se debe declarar terminado el realismo hasta comprobar los modelos exportados, el build Android y el rendimiento en el teléfono objetivo.
+
+
+## Perfil móvil
+
+Las especificaciones de Ara fijan `rig: game_lite`, un esqueleto de 25 huesos sin dedos, para limitar el coste de skinning en Android. Ara exporta con +Y arriba y el personaje mirando a +Z; `GltfPlayerSquad` compensa la orientación de base con 180° al aplicar el yaw del partido. El renderer calcula el máximo de huesos entre ambos modelos para configurar el shader.
