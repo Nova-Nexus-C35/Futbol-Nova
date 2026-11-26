@@ -285,3 +285,8 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - `GltfPlayerSquad.updatePlayer` recibe `carryingBall` y prioriza clips de dribbling en bucle cuando el GLB los contiene. Se añadió prueba para detectar etiquetas de dribbling. El GLB Ara actual no incluye `soccer_dribble`, así que el fallback walk/run permanece hasta integrar un clip real.
 - Investigación de `pronane/c_games/arena-fc`: MIT para código, manifiesto `arena-18`/18 huesos, 67 clips reportados y clip `soccer_dribble`; GLB 43.631.032 bytes. No se importó por coste/tamaño y desajuste de rig. Se registró Cosindra como alternativa opcional de exportación con retarget.
 - Pendiente CI para el nuevo validador de articulaciones/canales y las pruebas en Android físico. No declarar modo Amistosos terminado.
+### Ajuste de CI por joints auxiliares Ara — 2026-11-26
+
+- Run 445 detectó `home.glb` con 29 joints y detuvo CI antes de Gradle; fue un fallo del supuesto de validación (25 total), no una falla del asset.
+- Ara documenta 25 huesos `game_lite` más socket `WeaponR` y joints faciales `jaw` + ambos ojos. Se corrigió el validador a 25–29 y se actualizó README y research.
+- Se mantiene `SceneManager` con `maxBones` dinámico; CI también comprueba mesh+skin y canales no vacíos de cada acción requerida. Pendiente run siguiente.

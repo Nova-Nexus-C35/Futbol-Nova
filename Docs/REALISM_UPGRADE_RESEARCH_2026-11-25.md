@@ -247,3 +247,8 @@ Fuentes:
 
 ### Decisión
 - Mantener Ara 3D Gen como modelo humano activo. El soporte condicional `dribble` ya está preparado en el renderer; incorporar un clip de `pronane/c_games` o Cosindra solo tras retarget, verificación de licencia, tamaño, foot-contact y sincronización de balón.
+### Aclaración de presupuesto de rig Ara `game_lite`
+
+- La documentación oficial de Ara define 25 huesos humanoides para `game_lite`, pero indica que cada rig añade `WeaponR` y por defecto `jaw` + ambos ojos. El GLB de producción reporta 29 joints: no son 29 huesos corporales de locomoción, sino 25 + 4 auxiliares.
+- Fuentes oficiales: https://ara3dgen.com/docs/rigging/ y https://ara3dgen.com/docs/library/.
+- El primer intento de endurecer CI con máximo 25 detectó correctamente 29 y falló antes de compilar. Se ajustó el contrato a 25–29 joints, se mantiene `SceneManager(maxBones)` dinámico y se exige que cada acción requerida tenga canales de animación no vacíos.

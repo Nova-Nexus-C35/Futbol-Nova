@@ -81,7 +81,7 @@ jobs:
               skins = doc.get('skins', [])
               assert skins, f'{name}: no skinned mesh'
               joint_counts = [len(skin.get('joints', [])) for skin in skins]
-              assert joint_counts and all(18 <= count <= 25 for count in joint_counts), f'{name}: unexpected game_lite joint counts {joint_counts}'
+              assert joint_counts and all(25 <= count <= 29 for count in joint_counts), f'{name}: unexpected game_lite joint counts (25 body bones + Ara socket/facial joints; expected 25-29) {joint_counts}'
               assert any(node.get('mesh') is not None and node.get('skin') is not None
                          for node in doc.get('nodes', [])), f'{name}: no node binds a mesh to a skin'
               animations = doc.get('animations', [])

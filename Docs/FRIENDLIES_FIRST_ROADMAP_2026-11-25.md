@@ -271,3 +271,8 @@ Criterio de aceptación final: un partido completo 11v11 en 3D, con controles t�
 - [ ] Completar el checklist P0 del modo Amistosos: prepartido/plantillas, controles, reglas, pausa/descanso/final, historial, segundo amistoso y recuperación en teléfono.
 
 **Límite de aceptación:** CI 444 prueba compilación, tests y empaquetado, no ejecución real en el teléfono. El modo Amistosos y el estándar FIFA-like siguen sin certificarse hasta pasar la prueba física.
+### Corrección del límite de joints GLB según la documentación Ara — 2026-11-26
+
+- [x] Corregir la validación inicial que asumía 25 joints totales: el rig `game_lite` tiene 25 huesos de cuerpo, y Ara añade `WeaponR`, `jaw` y ambos ojos (29 joints totales en el GLB actual).
+- [x] Ajustar los dos workflows a 25–29 joints; validar mesh+skin y que cada clip requerido tenga canales reproducibles.
+- [ ] Confirmar CI posterior a esta corrección y mantener el límite de 29 salvo que la documentación/licencia del rig cambie.

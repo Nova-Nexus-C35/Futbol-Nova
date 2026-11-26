@@ -11,7 +11,7 @@ Los modelos se generan desde `Assets/Players/characters/home.json` y `away.json`
 
 - GLB glTF 2.0, eje vertical Y.
 - Malla skinned con nodo `skin` y pesos de vértices válidos.
-- Esqueleto con un máximo objetivo inicial de 25 huesos por draw para el perfil GLES2 más conservador; si el modelo supera el límite, dividir/optimizar las mallas antes de elevar el presupuesto.
+- Esqueleto `game_lite` con 25 huesos humanoides. Ara añade `WeaponR` y, por defecto, `jaw` + los dos ojos como joints auxiliares; el GLB actual declara 29 joints totales (25 de cuerpo + 4 auxiliares). CI exige 25–29 joints y el renderer configura el presupuesto con `maxBones` real. Si el export supera 29, revisar los joints auxiliares y el límite del shader antes de aceptarlo.
 - Clips esperados: locomoción (`idle`, `walk`, `run`) y fútbol (`soccer_shoot`, `soccer_pass`, pases laterales, recepción, control de pecho, cabezazo, tackle, entradas, portero, saque de banda y celebración).
 - Escala y origen revisados para altura aproximada de 1.8 unidades, pies en Y=0 y orientación de origen +Z (Ara); el renderer aplica el giro de 180° necesario para las coordenadas de juego.
 - Texturas incluidas dentro del GLB o rutas relativas empaquetadas. No depender de red.
@@ -37,3 +37,10 @@ El pipeline genera los GLB en GitHub Actions y los guarda en esta rama. No se de
 ## Perfil móvil
 
 Las especificaciones de Ara fijan `rig: game_lite`, un esqueleto de 25 huesos sin dedos, para limitar el coste de skinning en Android. Ara exporta con +Y arriba y el personaje mirando a +Z; `GltfPlayerSquad` compensa la orientación de base con 180° al aplicar el yaw del partido. El renderer calcula el máximo de huesos entre ambos modelos para configurar el shader.
+
+
+## Validación del esqueleto real — 2026-11-26
+
+- Ara documenta `game_lite` como rig humanoide de 25 huesos, y explica que cada rig añade el socket `WeaponR` y por defecto `jaw` + ambos ojos. El GLB exportado declara 29 joints totales, coherente con 25 + 4 auxiliares.
+- Fuentes: https://ara3dgen.com/docs/rigging/ y https://ara3dgen.com/docs/library/.
+- CI valida 25–29 joints, un nodo que enlaza mesh+skin y canales de animación no vacíos para cada acción requerida. `GltfPlayerSquad` configura `SceneManager` usando el `maxBones` real del GLB.
