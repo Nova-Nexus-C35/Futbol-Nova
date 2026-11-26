@@ -236,3 +236,13 @@ Archivo: `app/src/main/java/com/novanexus/futbolnova/GltfPlayerSquad.java`
 ## Interpretación y límites
 
 CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron generados/validados por el workflow, que el runtime ARM64 y los modelos se empaquetaron y que el APK se publicó. Esto NO demuestra por sí solo que el aspecto sea de nivel FIFA, que los 22 jugadores se animen correctamente en un partido real, ni que el rendimiento sea estable en un teléfono físico. Se mantiene pendiente la prueba visual y de gameplay en dispositivo Android, el contacto sincronizado balón/pie, la animación futbolística completa, el estadio detallado y la aceptación end-to-end del modo Amistosos.
+
+## Integración de acciones GLB con eventos de partido — 2026-11-26
+
+- Commit de código: `aac31714f600ce86ac61517330755fed6b499ad8`.
+- `FutbolNovaGame` dispara `soccer_receive` al completar una recepción de pase; `standing_tackle` en las recuperaciones de balón de la IA; `soccer_shoot` y `soccer_pass` para tiros y pases de la IA.
+- Las paradas del portero activan `keeper_catch` o `keeper_dive_left/right`; si no existe el clip direccional, se intenta `keeper_punch`.
+- Los identificadores se cotejaron con la lista `FOOTBALL_CLIPS` del workflow Ara. La búsqueda por fragmento tolera prefijos/sufijos que añada el exportador.
+- Relectura de GitHub tras el commit confirmó las cinco conexiones nuevas.
+- El workflow Android CI se disparó por los cambios documentales posteriores; pendiente esperar y revisar sus jobs. No afirmar todavía que el nuevo código compile.
+- Pendiente: animación de conducción/control, cabeceras, despejes, saques, caídas y celebraciones; comprobar la duración real y transición de los clips; sincronización exacta del pie con el balón; prueba en GPU y teléfono Android físico. No se declara FIFA-like ni Amistosos terminado.
