@@ -106,6 +106,12 @@ public final class GltfPlayerSquad implements Disposable {
         if (desired != null && !desired.equals(activeClips[index])) play(scene, index, desired);
     }
 
+    /** Hides dismissed or substituted players without removing their stable lineup slot. */
+    public void setPlayerActive(int index, boolean active) {
+        if (index < 0 || index >= players.size) return;
+        if (!active) players.get(index).modelInstance.transform.setToTranslation(0f, -10000f, 0f);
+    }
+
     /** Starts a football action clip if it exists in this player's GLB. */
     public boolean playAction(int index, String clipHint) {
         if (index < 0 || index >= players.size || clipHint == null || clipHint.trim().isEmpty()) return false;
