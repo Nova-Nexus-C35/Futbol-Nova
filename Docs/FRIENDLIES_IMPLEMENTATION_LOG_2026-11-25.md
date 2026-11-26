@@ -168,7 +168,7 @@ Investigación pública:
 Archivos añadidos:
 - `Assets/Players/characters/home.json`: futbolista local con camiseta azul, shorts claros y número 10.
 - `Assets/Players/characters/away.json`: futbolista visitante con camiseta roja, shorts blancos y número 10.
-- `.github/workflows/generate-football-players.yml`: CLI Ara 0.11.0 fijado, cache de datos, export GLB de detalle alto, validación GLB 2.0/skin/clips, commit de los dos modelos en esta rama y artifact de inspección.
+- `.github/workflows/generate-football-players.yml`: CLI Ara 0.18.1 fijado, cache de datos, export GLB de detalle alto, validación GLB 2.0/skin/clips, commit de los dos modelos en esta rama y artifact de inspección.
 
 Código actualizado:
 - `GltfPlayerSquad.java`: dos SceneAsset independientes para home/away; crea 11 instancias por equipo, usa maxBones combinado, aplica transformaciones de MatchSimulation, mantiene locomoción, soporta playAction con bloqueo temporal y oculta jugadores inactivos.
@@ -180,3 +180,11 @@ Estado de verificación:
 - Pendiente ejecutar workflow Ara, revisar artefactos GLB, compilar Android y probar en teléfono real.
 - El workflow no toca `main`; el commit automático de los binarios se dirige únicamente a `rebuild/libgdx-android-2026-11-22`.
 - No se afirma que los GLB finales ya existan ni que el realismo FIFA esté terminado.
+
+
+### Corrección del generador Ara tras CI — 2026-11-26
+
+- La primera ejecución del workflow falló de forma reproducible porque Ara CLI 0.11.0 no conocía el ID deportivo `soccer_shoot`; los clips deportivos ya están presentes en el código fuente público actual, pero no en aquella versión publicada del CLI.
+- Se inspeccionó `packages/cli/package.json` y `packages/cli/CHANGELOG.md` del repositorio oficial: la versión actual es 0.18.1 (2026-11-25), que incluye la evolución reciente del catálogo y exportador.
+- Se actualizó la versión fijada de ambos workflows a 0.18.1 y la clave de caché. Se mantiene la lista de IDs deportivos, el preset The Footballer y el rig game_lite.
+- Pendiente: el siguiente CI debe demostrar que los IDs se reconocen y que se generan ambos GLB; no se marca como resuelto hasta ver el resultado.
