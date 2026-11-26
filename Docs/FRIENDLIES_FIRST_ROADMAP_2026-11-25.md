@@ -177,3 +177,18 @@ Las pruebas añadidas ejercitan las reglas y los contratos del motor, pero no in
 - [ ] Verificar que el modelo real se ajusta a la cámara, escala, orientación, 24 huesos por draw y rendimiento del Android objetivo.
 - [ ] Implementar mapeo de animaciones futbolísticas (dribbling, control, pase, tiro, tackle, caída, portero y celebraciones) y sincronización balón-pie.
 - [ ] Activar renderer GLB por defecto solo después de validación en dispositivo y pruebas de estabilidad.
+
+
+## Futbolistas humanos de detalle alto — 2026-11-26
+
+- [x] Investigar Ara 3D Gen y verificar código MIT, datos MakeHuman CC0 y condiciones CMU.
+- [x] Crear especificaciones reproducibles para el preset The Footballer: uniforme azul local y rojo visitante.
+- [x] Crear workflow CI para generar dos GLB de detalle alto con clips futbolísticos seleccionados y guardarlos en la rama de desarrollo.
+- [x] Adaptar GltfPlayerSquad para cargar dos assets distintos, mantener locomoción, reproducir acciones y ocultar jugadores inactivos.
+- [x] Conectar controles TIRO/PASE/ROBO con animaciones de tiro, pase y entrada.
+- [ ] Ejecutar el workflow y comprobar que genera ambos GLB; inspeccionar tamaño, nodos, huesos y nombres de clips.
+- [ ] Ejecutar Android CI después de la generación y comprobar empaquetado de ambos GLB en APK ARM64.
+- [ ] Probar en Android físico: escala, orientación, materiales, uniformes, rendimiento, memoria, temperatura y estabilidad.
+- [ ] Añadir acciones de recepción, control, cabezazo, portero, caída y celebración a los eventos reales de gameplay.
+- [ ] Ajustar el punto de contacto pie-balón y sincronizar el fotograma de impacto con la física del balón.
+- [ ] No retirar el fallback procedural ni declarar realismo final hasta completar validación física.
