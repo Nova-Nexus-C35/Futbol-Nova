@@ -704,7 +704,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         MatchSimulation.PlayerState attacker=lineup.get(matchSimulation.getControlledPlayerIndex()),target=lineup.get(possessionOwnerIndex);
         if(target.homeTeam)return;
         if(gltfPlayerSquad!=null)
-            gltfPlayerSquad.playAction(matchSimulation.getControlledPlayerIndex(),"Standing tackle");
+            gltfPlayerSquad.playAction(matchSimulation.getControlledPlayerIndex(),
+                    PlayerAnimationPolicy.tackleHint(attacker.movementSpeed));
         MatchSimulation.TackleResult result=MatchGameplay.tackle(attacker,target,1.7f);tackleCooldown=0.75f;
         if(result!=null&&result.success){matchStatistics.recordTackle(attacker.playerId,true,matchClock.getTotalElapsedSeconds());possessionOwnerIndex=matchSimulation.getControlledPlayerIndex();lastTouchHome=true;}
         else if(result!=null&&result.foul){
@@ -736,6 +737,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                 matchAdvantage.clear();
                 matchState.addGoal(exit.awardedHome);
                 matchStatistics.recordGoal(null,exit.awardedHome,matchClock.getTotalElapsedSeconds());
+                playGoalCelebration(exit.awardedHome);
                 ballPosition.set(0f,BALL_RADIUS,0f);
                 restartAwardedHome=!exit.awardedHome;
                 kickoffRestart=true;
@@ -834,10 +836,10 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             matchStatistics.recordSave(keeper.playerId,keeper.homeTeam,matchClock.getTotalElapsedSeconds());
             goalkeeperDiveDirections[keeperIndex]=plan.diveDirection;
             if(gltfPlayerSquad!=null) {
-                String keeperClip=plan.action==GoalkeeperSaveModel.Action.CATCH
-                        ? "keeper_catch"
-                        : plan.diveDirection<0f ? "keeper_dive_left" : "keeper_dive_right";
-                if(!gltfPlayerSquad.playAction(keeperIndex,keeperClip))
+                String keeperClip=PlayerAnimationPolicy.goalkeeperSaveHint(
+                        plan.action==GoalkeeperSaveModel.Action.CATCH,plan.diveDirection);
+                if(!gltfPlayerSquad.playAction(keeperIndex,keeperClip)
+                        && !"keeper_punch".equals(keeperClip))
                     gltfPlayerSquad.playAction(keeperIndex,"keeper_punch");
             }
             if(plan.action==GoalkeeperSaveModel.Action.CATCH){
@@ -857,6 +859,35 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         return false;
     }
 
+    private void playGoalCelebration(boolean scoringHome) {
+        if (gltfPlayerSquad == null) return;
+        List<MatchSimulation.PlayerState> lineup = matchSimulation.getPlayers();
+        int played = 0;
+        for (int i = 0; i < lineup.size() && played < 6; i++) {
+            MatchSimulation.PlayerState player = lineup.get(i);
+            if (!player.active || player.homeTeam != scoringHome || "GK".equals(player.role)) continue;
+            if (gltfPlayerSquad.playAction(i, "siu_celebration")) played++;
+        }
+    }
+
+    private void playRestartAnimation(List<MatchSimulation.PlayerState> lineup,
+                                      MatchRules.Restart restart, boolean awardedHome) {
+        if (gltfPlayerSquad == null || restart != MatchRules.Restart.THROW_IN) return;
+        int thrower = MatchGameplay.NO_OWNER;
+        float nearestDistance2 = Float.MAX_VALUE;
+        for (int i = 0; i < lineup.size(); i++) {
+            MatchSimulation.PlayerState player = lineup.get(i);
+            if (!player.active || player.homeTeam != awardedHome || "GK".equals(player.role)) continue;
+            float dx = player.x - ballPosition.x;
+            float dz = player.z - ballPosition.z;
+            float distance2 = dx * dx + dz * dz;
+            if (distance2 < nearestDistance2) {
+                nearestDistance2 = distance2;
+                thrower = i;
+            }
+        }
+        if (thrower != MatchGameplay.NO_OWNER) gltfPlayerSquad.playAction(thrower, "throw_in");
+    }
     private void updateGameplay(float delta){
         tackleCooldown=Math.max(0f,tackleCooldown-delta);
         for(int i=0;i<aiTackleCooldowns.length;i++)aiTackleCooldowns[i]=Math.max(0f,aiTackleCooldowns[i]-delta);
@@ -864,6 +895,7 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             restartClock-=delta;
             if(restartClock<=0f){
                 List<MatchSimulation.PlayerState> penaltyLineup=matchSimulation.getPlayers();
+                playRestartAnimation(penaltyLineup,pendingRestart,restartAwardedHome);
                 int goalkeeperIndex=restartAwardedHome?11:0;
                 float goalkeeperX=penaltyLineup.size()>goalkeeperIndex
                         ?penaltyLineup.get(goalkeeperIndex).x:Float.NaN;
@@ -877,6 +909,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             return;
         }
         List<MatchSimulation.PlayerState> lineup=matchSimulation.getPlayers();
+        boolean possessionWasFree=possessionOwnerIndex<0;
+        boolean expectedPassReception=pendingPassReceiver>=0;
         if(pendingPassReceiver>=0){
             pendingPassClock-=delta;
             if(pendingPassClock<=0f)clearPendingPass();
@@ -894,10 +928,17 @@ public final class FutbolNovaGame extends ApplicationAdapter {
         if(pendingPassReceiver>=0&&possessionOwnerIndex>=0){
             if(possessionOwnerIndex==pendingPassReceiver&&pendingPasserPlayerId!=null) {
                 matchStatistics.recordPassCompleted(pendingPasserPlayerId,pendingPasserHomeTeam,matchClock.getTotalElapsedSeconds());
-                if(gltfPlayerSquad!=null)
-                    gltfPlayerSquad.playAction(pendingPassReceiver,"soccer_receive");
+                if(gltfPlayerSquad!=null) {
+                    String aerialClip=PlayerAnimationPolicy.aerialControlHint(ballPosition.y);
+                    gltfPlayerSquad.playAction(pendingPassReceiver,
+                            aerialClip==null?"soccer_receive":aerialClip);
+                }
             }
             clearPendingPass();
+        }
+        if(possessionWasFree&&!expectedPassReception&&possessionOwnerIndex>=0&&gltfPlayerSquad!=null) {
+            String aerialClip=PlayerAnimationPolicy.aerialControlHint(ballPosition.y);
+            if(aerialClip!=null)gltfPlayerSquad.playAction(possessionOwnerIndex,aerialClip);
         }
         int possessionTeam=possessionOwnerIndex>=0&&possessionOwnerIndex<lineup.size()
                 ?(lineup.get(possessionOwnerIndex).homeTeam?1:0):MatchAdvantage.NO_TEAM;
@@ -923,7 +964,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
             if(tackle!=null&&tackle.success){
                 matchStatistics.recordTackle(lineup.get(nearestDefender).playerId,nearestDefender<11,matchClock.getTotalElapsedSeconds());
                 if(gltfPlayerSquad!=null)
-                    gltfPlayerSquad.playAction(nearestDefender,"standing_tackle");
+                    gltfPlayerSquad.playAction(nearestDefender,
+                            PlayerAnimationPolicy.tackleHint(lineup.get(nearestDefender).movementSpeed));
                 possessionOwnerIndex=nearestDefender;
                 currentOwner=lineup.get(possessionOwnerIndex);
                 aiKickClock=1.0f;
