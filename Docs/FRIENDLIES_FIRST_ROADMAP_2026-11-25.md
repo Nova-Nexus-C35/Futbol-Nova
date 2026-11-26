@@ -201,3 +201,25 @@ Las pruebas añadidas ejercitan las reglas y los contratos del motor, pero no in
 - [ ] Ejecutar Android CI y confirmar que se resuelve el merge sin ocultar recursos distintos.
 - [ ] Verificar que `home.glb`, `away.glb` y `libgdx.so` estén dentro del APK ARM64.
 - [ ] Ejecutar pruebas de carga GLB/animaciones y probar en dispositivo.
+
+
+## Estándar obligatorio de simulador 3D tipo FIFA — 2026-11-26
+
+No aceptar como entrega final una cancha 3D con personajes simples ni un prototipo de visualización. La meta requiere partido 3D jugable completo.
+
+- [x] Confirmar objetivo visual y jugable: simulador de fútbol 3D tipo FIFA/EA SPORTS FC.
+- [x] Mantener pipeline de dos modelos humanoides GLB diferenciados por equipo y animaciones de fútbol solicitadas.
+- [x] Endurecer el renderer GLB contra coordenadas/velocidades no finitas y delta inválido (commit f338f2815e2fa4af7845bd7ef3e48015bcac481f).
+- [ ] Confirmar CI del commit f338f2815e2fa4af7845bd7ef3e48015bcac481f (run 45767673346).
+- [ ] Ejecutar workflow de generación Ara y comprobar ambos GLB reales, tamaños, licencias, skins, huesos, nombres/IDs y cantidad de clips.
+- [ ] Validar escala, orientación, root motion, rig y retargeting; comprobar que 22 instancias se ven correctamente y que los suplentes/expulsados se ocultan y reactivan.
+- [ ] Integrar y probar clips de control/recepción, regate, pase, tiro, cabezazo, entrada, caída, portero y celebración con transición suave.
+- [ ] Sincronizar el fotograma de contacto del pie/cabeza con la física y trayectoria del balón.
+- [ ] Añadir articulación y locomoción de piernas/brazos reales; no aceptar la animación procedural de cilindros como resultado final.
+- [ ] Mejorar césped y materiales, líneas 3D, redes, estadio, público, luces, sombras y atmósfera.
+- [ ] Validar cámara broadcast dinámica y replays.
+- [ ] Completar IA táctica 11v11, porteros, árbitro, reglas, sustituciones y continuidad del partido.
+- [ ] Medir FPS, memoria, temperatura, consumo y estabilidad en Android ARM64 real; preparar niveles gráficos adaptables.
+- [ ] Completar pruebas end-to-end de amistoso y aceptación física antes de declarar Amistosos terminado.
+
+Criterio de aceptación final: un partido completo 11v11 en 3D, con controles táctiles, animaciones humanas de fútbol, balón con físicas y presentación de estadio/cámara de simulador moderno. La comparación con FIFA es el estándar de objetivo, no una afirmación de paridad gráfica ya conseguida.
