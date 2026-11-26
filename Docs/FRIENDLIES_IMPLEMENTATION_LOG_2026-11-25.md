@@ -157,3 +157,26 @@ Verificación y límites:
 - No se declara completada la integración visual ni el modo Amistosos.
 
 - Revisión de coordenadas JitPack: la página del tag 2.3.0 indica com.github.mgsx-dev:gdx-gltf:2.3.0; app/build.gradle se corrigió a esa coordenada oficial. La resolución queda pendiente del siguiente CI.
+
+
+## Generación de futbolistas de detalle alto y dos uniformes — 2026-11-26
+
+Investigación pública:
+- Ara 3D Gen: https://github.com/olatunde85/3d-gen (MIT); datos MakeHuman CC0 1.0 y movimiento CMU con sus condiciones de uso.
+- Confirmado preset `The Footballer`, export GLB de detalle alto, JSON de parámetros y selección de clips deportivos por ID.
+
+Archivos añadidos:
+- `Assets/Players/characters/home.json`: futbolista local con camiseta azul, shorts claros y número 10.
+- `Assets/Players/characters/away.json`: futbolista visitante con camiseta roja, shorts blancos y número 10.
+- `.github/workflows/generate-football-players.yml`: CLI Ara 0.11.0 fijado, cache de datos, export GLB de detalle alto, validación GLB 2.0/skin/clips, commit de los dos modelos en esta rama y artifact de inspección.
+
+Código actualizado:
+- `GltfPlayerSquad.java`: dos SceneAsset independientes para home/away; crea 11 instancias por equipo, usa maxBones combinado, aplica transformaciones de MatchSimulation, mantiene locomoción, soporta playAction con bloqueo temporal y oculta jugadores inactivos.
+- `FutbolNovaGame.java`: carga ambos GLB solo si están disponibles; si falta cualquiera conserva el fallback procedural. Conecta TIRO/PASE/ROBO a `soccer_shoot`, `soccer_pass` y `standing_tackle`; conserva el fallback actualizado para recuperación en runtime.
+- README principal y contrato de assets documentan rutas, pipeline y licencias.
+
+Estado de verificación:
+- Los JSON, workflow y cambios Java fueron escritos en la rama indicada. Falta leerlos de nuevo y verificar los SHA de todos los cambios.
+- Pendiente ejecutar workflow Ara, revisar artefactos GLB, compilar Android y probar en teléfono real.
+- El workflow no toca `main`; el commit automático de los binarios se dirige únicamente a `rebuild/libgdx-android-2026-11-22`.
+- No se afirma que los GLB finales ya existan ni que el realismo FIFA esté terminado.
