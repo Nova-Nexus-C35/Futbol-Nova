@@ -5,7 +5,7 @@ El juego carga opcionalmente dos futbolistas humanoides riggeados, uno por equip
 - `app/src/main/assets/models/players/home.glb` — uniforme azul del equipo local.
 - `app/src/main/assets/models/players/away.glb` — uniforme rojo del equipo visitante.
 
-Los modelos se generan desde `Assets/Players/characters/home.json` y `away.json` con el workflow `.github/workflows/generate-football-players.yml`, usando Ara 3D Gen CLI fijado a `0.11.0`.
+Los modelos se generan desde `Assets/Players/characters/home.json` y `away.json` con el workflow `.github/workflows/generate-football-players.yml`, usando Ara 3D Gen CLI fijado a `0.18.1`.
 
 ## Requisitos
 
