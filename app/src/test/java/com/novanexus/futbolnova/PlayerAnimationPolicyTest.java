@@ -26,6 +26,15 @@ public class PlayerAnimationPolicyTest {
         assertNull(PlayerAnimationPolicy.aerialControlHint(Float.NaN));
     }
 
+    @Test public void clipLookupAcceptsAraDisplayLabelsAndExportIds() {
+        assertTrue(PlayerAnimationPolicy.clipNameMatches("soccer_shoot", "Shoot (football)"));
+        assertTrue(PlayerAnimationPolicy.clipNameMatches("Pass (straight)", "soccer_pass"));
+        assertTrue(PlayerAnimationPolicy.clipNameMatches("Goalkeeper dive left", "keeper_dive_left"));
+        assertTrue(PlayerAnimationPolicy.clipNameMatches("Standing tackle", "standing_tackle"));
+        assertFalse(PlayerAnimationPolicy.clipNameMatches("Standing tackle", "stand"));
+        assertFalse(PlayerAnimationPolicy.clipNameMatches(null, "soccer_shoot"));
+    }
+
     @Test public void goalkeeperActionHandlesCatchPunchAndBothDiveSides() {
         assertEquals("keeper_catch", PlayerAnimationPolicy.goalkeeperSaveHint(true, 1f));
         assertEquals("keeper_punch", PlayerAnimationPolicy.goalkeeperSaveHint(false, 0f));
