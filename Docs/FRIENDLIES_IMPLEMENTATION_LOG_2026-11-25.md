@@ -266,3 +266,4 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - Se detectó que `findClip` comparaba la etiqueta completa. Las acciones del jugador controlado (`Shoot (football)`, `Pass (straight)`) podían no coincidir con IDs exportados `soccer_shoot`/`soccer_pass`.
 - `PlayerAnimationPolicy.clipNameMatches` normaliza separadores, elimina descriptores entre paréntesis y reconoce prefijos `soccer`, `keeper` y `goalkeeper`. Se conecta a `GltfPlayerSquad.findClip`.
 - Se añadieron pruebas para shoot/pass, dive, standing tackle, null y falso positivo `stand`; el fallback Idle ya no usa `stand`.
+- Ajuste adicional del selector: se bloqueó el falso positivo del alias `stand` contra `Standing tackle`; el alias solo acepta una pose `Stand`/`Stand idle` real. El código y la prueba de regresión quedaron guardados.
