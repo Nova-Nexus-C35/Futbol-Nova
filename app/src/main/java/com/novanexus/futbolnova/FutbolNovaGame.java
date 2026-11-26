@@ -300,6 +300,8 @@ public final class FutbolNovaGame extends ApplicationAdapter {
                             Math.min(1f,goalkeeperRecoveryTimers[i]/0.78f));
                 if(gltfPlayerSquad!=null)
                     gltfPlayerSquad.updatePlayer(i,state.x,state.z,yaw,state.movementSpeed);
+            }else if(gltfPlayerSquad!=null){
+                gltfPlayerSquad.setPlayerActive(i,false);
             }
         }
 
