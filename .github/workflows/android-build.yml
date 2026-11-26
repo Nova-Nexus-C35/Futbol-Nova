@@ -60,9 +60,20 @@ jobs:
               assert doc.get('skins'), f'{name}: no skinned mesh'
               animations = [a.get('name', '').lower() for a in doc.get('animations', [])]
               assert animations, f'{name}: no animation clips'
-              assert any('shoot' in clip for clip in animations), f'{name}: no football shot clip'
-              assert any('pass' in clip for clip in animations), f'{name}: no football pass clip'
-              print(f'{name}: {len(data)} bytes, {len(doc.get("nodes", []))} nodes, {len(doc["skins"])} skins, {len(animations)} clips')
+              normalized = [''.join(ch for ch in clip.lower() if ch.isalnum()) for clip in animations]
+              required = {
+                  'idle': 'idle', 'walk': 'walk', 'run': 'run',
+                  'shot': 'shoot', 'pass': 'pass', 'receive': 'receive',
+                  'header': 'header', 'chest control': 'chestcontrol',
+                  'standing tackle': 'standingtackle', 'slide tackle': 'slidetackle',
+                  'goalkeeper catch': 'keepercatch', 'goalkeeper punch': 'keeperpunch',
+                  'left goalkeeper dive': 'keeperdiveleft', 'right goalkeeper dive': 'keeperdiveright',
+                  'throw-in': 'throwin', 'celebration': 'siucelebration',
+              }
+              missing = [label for label, token in required.items()
+                         if not any(token in clip for clip in normalized)]
+              assert not missing, f'{name}: missing football clips: {missing}; found={animations}'
+              print(f'{name}: {len(data)} bytes, {len(doc.get("nodes", []))} nodes, {len(doc["skins"])} skins, {len(animations)} validated clips')
           PY
       - name: Commit generated player assets to the development branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/rebuild/libgdx-android-2026-11-22'
