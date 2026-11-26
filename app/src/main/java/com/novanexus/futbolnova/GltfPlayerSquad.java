@@ -91,7 +91,10 @@ public final class GltfPlayerSquad implements Disposable {
 
     /** Updates one player from authoritative match coordinates and velocity. */
     public void updatePlayer(int index, float x, float z, float yawRadians, float movementSpeed) {
-        if (index < 0 || index >= players.size) return;
+        if (index < 0 || index >= players.size
+                || !Float.isFinite(x) || !Float.isFinite(z)
+                || !Float.isFinite(yawRadians) || !Float.isFinite(movementSpeed)
+                || movementSpeed < 0f) return;
         Scene scene = players.get(index);
         scene.modelInstance.transform.setToTranslation(x, 0f, z)
                 .rotate(Vector3.Y, yawRadians * MathUtils.radiansToDegrees + 180f)
@@ -128,7 +131,8 @@ public final class GltfPlayerSquad implements Disposable {
     }
 
     public void render(float delta) {
-        float safeDelta = Math.max(0f, Math.min(delta, 0.05f));
+        // A damaged frame must never inject NaN into the animation clock.
+        float safeDelta = Float.isFinite(delta) ? Math.max(0f, Math.min(delta, 0.05f)) : 0f;
         for (int i = 0; i < actionLockSeconds.length; i++)
             actionLockSeconds[i] = Math.max(0f, actionLockSeconds[i] - safeDelta);
         sceneManager.update(safeDelta);
