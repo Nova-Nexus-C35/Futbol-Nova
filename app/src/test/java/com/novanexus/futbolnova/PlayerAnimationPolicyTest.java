@@ -19,9 +19,9 @@ public class PlayerAnimationPolicyTest {
     }
 
     @Test public void aerialControlSelectsChestOrHeaderByBallHeight() {
-        assertNull(PlayerAnimationPolicy.aerialControlHint(0.8f));
-        assertEquals("soccer_chest_control", PlayerAnimationPolicy.aerialControlHint(1.2f));
-        assertEquals("soccer_header", PlayerAnimationPolicy.aerialControlHint(1.8f));
+        assertNull(PlayerAnimationPolicy.aerialControlHint(0.6f));
+        assertEquals("soccer_chest_control", PlayerAnimationPolicy.aerialControlHint(0.8f));
+        assertEquals("soccer_header", PlayerAnimationPolicy.aerialControlHint(1.05f));
         assertNull(PlayerAnimationPolicy.aerialControlHint(Float.NaN));
     }
 
