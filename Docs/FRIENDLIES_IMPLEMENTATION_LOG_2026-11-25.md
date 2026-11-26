@@ -261,3 +261,8 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - Revisión de `MatchGameplay.acquirePossession` detectó un límite vertical de 1.1 m; el umbral anterior de header 1.65 m no podía dispararse nunca.
 - Se ajustó `PlayerAnimationPolicy`: chest control desde 0.65 m, header desde 0.98 m y rechazo explícito por encima de 1.1 m. Se añadieron pruebas de límite inferior/superior.
 - `soccer_jump_header` queda pendiente hasta que exista salto del jugador y contacto aéreo físicamente sincronizado; no se finge esa capacidad.
+### Corrección crítica del selector de clips GLB — 2026-11-26
+
+- Se detectó que `findClip` comparaba la etiqueta completa. Las acciones del jugador controlado (`Shoot (football)`, `Pass (straight)`) podían no coincidir con IDs exportados `soccer_shoot`/`soccer_pass`.
+- `PlayerAnimationPolicy.clipNameMatches` normaliza separadores, elimina descriptores entre paréntesis y reconoce prefijos `soccer`, `keeper` y `goalkeeper`. Se conecta a `GltfPlayerSquad.findClip`.
+- Se añadieron pruebas para shoot/pass, dive, standing tackle, null y falso positivo `stand`; el fallback Idle ya no usa `stand`.
