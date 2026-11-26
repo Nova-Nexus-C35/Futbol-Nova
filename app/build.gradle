@@ -29,7 +29,7 @@ android {
 dependencies {
     implementation "com.badlogicgames.gdx:gdx:${gdxVersion}"
     // Optional GLB humanoid renderer; procedural PlayerVisual remains the safe fallback.
-    implementation "com.github.mgsx-dev:gdx-gltf:2.3.0"
+    implementation "com.github.mgsx-dev.gdx-gltf:gltf:2.3.0"
     implementation "com.badlogicgames.gdx:gdx-backend-android:${gdxVersion}"
     gdxNatives "com.badlogicgames.gdx:gdx-platform:${gdxVersion}:natives-arm64-v8a"
     testImplementation 'junit:junit:4.13.2'
