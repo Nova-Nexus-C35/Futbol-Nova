@@ -6,6 +6,7 @@ public final class PlayerAnimationPolicy {
     private static final float MOVING_SPEED = 0.25f;
     private static final float HEADER_HEIGHT = 0.98f;
     private static final float CHEST_CONTROL_HEIGHT = 0.65f;
+    private static final float MAX_CONTROL_HEIGHT = 1.1f;
     private static final float SLIDE_TACKLE_SPEED = 3.0f;
 
     private PlayerAnimationPolicy() {
@@ -22,7 +23,8 @@ public final class PlayerAnimationPolicy {
     }
 
     public static String aerialControlHint(float ballHeight) {
-        if (!Float.isFinite(ballHeight) || ballHeight < CHEST_CONTROL_HEIGHT) return null;
+        if (!Float.isFinite(ballHeight) || ballHeight < CHEST_CONTROL_HEIGHT
+                || ballHeight > MAX_CONTROL_HEIGHT) return null;
         return ballHeight >= HEADER_HEIGHT ? "soccer_header" : "soccer_chest_control";
     }
 
