@@ -190,3 +190,11 @@ Estado de verificación:
 - Pendiente: el siguiente CI debe demostrar que los IDs se reconocen y que se generan ambos GLB; no se marca como resuelto hasta ver el resultado.
 
 - CI con GLB generados falló en `:app:checkDebugDuplicateClasses`: la coordenada agregada `com.github.mgsx-dev:gdx-gltf:2.3.0` incorporó `desktop` e `ibl-composer` y duplicó clases libGDX. Se consultó el README/build del tag 2.3.0 y se corrigió a `com.github.mgsx-dev.gdx-gltf:gltf:2.3.0`, el submódulo runtime recomendado oficialmente. Pendiente confirmar con nuevo CI.
+
+
+### Corrección de empaquetado Android — 2026-11-26
+
+- Se leyó el log completo de la ejecución `45701139242`: el fallo ocurrió en `:app:mergeDebugJavaResource`, con tres recursos duplicados `net/mgsx/gltf/shaders/default.vs.glsl` de `desktop`, `ibl-composer` y `gltf` 2.3.0.
+- Se modificó `app/build.gradle` añadiendo `android.packaging.resources.pickFirsts += ['net/mgsx/gltf/shaders/**']`, limitado al directorio de shaders de gdx-gltf para no descartar recursos generales ni clases.
+- Commit de corrección: `24f851c816a6d7fee271cea86564aaedcf59f56e`.
+- Pendiente: ejecutar CI posterior a este commit; comprobar `testDebugUnitTest`, `assembleDebug`, los tres archivos empaquetados (runtime ARM64 + home/away GLB) y cualquier conflicto adicional. La ejecución anterior sigue siendo FALLIDA y no valida esta corrección.
