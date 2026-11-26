@@ -24,6 +24,14 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     testOptions { unitTests.returnDefaultValues = true }
+
+    // gdx-gltf publishes identical shader resources from multiple modules.
+    // Keep one canonical copy so Android's Java-resource merge can package the APK.
+    packaging {
+        resources {
+            pickFirsts += ['net/mgsx/gltf/shaders/**']
+        }
+    }
 }
 
 dependencies {
