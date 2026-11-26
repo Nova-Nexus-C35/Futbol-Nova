@@ -4,8 +4,8 @@ package com.novanexus.futbolnova;
 public final class PlayerAnimationPolicy {
     private static final float SPRINT_SPEED = 2.8f;
     private static final float MOVING_SPEED = 0.25f;
-    private static final float HEADER_HEIGHT = 1.65f;
-    private static final float CHEST_CONTROL_HEIGHT = 0.95f;
+    private static final float HEADER_HEIGHT = 0.98f;
+    private static final float CHEST_CONTROL_HEIGHT = 0.65f;
     private static final float SLIDE_TACKLE_SPEED = 3.0f;
 
     private PlayerAnimationPolicy() {
