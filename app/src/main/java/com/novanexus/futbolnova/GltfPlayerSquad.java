@@ -28,7 +28,6 @@ public final class GltfPlayerSquad implements Disposable {
     private final SceneManager sceneManager;
     private final Array<Scene> players = new Array<>();
     private final String[] activeClips;
-    private final float[] actionLockSeconds;
     private final float modelScale;
 
     public GltfPlayerSquad(String homePath, String awayPath, PerspectiveCamera camera,
@@ -73,7 +72,6 @@ public final class GltfPlayerSquad implements Disposable {
         this.modelScale = modelScale;
         int totalPlayers = playersPerTeam * 2;
         activeClips = new String[totalPlayers];
-        actionLockSeconds = new float[totalPlayers];
         for (int i = 0; i < totalPlayers; i++) {
             SceneAsset teamAsset = i < playersPerTeam ? homeAsset : awayAsset;
             Scene scene = new Scene(teamAsset.scene);
@@ -100,10 +98,11 @@ public final class GltfPlayerSquad implements Disposable {
                 .rotate(Vector3.Y, yawRadians * MathUtils.radiansToDegrees + 180f)
                 .scale(modelScale, modelScale, modelScale);
 
-        if (actionLockSeconds[index] > 0f) return;
-        String desired = movementSpeed > 2.8f
+        if (scene.animationController != null && scene.animationController.inAction) return;
+        String locomotion = PlayerAnimationPolicy.locomotionHint(movementSpeed);
+        String desired = "sprint".equals(locomotion)
                 ? findClip(scene.modelInstance.animations, "sprint", "run")
-                : movementSpeed > 0.25f
+                : "walk".equals(locomotion)
                 ? findClip(scene.modelInstance.animations, "walk", "jog", "run")
                 : findClip(scene.modelInstance.animations, "idle", "stand");
         if (desired != null && !desired.equals(activeClips[index])) play(scene, index, desired);
@@ -121,27 +120,26 @@ public final class GltfPlayerSquad implements Disposable {
         Scene scene = players.get(index);
         String clip = findClip(scene.modelInstance.animations, clipHint);
         if (clip == null) return false;
-        play(scene, index, clip);
-        String hint = clipHint.toLowerCase(java.util.Locale.ROOT);
-        actionLockSeconds[index] = hint.contains("dive") ? 1.7f
-                : hint.contains("shoot") ? 0.95f
-                : hint.contains("pass") ? 0.8f
-                : hint.contains("tackle") ? 1.25f : 1.0f;
+        if (scene.animationController == null || scene.animationController.inAction) return false;
+        // A one-shot action overlays locomotion and automatically returns to the queued base clip.
+        scene.animationController.action(clip, 1, 1f, null, 0.12f);
+        activeClips[index] = clip;
         return true;
     }
 
     public void render(float delta) {
         // A damaged frame must never inject NaN into the animation clock.
         float safeDelta = Float.isFinite(delta) ? Math.max(0f, Math.min(delta, 0.05f)) : 0f;
-        for (int i = 0; i < actionLockSeconds.length; i++)
-            actionLockSeconds[i] = Math.max(0f, actionLockSeconds[i] - safeDelta);
         sceneManager.update(safeDelta);
         sceneManager.render();
     }
 
     private void play(Scene scene, int index, String clipId) {
         if (clipId == null || scene.animationController == null) return;
-        scene.animationController.setAnimation(clipId, -1);
+        if (activeClips[index] == null)
+            scene.animationController.setAnimation(clipId, -1);
+        else
+            scene.animationController.animate(clipId, -1, 1f, null, 0.16f);
         activeClips[index] = clipId;
     }
 
