@@ -248,3 +248,7 @@ Criterio de aceptación final: un partido completo 11v11 en 3D, con controles t�
 
 - `MatchGameplay.acquirePossession` limita actualmente la altura del balón a 1.1 m. Por eso los umbrales de chest control/header se ajustaron a 0.65 m y 0.98 m, con límite superior explícito de 1.1 m.
 - No se activa `soccer_jump_header` ni se permite control por encima de la altura de posesión hasta implementar salto/alcance vertical y colisión aérea reales. Así se evita una animación que visualmente toca un balón que la simulación no puede poseer.
+### Corrección del mapeo de nombres de animación — 2026-11-26
+
+- El exportador puede guardar IDs (`soccer_shoot`) mientras el juego solicita etiquetas (`Shoot (football)`). Se añadió normalización y alias de prefijos en `PlayerAnimationPolicy.clipNameMatches`; el mapeo ya no depende de coincidencia literal de toda la etiqueta.
+- Se quitó `stand` como fallback de Idle para evitar que una animación `Standing tackle` se confunda con una pose de pie.
