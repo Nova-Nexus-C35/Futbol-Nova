@@ -121,3 +121,27 @@ Licencia fuente: https://github.com/kendrekaran/striker-3d/blob/main/assets/LICE
 ### Corrección de coordenadas JitPack
 
 La página de JitPack consultada para el tag 2.3.0 publica como coordenada recomendada `com.github.mgsx-dev:gdx-gltf:2.3.0`. Se corrigió app/build.gradle para usar esa coordenada oficial, en lugar de la coordenada histórica de submódulo documentada en el README del repositorio. La compilación CI del commit actualizado debe confirmar que el artefacto se resuelve realmente.
+
+
+## Ara 3D Gen — pipeline realista de futbolistas — 2026-11-26
+
+Repositorio público: https://github.com/olatunde85/3d-gen
+Sitio y documentación: https://ara3dgen.com/ y https://ara3dgen.com/docs/cli/
+
+Hallazgos comprobados en el README y documentación pública:
+- Código MIT; los datos base MakeHuman se publican bajo CC0 1.0.
+- Exporta GLB riggeado con detalle low/medium/high y permite seleccionar clips de animación por ID.
+- El preset exacto `The Footballer` existe y ya define camiseta, pantalón corto y medias deportivas.
+- El catálogo incluye animaciones deportivas con IDs como `soccer_shoot`, `soccer_pass`, `soccer_receive`, `soccer_header`, `soccer_chest_control`, `standing_tackle`, `slide_tackle`, `keeper_ready`, `keeper_catch`, `keeper_dive_left/right`, `throw_in` y `siu_celebration`.
+- El CLI documenta export reproducible desde JSON y generación de modelos en CI, con versión de herramienta fijada y cache de datos.
+- Los movimientos CMU pueden usarse en productos comerciales, pero sus datos no se pueden revender directamente, ni siquiera convertidos. Se debe conservar el crédito CMU en los avisos de distribución.
+
+Decisión aplicada en Fútbol Nova:
+- Dos especificaciones versionables: `Assets/Players/characters/home.json` (azul) y `away.json` (rojo), ambas basadas en `The Footballer`.
+- Nuevo workflow `.github/workflows/generate-football-players.yml`: fija Ara CLI 0.11.0, genera GLB de detalle alto con locomoción y clips futbolísticos, valida GLB 2.0/skin/animaciones y guarda `home.glb` y `away.glb` en la rama de desarrollo.
+- `GltfPlayerSquad` carga los dos assets y asigna los primeros 11 al equipo local y los siguientes 11 al visitante; mantiene locomoción y permite disparar clips de acción con bloqueo temporal para que no se cancelen al frame siguiente.
+- `FutbolNovaGame` conecta TIRO, PASE y ROBO con `soccer_shoot`, `soccer_pass` y `standing_tackle`; los jugadores inactivos se ocultan conservando índices estables.
+
+Referencias: https://github.com/olatunde85/3d-gen/blob/main/docs/animations.md ; https://github.com/olatunde85/3d-gen/blob/main/docs/cli.md ; https://github.com/olatunde85/3d-gen/blob/main/scripts/ASSETS_LICENSE.txt
+
+**Límite:** los GLB de producción aún dependen de que el workflow se ejecute correctamente. Hasta que existan en la rama, pase CI Android y se prueben en dispositivo, el renderer conservará el fallback procedural y no se declara alcanzado el nivel visual FIFA.
