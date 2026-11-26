@@ -160,3 +160,30 @@ La primera compilación con Ara GLB encontró clases duplicadas porque `com.gith
 ### Diagnóstico de empaquetado Android — 2026-11-26
 
 La ejecución Android Actions `45701139242` llegó a `:app:mergeDebugJavaResource` y falló porque tres artefactos de gdx-gltf contienen el recurso `net/mgsx/gltf/shaders/default.vs.glsl`. No fue un error de compilación Java ni una prueba de animación. Se añadió una regla Android `packaging.resources.pickFirsts` limitada a `net/mgsx/gltf/shaders/**`, conservando una única copia del shader compartido en el APK. Debe verificarse que no aparezcan conflictos de otros recursos y que el APK empaquete correctamente ambos GLB.
+
+
+## Auditoría comparativa de alternativas públicas — 2026-11-26
+
+Objetivo no negociable: simulador de fútbol 3D completo, con experiencia visual y jugable comparable a FIFA/EA SPORTS FC. Una cancha 3D o modelos estáticos no satisfacen el objetivo.
+
+Repositorios revisados:
+- `olatunde85/3d-gen`: código MIT; datos de personaje MakeHuman CC0; genera humanos GLB riggeados y personalizables. Candidato para el pipeline de jugadores, no runtime Android.
+- `rblaurent/football-tackle-lab`: prototipo web con locomoción, contactos y selección de clips. El propio README indica que contiene recursos/animaciones extraídos de Gameplay Football/EA y aclara que su licencia de código no concede derechos sobre esos datos. Se excluye toda reutilización de assets, clips extraídos o código con procedencia no autorizada; solo se estudian conceptos de controlador y pruebas.
+- `blurz17/blurz-native-football-`: referencia nativa Android ARM64 con OpenGL ES, físicas ODE, HUD táctil y pipeline glTF/FBX. Licencia GPLv3 indicada en el repositorio; no se copia ni enlaza código en el proyecto Java/libGDX sin una decisión expresa de compatibilidad de licencia.
+- `tshrjn/openFIFA`: referencia de alcance y dirección artística; usa Unity y requiere revisar licencias de cada asset/dependencia antes de cualquier adopción. No se migra el motor actual basándose solo en su README.
+- `Kinemiq/free-game-animations`: animaciones humanoides CC0 en GLB/FBX; útiles como base general de locomoción, pero no sustituyen clips futbolísticos específicos ni garantizan retargeting compatible con el rig Ara.
+- `Adem-maker600/football-3d-game`: ejemplo Java/libGDX 3v3, de escala muy limitada; referencia conceptual, no base para un simulador 11v11.
+
+Decisión técnica:
+- Mantener Java 17 + libGDX en esta fase; gdx-gltf queda como loader/renderizador GLB opcional sujeto a CI y prueba Android.
+- No migrar a Unity, Godot, SDL u otro motor sin una comparación reproducible de rendimiento, licencias, tamaño APK, compatibilidad Android y coste de reescribir la simulación.
+- Los modelos humanos generados con datos CC0 y los clips con licencia comprobada son preferibles a recursos extraídos de juegos comerciales.
+- Para acercarse al estándar FIFA hacen falta modelos de alta fidelidad, materiales/iluminación, animación futbolística retargeteada, físicas de balón/contacto, IA 11v11, estadio/público y cámara broadcast. El renderer GLB actual solo cubre una parte.
+
+Fuentes:
+- https://github.com/olatunde85/3d-gen
+- https://github.com/rblaurent/football-tackle-lab
+- https://github.com/blurz17/blurz-native-football-
+- https://github.com/tshrjn/openFIFA
+- https://github.com/Kinemiq/free-game-animations
+- https://github.com/Adem-maker600/football-3d-game
