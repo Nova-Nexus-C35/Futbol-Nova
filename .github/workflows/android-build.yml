@@ -45,6 +45,25 @@ jobs:
           cp "$(find /tmp/nova-away -maxdepth 1 -type f -name '*.glb' -print -quit)" app/src/main/assets/models/players/away.glb
           test -s app/src/main/assets/models/players/home.glb
           test -s app/src/main/assets/models/players/away.glb
+      - name: Validate both GLB models and football animation clips
+        run: |
+          python - <<'PY'
+          import json, struct
+          from pathlib import Path
+          for name in ('home.glb', 'away.glb'):
+              path = Path('app/src/main/assets/models/players') / name
+              data = path.read_bytes()
+              magic, version, length, json_length, json_type = struct.unpack_from('<5I', data, 0)
+              assert magic == 0x46546c67 and version == 2 and length == len(data), name
+              assert json_type == 0x4e4f534a and 20 + json_length <= len(data), name
+              doc = json.loads(data[20:20 + json_length].decode('utf-8').rstrip(' \\t\\r\\n\\0'))
+              assert doc.get('skins'), f'{name}: no skinned mesh'
+              animations = [a.get('name', '').lower() for a in doc.get('animations', [])]
+              assert animations, f'{name}: no animation clips'
+              assert any('shoot' in clip for clip in animations), f'{name}: no football shot clip'
+              assert any('pass' in clip for clip in animations), f'{name}: no football pass clip'
+              print(f'{name}: {len(data)} bytes, {len(doc.get("nodes", []))} nodes, {len(doc["skins"])} skins, {len(animations)} clips')
+          PY
       - name: Commit generated player assets to the development branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/rebuild/libgdx-android-2026-11-22'
         run: |
@@ -72,8 +91,20 @@ jobs:
           gradle-version: '8.11.1'
       - name: Run unit tests and build ARM64 debug APK
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
-      - name: Verify ARM64 native runtime is packaged
-        run: unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -Fx 'lib/arm64-v8a/libgdx.so'
+      - name: Verify ARM64 native runtime and both player models are packaged
+        run: |
+          unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -Fx 'lib/arm64-v8a/libgdx.so'
+          unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -Fx 'assets/models/players/home.glb'
+          unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -Fx 'assets/models/players/away.glb'
+      - name: Upload generated player models
+        uses: actions/upload-artifact@v4
+        with:
+          name: futbol-nova-realistic-player-models
+          path: |
+            app/src/main/assets/models/players/home.glb
+            app/src/main/assets/models/players/away.glb
+          if-no-files-found: error
+          retention-days: 30
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
