@@ -272,3 +272,8 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - `.github/workflows/generate-football-players.yml` conserva la generación manual, validación de clips y commit de los GLB.
 - `.github/workflows/android-build.yml` ya no vuelve a generar modelos en cada push: valida los dos GLB versionados y ejecuta pruebas/compilación ARM64. Esto reduce tiempo y evita que la generación de arte cancele repetidamente la compilación de código.
 - La ejecución de Android CI del nuevo workflow debe terminar sobre el último commit antes de dar la compilación por válida.
+### Soporte condicional de animación de conducción — 2026-11-26
+
+- `GltfPlayerSquad.updatePlayer` ahora recibe `carryingBall`, y prioriza un clip looping de dribbling cuando el poseedor se desplaza. Si no hay clip compatible, usa walk/run; no finge que una carrera genérica sea una animación de control de balón.
+- `FutbolNovaGame` pasa `possessionOwnerIndex == i` para cada jugador y se añadió prueba del normalizador para `Soccer dribble with ball`.
+- Pendiente de contenido: los modelos actuales no se han certificado con un clip de dribbling específico; crear/retargetear uno propio y sincronizar el toque con el balón.
