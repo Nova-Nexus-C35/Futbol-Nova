@@ -52,3 +52,12 @@ APK output: `app/build/outputs/apk/debug/app-debug.apk`.
 ## Integración del proyecto original
 
 La fuente original está conservada en `Nova-Nexus-C35/Nova-Workspace/Projects/Games/futbol-nova/` y su versión histórica usa Godot 4.4.1. El proyecto Android actual mantiene Java 17 + libGDX por decisión del propietario. Los catálogos JSON originales se están migrando a `app/src/main/assets/data/original/` y se leen mediante `OriginalProjectData`. La portabilidad completa de gameplay sigue pendiente. Consulta `Docs/ORIGINAL_PROJECT_INTEGRATION.md`.
+
+
+## Jugadores humanos 3D realistas
+
+Las especificaciones reproducibles de los dos uniformes están en `Assets/Players/characters/home.json` y `away.json`. El workflow `.github/workflows/generate-football-players.yml` usa Ara 3D Gen CLI fijado a la versión 0.11.0 para generar modelos GLB riggeados de detalle alto con animaciones futbolísticas. Los modelos generados se guardan en `app/src/main/assets/models/players/home.glb` y `away.glb` en esta rama de desarrollo.
+
+El renderer usa dos GLB distintos (azul local y rojo visitante), mantiene el fallback procedural, oculta jugadores inactivos y conecta los controles TIRO/PASE/ROBO a clips deportivos cuando están presentes. La generación requiere que GitHub Actions pueda descargar Ara y sus datos CC0; los modelos no se consideran validados hasta que el workflow termine, la compilación Android pase y se prueben en un dispositivo.
+
+Procedencia/licencias: [Ara 3D Gen](https://github.com/olatunde85/3d-gen), código MIT; datos MakeHuman CC0; animaciones CMU con sus condiciones de uso comercial y prohibición de reventa directa de los datos de captura. Consultar el ZIP/export de Ara y `Docs/REALISM_UPGRADE_RESEARCH_2026-11-25.md` antes de redistribuir assets.
