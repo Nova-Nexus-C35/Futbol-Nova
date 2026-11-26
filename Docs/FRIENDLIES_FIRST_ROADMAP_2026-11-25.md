@@ -264,13 +264,13 @@ Criterio de aceptación final: un partido completo 11v11 en 3D, con controles t�
 - [x] CI 444: pruebas unitarias, APK ARM64, `libgdx.so`, `home.glb` y `away.glb` empaquetados; release publicado. Resultado: SUCCESS.
 - [x] Renderer recibe el estado de posesión y busca un bucle `dribble`/`soccer_dribble`/`ball carry` si el asset lo ofrece; fallback walk/run cuando no existe.
 - [x] Investigar alternativa pública `pronane/c_games/arena-fc`: clip `soccer_dribble`, pero rig de 18 huesos y GLB de 43,6 MB; no importar sin optimización/retarget y revisión de licencia.
-- [ ] Añadir validación automática de que cada GLB liga una malla a un skin de 18–25 articulaciones y que los clips requeridos contienen canales reproducibles; workflow preparado, pendiente CI de esta validación.
+- [ ] Añadir validación automática de que cada GLB liga una malla a un skin de 25–29 joints (25 huesos `game_lite` más 4 auxiliares Ara) y que los clips requeridos contienen canales reproducibles; workflow preparado, pendiente CI de esta validación.
 - [ ] Obtener y retargetear un clip de dribbling real, con marcadores de contacto y ritmo de pie, para el rig Ara activo.
 - [ ] Sincronizar contacto pie-balón, desplazamiento raíz y control físico; el balón actualmente se ancla por delante del poseedor y no hay una prueba visual de contacto.
 - [ ] Prueba física Android: carga de 22 instancias, escala/orientación, transiciones, cámara, multitáctil, FPS, memoria, temperatura, pérdida/restauración GL y partido completo offline.
 - [ ] Completar el checklist P0 del modo Amistosos: prepartido/plantillas, controles, reglas, pausa/descanso/final, historial, segundo amistoso y recuperación en teléfono.
 
-**Límite de aceptación:** CI 444 prueba compilación, tests y empaquetado, no ejecución real en el teléfono. El modo Amistosos y el estándar FIFA-like siguen sin certificarse hasta pasar la prueba física.
+**Límite de aceptación:** CI 444 prueba compilación, tests y empaquetado, no ejecución real en el teléfono. Run 445 falló únicamente porque el validador asumía 25 joints totales; el GLB real declara 29 (25 de cuerpo + 4 auxiliares Ara). La validación se corrigió en el commit siguiente; falta confirmar un run posterior. El modo Amistosos y el estándar FIFA-like siguen sin certificarse hasta pasar la prueba física.
 ### Corrección del límite de joints GLB según la documentación Ara — 2026-11-26
 
 - [x] Corregir la validación inicial que asumía 25 joints totales: el rig `game_lite` tiene 25 huesos de cuerpo, y Ara añade `WeaponR`, `jaw` y ambos ojos (29 joints totales en el GLB actual).
