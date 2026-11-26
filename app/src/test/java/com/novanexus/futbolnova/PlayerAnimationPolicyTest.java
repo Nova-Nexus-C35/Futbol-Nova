@@ -31,6 +31,7 @@ public class PlayerAnimationPolicyTest {
         assertTrue(PlayerAnimationPolicy.clipNameMatches("Pass (straight)", "soccer_pass"));
         assertTrue(PlayerAnimationPolicy.clipNameMatches("Goalkeeper dive left", "keeper_dive_left"));
         assertTrue(PlayerAnimationPolicy.clipNameMatches("Standing tackle", "standing_tackle"));
+        assertTrue(PlayerAnimationPolicy.clipNameMatches("Soccer dribble with ball", "dribble"));
         assertFalse(PlayerAnimationPolicy.clipNameMatches("Standing tackle", "stand"));
         assertFalse(PlayerAnimationPolicy.clipNameMatches(null, "soccer_shoot"));
     }
