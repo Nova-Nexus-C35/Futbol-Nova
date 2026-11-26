@@ -56,7 +56,7 @@ La fuente original está conservada en `Nova-Nexus-C35/Nova-Workspace/Projects/G
 
 ## Jugadores humanos 3D realistas
 
-Las especificaciones reproducibles de los dos uniformes están en `Assets/Players/characters/home.json` y `away.json`. El workflow `.github/workflows/generate-football-players.yml` usa Ara 3D Gen CLI fijado a la versión 0.11.0 para generar modelos GLB riggeados de detalle alto con animaciones futbolísticas. Los modelos generados se guardan en `app/src/main/assets/models/players/home.glb` y `away.glb` en esta rama de desarrollo.
+Las especificaciones reproducibles de los dos uniformes están en `Assets/Players/characters/home.json` y `away.json`. El workflow `.github/workflows/generate-football-players.yml` usa Ara 3D Gen CLI fijado a la versión 0.18.1 para generar modelos GLB riggeados de detalle alto con animaciones futbolísticas. Los modelos generados se guardan en `app/src/main/assets/models/players/home.glb` y `away.glb` en esta rama de desarrollo.
 
 El renderer usa dos GLB distintos (azul local y rojo visitante), mantiene el fallback procedural, oculta jugadores inactivos y conecta los controles TIRO/PASE/ROBO a clips deportivos cuando están presentes. La generación requiere que GitHub Actions pueda descargar Ara y sus datos CC0; los modelos no se consideran validados hasta que el workflow termine, la compilación Android pase y se prueben en un dispositivo.
 
