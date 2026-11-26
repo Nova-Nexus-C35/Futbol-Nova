@@ -258,3 +258,16 @@ Criterio de aceptación final: un partido completo 11v11 en 3D, con controles t�
 - [x] Si el futbolista tiene posesión y se desplaza, priorizar un clip looping `dribble`/`soccer_dribble`/`ball carry`; si el GLB no lo incluye, volver a locomoción walk/run sin romper el partido.
 - [x] Añadir prueba de reconocimiento de nombres de clip de dribbling.
 - [ ] Crear e incorporar un clip de conducción original/licenciado y medir contacto pie-balón; el GLB actual no se debe anunciar como si ya incluyera ese clip.
+## Cierre de integración de animaciones y CI — 2026-11-26
+
+- [x] Workflow Android separado de la generación manual de GLB; valida assets versionados y evita regenerarlos en cada push.
+- [x] CI 444: pruebas unitarias, APK ARM64, `libgdx.so`, `home.glb` y `away.glb` empaquetados; release publicado. Resultado: SUCCESS.
+- [x] Renderer recibe el estado de posesión y busca un bucle `dribble`/`soccer_dribble`/`ball carry` si el asset lo ofrece; fallback walk/run cuando no existe.
+- [x] Investigar alternativa pública `pronane/c_games/arena-fc`: clip `soccer_dribble`, pero rig de 18 huesos y GLB de 43,6 MB; no importar sin optimización/retarget y revisión de licencia.
+- [ ] Añadir validación automática de que cada GLB liga una malla a un skin de 18–25 articulaciones y que los clips requeridos contienen canales reproducibles; workflow preparado, pendiente CI de esta validación.
+- [ ] Obtener y retargetear un clip de dribbling real, con marcadores de contacto y ritmo de pie, para el rig Ara activo.
+- [ ] Sincronizar contacto pie-balón, desplazamiento raíz y control físico; el balón actualmente se ancla por delante del poseedor y no hay una prueba visual de contacto.
+- [ ] Prueba física Android: carga de 22 instancias, escala/orientación, transiciones, cámara, multitáctil, FPS, memoria, temperatura, pérdida/restauración GL y partido completo offline.
+- [ ] Completar el checklist P0 del modo Amistosos: prepartido/plantillas, controles, reglas, pausa/descanso/final, historial, segundo amistoso y recuperación en teléfono.
+
+**Límite de aceptación:** CI 444 prueba compilación, tests y empaquetado, no ejecución real en el teléfono. El modo Amistosos y el estándar FIFA-like siguen sin certificarse hasta pasar la prueba física.

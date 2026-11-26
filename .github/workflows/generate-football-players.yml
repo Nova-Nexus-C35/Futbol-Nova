@@ -69,10 +69,6 @@ jobs:
               assert magic == 0x46546c67 and version == 2 and length == len(data), name
               assert chunk_type == 0x4e4f534a and 20 + chunk_length <= len(data), name
               doc = json.loads(data[20:20 + chunk_length].decode('utf-8').rstrip(' \\t\\r\\n\\0'))
-              assert doc.get('skins'), f'{name}: no skin'
-              assert doc.get('animations'), f'{name}: no animations'
-              animations = [a.get('name', '') for a in doc['animations']]
-              normalized = [''.join(ch for ch in clip.lower() if ch.isalnum()) for clip in animations]
               required = {
                   'idle': 'idle', 'walk': 'walk', 'run': 'run',
                   'shot': 'shoot', 'pass': 'pass', 'receive': 'receive',
@@ -82,10 +78,23 @@ jobs:
                   'left goalkeeper dive': 'keeperdiveleft', 'right goalkeeper dive': 'keeperdiveright',
                   'throw-in': 'throwin', 'celebration': 'siucelebration',
               }
-              missing = [label for label, token in required.items()
-                         if not any(token in clip for clip in normalized)]
-              assert not missing, f'{name}: missing football clips: {missing}; found={animations}'
-              print(f'{name}: {len(data)} bytes, {len(doc.get("nodes", []))} nodes, {len(doc["skins"])} skins, {len(animations)} validated clips')
+              skins = doc.get('skins', [])
+              assert skins, f'{name}: no skinned mesh'
+              joint_counts = [len(skin.get('joints', [])) for skin in skins]
+              assert joint_counts and all(18 <= count <= 25 for count in joint_counts), f'{name}: unexpected game_lite joint counts {joint_counts}'
+              assert any(node.get('mesh') is not None and node.get('skin') is not None
+                         for node in doc.get('nodes', [])), f'{name}: no node binds a mesh to a skin'
+              animations = doc.get('animations', [])
+              assert animations, f'{name}: no animation clips'
+              normalized = [''.join(ch for ch in a.get('name', '').lower() if ch.isalnum())
+                            for a in animations]
+              missing = []
+              for label, token in required.items():
+                  if not any(token in clip and len(animation.get('channels', [])) > 0
+                             for clip, animation in zip(normalized, animations)):
+                      missing.append(label)
+              assert not missing, f'{name}: missing playable football clips: {missing}; found={[a.get("name", "") for a in animations]}'
+              print(f'{name}: {len(data)} bytes, {len(doc.get("nodes", []))} nodes, joints={joint_counts}, {len(animations)} playable clips')
           PY
 
       - name: Commit generated player models to development branch

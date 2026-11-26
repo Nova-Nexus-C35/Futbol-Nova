@@ -277,3 +277,11 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - `GltfPlayerSquad.updatePlayer` ahora recibe `carryingBall`, y prioriza un clip looping de dribbling cuando el poseedor se desplaza. Si no hay clip compatible, usa walk/run; no finge que una carrera genérica sea una animación de control de balón.
 - `FutbolNovaGame` pasa `possessionOwnerIndex == i` para cada jugador y se añadió prueba del normalizador para `Soccer dribble with ball`.
 - Pendiente de contenido: los modelos actuales no se han certificado con un clip de dribbling específico; crear/retargetear uno propio y sincronizar el toque con el balón.
+## Verificación de CI 444 y soporte de dribbling — 2026-11-26
+
+- Commit probado: `99d8bd2035b2a3be9eeeea1a289fdf9b1a10141d`.
+- Workflow 444 SUCCESS: Android job y publish-release job. `:app:testDebugUnitTest` y `:app:assembleDebug` completaron con BUILD SUCCESSFUL; verificación del APK confirmó `lib/arm64-v8a/libgdx.so`, `assets/models/players/home.glb` y `away.glb`.
+- Artefactos de CI: APK `futbol-nova-android-arm64-debug`, SHA-256 ZIP `5456051eea2be47e1c09c78475b28dd87ce1d8f3c38748b76440e1fcf1f581ee`; modelos `futbol-nova-realistic-player-models`, SHA-256 ZIP `e365021a47ee9f7d1856eb3f1c83ede41fe4f8d3785fd99c34ab85609d0e7492`.
+- `GltfPlayerSquad.updatePlayer` recibe `carryingBall` y prioriza clips de dribbling en bucle cuando el GLB los contiene. Se añadió prueba para detectar etiquetas de dribbling. El GLB Ara actual no incluye `soccer_dribble`, así que el fallback walk/run permanece hasta integrar un clip real.
+- Investigación de `pronane/c_games/arena-fc`: MIT para código, manifiesto `arena-18`/18 huesos, 67 clips reportados y clip `soccer_dribble`; GLB 43.631.032 bytes. No se importó por coste/tamaño y desajuste de rig. Se registró Cosindra como alternativa opcional de exportación con retarget.
+- Pendiente CI para el nuevo validador de articulaciones/canales y las pruebas en Android físico. No declarar modo Amistosos terminado.

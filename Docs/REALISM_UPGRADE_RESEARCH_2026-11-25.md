@@ -231,3 +231,19 @@ Fuentes:
 ### Conclusión de alternativas
 - El clip específico de dribbling sigue siendo el hueco principal del catálogo Ara revisado. Las opciones compatibles son: crear una animación original en Blender/AnimStudio y retargetearla al rig Ara; grabar una acción con motion capture propio; o localizar un clip de fútbol con licencia explícita que permita redistribución dentro del juego.
 - No añadir una dependencia externa ni importar paquetes completos solo por ser públicos. Cada incorporación futura debe incluir URL de origen, hash, licencia, atribución y prueba de retargeting.
+## Alternativa adicional con animación de dribbling — auditoría 2026-11-26
+
+### pronane/c_games — subproyecto arena-fc
+- Repositorio: https://github.com/pronane/c_games/tree/main/arena-fc
+- `arena-fc/LICENSE.txt` verificada: MIT para el código del proyecto; el aviso excluye componentes de terceros, por lo que cada dependencia y recurso se revisa por separado. README declara que sus modelos y mallas son originales/procedurales y no usan assets comerciales de FIFA/PES.
+- `Data/soccer_player_manifest.json` declara esqueleto `arena-18` (18 huesos), malla de 8.002 vértices/16.000 triángulos, altura 1,7512 m y un clip `soccer_dribble` de bucle para control cercano del balón. El informe del proyecto describe 67 clips de fútbol; el manifiesto conserva múltiples variantes y metadatos.
+- `Data/models/soccer_player.glb` ocupa 43.631.032 bytes. No se incorpora directamente: es grande para el APK Android, usa rig de 18 huesos distinto al `game_lite` de Ara (objetivo de 25) y requiere comprobar por separado la cadena Sprite Forge/retarget/materiales. Es una referencia técnica útil para la pose de dribbling, locomoción y metadatos de clips.
+- Código de referencia del clip: `arena-fc/Tools/soccer_motions.py`, función `_dribble` y entrada `soccer_dribble` en `CUSTOM`; el clip es un bucle de control cercano con traslación raíz delegada al motor. No se copió ni se añadió como dependencia.
+
+### Opción externa complementaria: Cosindra MotionSmith
+- Referencia: https://cosindra.ai/motionsmith/motions/soccer-dribble
+- La página indica que el primer take se puede descargar con cuenta gratuita en GLB/FBX/BVH, uso comercial y sin atribución; el clip base usa el esqueleto UE5 Manny y exige retarget al rig Ara. El proveedor indica que el movimiento se genera con NVIDIA Kimodo bajo NVIDIA Open Model License y que el usuario conserva los derechos del movimiento generado.
+- No se descarga ni se importa automáticamente: requiere cuenta del propietario, exportación y comprobación del archivo/licencia entregado. Queda como alternativa opcional si el usuario prefiere generar el clip sobre su propio personaje.
+
+### Decisión
+- Mantener Ara 3D Gen como modelo humano activo. El soporte condicional `dribble` ya está preparado en el renderer; incorporar un clip de `pronane/c_games` o Cosindra solo tras retarget, verificación de licencia, tamaño, foot-contact y sincronización de balón.
