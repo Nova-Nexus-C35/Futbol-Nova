@@ -192,3 +192,12 @@ Las pruebas añadidas ejercitan las reglas y los contratos del motor, pero no in
 - [ ] Añadir acciones de recepción, control, cabezazo, portero, caída y celebración a los eventos reales de gameplay.
 - [ ] Ajustar el punto de contacto pie-balón y sincronizar el fotograma de impacto con la física del balón.
 - [ ] No retirar el fallback procedural ni declarar realismo final hasta completar validación física.
+
+
+## Corrección de empaquetado GLB — 2026-11-26
+
+- [x] Identificar el fallo real de CI: `:app:mergeDebugJavaResource` por tres copias del recurso `net/mgsx/gltf/shaders/default.vs.glsl` procedentes de módulos gdx-gltf.
+- [x] Añadir `packaging.resources.pickFirsts` acotado a `net/mgsx/gltf/shaders/**` en `app/build.gradle`.
+- [ ] Ejecutar Android CI y confirmar que se resuelve el merge sin ocultar recursos distintos.
+- [ ] Verificar que `home.glb`, `away.glb` y `libgdx.so` estén dentro del APK ARM64.
+- [ ] Ejecutar pruebas de carga GLB/animaciones y probar en dispositivo.
