@@ -155,3 +155,8 @@ La versión 0.11.0 falló en CI con `Unknown animation "soccer_shoot"`. Se compr
 ### Corrección de dependencia gdx-gltf tras Android CI — 2026-11-26
 
 La primera compilación con Ara GLB encontró clases duplicadas porque `com.github.mgsx-dev:gdx-gltf:2.3.0` resuelve el proyecto agregado, que incluye los módulos `desktop` e `ibl-composer` junto al runtime de libGDX. Se revisaron `README.md`, `settings.gradle` y `gltf/build.gradle` del tag público 2.3.0: el README oficial recomienda la dependencia del submódulo `com.github.mgsx-dev.gdx-gltf:gltf:2.3.0`. Se corrigió `app/build.gradle` a esa coordenada core, que depende de libGDX pero no añade los módulos desktop/IBL. Recompilación pendiente.
+
+
+### Diagnóstico de empaquetado Android — 2026-11-26
+
+La ejecución Android Actions `45701139242` llegó a `:app:mergeDebugJavaResource` y falló porque tres artefactos de gdx-gltf contienen el recurso `net/mgsx/gltf/shaders/default.vs.glsl`. No fue un error de compilación Java ni una prueba de animación. Se añadió una regla Android `packaging.resources.pickFirsts` limitada a `net/mgsx/gltf/shaders/**`, conservando una única copia del shader compartido en el APK. Debe verificarse que no aparezcan conflictos de otros recursos y que el APK empaquete correctamente ambos GLB.
