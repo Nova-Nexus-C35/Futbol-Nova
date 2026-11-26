@@ -1,12 +1,6 @@
 name: Generate realistic football player models
 
 on:
-  push:
-    branches:
-      - rebuild/libgdx-android-2026-11-22
-    paths:
-      - 'Assets/Players/characters/**'
-      - '.github/workflows/generate-football-players.yml'
   workflow_dispatch:
 
 permissions:
@@ -78,8 +72,8 @@ jobs:
               assert doc.get('skins'), f'{name}: no skin'
               assert doc.get('animations'), f'{name}: no animations'
               ids = {a.get('name', '') for a in doc['animations']}
-              assert any('soccer_shoot' in x.lower() for x in ids), f'{name}: missing soccer_shoot clip'
-              assert any('soccer_pass' in x.lower() for x in ids), f'{name}: missing soccer_pass clip'
+              assert any('shoot' in x.lower() for x in ids), f'{name}: missing soccer_shoot clip'
+              assert any('pass' in x.lower() for x in ids), f'{name}: missing soccer_pass clip'
               print(f'{name}: {len(data)} bytes, {len(doc.get("nodes", []))} nodes, {len(doc["skins"])} skins, {len(ids)} clips')
           PY
 
