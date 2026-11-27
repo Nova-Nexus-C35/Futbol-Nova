@@ -18,9 +18,9 @@ Los SHA Git de los 134 blobs coinciden exactamente; por tanto, también se verif
 ## Separación de trabajo
 
 - `reference/Soccer-27/`: instantánea de referencia, no editar.
-- `vendor/Soccer-27`: submódulo Git del proyecto original.
+- No se encontró actualmente el submódulo `vendor/Soccer-27` en la raíz del repositorio; la fuente queda identificada por su URL y commit en el manifiesto.
 - El código y los recursos propios de NOVA deben crearse en una carpeta separada para mantener trazabilidad y facilitar futuras actualizaciones.
 
 ## Precaución legal
 
-La coincidencia de contenido no implica autorización de redistribución. El README fuente declara Apache-2.0, pero debe verificarse el texto de licencia y cada licencia de terceros antes de distribuir o comercializar una versión derivada.
+La coincidencia de contenido no implica autorización de redistribución. El README fuente declara Apache-2.0, pero no existe archivo LICENSE en el commit auditado y las licencias de terceros no están completamente verificadas. Consultar `reference/REFERENCE_LICENSE_AUDIT.md` antes de cualquier redistribución o publicación derivada.
