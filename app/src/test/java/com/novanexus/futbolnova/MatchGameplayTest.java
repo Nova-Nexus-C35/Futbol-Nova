@@ -219,4 +219,29 @@ public final class MatchGameplayTest {
   Vector3 target=MatchGameplay.chooseAiCarryTarget(players,9,false);
   assertTrue(target.z>carrier.z);
  }
+
+ @Test public void gameplayDecisionsRejectNullAndInvalidLineupEntries(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=new ArrayList<>(simulation.getPlayers());
+  MatchSimulation.PlayerState passer=players.get(7);
+  players.set(0,null);
+  players.get(18).x=Float.NaN;
+  assertEquals(MatchGameplay.NO_OWNER,MatchGameplay.findForwardPassDecision(
+          players,0,0f,0f,true,true).receiverIndex);
+  assertFalse(MatchGameplay.isPassLaneClear(null,0f,0f,1f,1f,true,7,9));
+  assertFalse(MatchGameplay.isPassLaneClear(players,Float.NaN,0f,1f,1f,true,7,9));
+  assertNull(MatchGameplay.tackle(null,passer,1.5f));
+ }
+
+ @Test public void invalidOpponentCoordinatesDoNotPoisonPassLaneOrCarryChoice(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  List<MatchSimulation.PlayerState> players=new ArrayList<>(simulation.getPlayers());
+  MatchSimulation.PlayerState owner=players.get(9);
+  players.get(18).x=Float.NaN;
+  players.get(18).z=Float.POSITIVE_INFINITY;
+  assertTrue(MatchGameplay.isPassLaneClear(players,owner.x,owner.z,owner.x+3f,owner.z-4f,true,9,8));
+  Vector3 target=MatchGameplay.chooseAiCarryTarget(players,9,true);
+  assertTrue(Float.isFinite(target.x));
+  assertTrue(Float.isFinite(target.z));
+ }
 }
