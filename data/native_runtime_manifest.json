@@ -65,5 +65,13 @@
     "third_division_file": "cuba_players.json",
     "other_league_rosters": "catalogued_but_not_enabled_until_roster_and_engine_validation"
   },
-  "status": "native_shell_and_initial_3d_match_prototype_under_development"
+  "status": "native_shell_and_initial_3d_match_prototype_under_development",
+  "default_friendly_match": {
+    "home_team_id": "FN-ESP-REAL-MADRID",
+    "home_team_name": "Albor Madrid",
+    "away_team_id": "FN-ESP-BARCELONA",
+    "away_team_name": "Litoral Barcelona",
+    "source": "owner_confirmed_pre_match_configuration",
+    "requires_verified_playable_rosters": true
+  }
 }
