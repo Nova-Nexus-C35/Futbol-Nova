@@ -13,6 +13,12 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 
 ## P0 — Base estable
 
+- [ ] Resolver la integración de perfiles personalizados sin alterar IDs estables ni atribuirlos a clubes incorrectos.
+- [ ] Definir el contrato de atributos entre JSON, Java y C++ y comprobar especialmente las seis estadísticas de portero.
+- [ ] Conectar el catálogo de habilidades/técnicas a acciones de juego reales o mantenerlas claramente desactivadas hasta su integración.
+
+
+
 - [ ] Validación estricta de todos los catálogos canónicos.
 - [ ] Pruebas de selección de dos equipos distintos.
 - [ ] Pruebas de atributos y perfiles personalizados por ID estable.
