@@ -1,0 +1,44 @@
+# Unity gameplay improvement backlog
+
+## Match feel
+
+- [x] Make CPU attackers consider nearby pressure, open shooting space, and player passing/shooting skill.
+- [x] Keep defending players closer to a goal-side position while preserving their starting shape.
+- [x] Award free kicks or penalties after some failed tackles from behind.
+- [x] Let pressured CPU defenders clear danger from their own defensive third.
+- [x] Add acceleration to carried-ball movement so the ball responds less like it is attached to the player.
+- [x] Make difficult first touches more likely under pressure and at higher incoming ball speeds.
+- [x] Let consecutive defensive switches cycle to another nearby outfielder instead of immediately returning to the last player.
+- [x] Add hold-to-charge shooting with a visible mobile power readout and a small accuracy trade-off at full power.
+- [ ] Tune the new decisions and ball response through in-game play on desktop and Android.
+- [x] Improve off-ball support runs, attacking width, and coordinated pressing.
+- [x] Add a manual curved run command that targets open space and respects the offside line.
+- [x] Add a Pass & Follow option that sends the passer on a limited curved continuation after a successful pass.
+- [x] Improve goalkeeper positioning and shot-reaction decisions with goal-side alignment and predicted shot-plane interception.
+- [x] Add halftime team tactics: balanced, high press, and counter attack.
+- [x] Allow tactical presets to be changed from the pause menu and keyboard during live play.
+- [x] Add pause-menu and keyboard CPU difficulty presets that tune opponent speed and on-ball decisions.
+- [x] Add a held call-for-pressure control that sends one AI teammate to close down the opposing ball carrier.
+- [x] Add on-ball shielding with slower movement and stronger resistance to tackles while held.
+- [x] Add low-driven shots for close-range and one-on-one finishing.
+- [x] Add lofted passing with a quick-tap ground pass and a hold-to-lob mobile control.
+- [x] Add crosses aimed into attacking space from wide positions, including CPU delivery when a runner is in the box.
+- [x] Add timing- and skill-dependent aerial headers from crosses, with CPU attempts near goal.
+- [x] Add a user-controlled corner setup phase with attackers and defenders moving into the box before delivery.
+- [x] Add corner avoidance and shielding controls during the setup phase.
+- [x] Enforce basic offside positions on passes and restart play with an indirect free kick when an offside player touches the ball.
+- [x] Add contextual movement animation for turns and ball-carrying, with sprinting, passing, and shooting actions.
+
+## Mobile quality
+
+- [x] Add a match pause/resume overlay with mobile touch and desktop keyboard controls.
+- [ ] Profile the active Unity scene on a mid-range Android device.
+- [ ] Tune rendering and input responsiveness after the first on-device review.
+
+## Screen UI and Soccer 27 branding
+
+- [x] Add a separate Soccer 27 home screen with routes to match, career, tournaments, squad, kits, and the player market.
+- [x] Share responsive typography, safe-area panels, and button styles across career and match screens.
+- [x] Fix the career match preview team-name clipping and match HUD safe-area collisions.
+- [ ] Capture and review current Unity screens on phone and desktop builds.
+- [ ] Profile rendering and touch response on a mid-range Android device.

@@ -1,0 +1,2324 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using FC2026.Gameplay;
+using FC2026.World;
+
+namespace FC2026.Core
+{
+    public sealed class MatchManager3D : MonoBehaviour
+    {
+        private const float PitchWidth = 68f;
+        private const float PitchLength = 105f;
+        private const float GoalWidth = 7.32f;
+        private const float GoalHeight = 2.44f;
+
+        private readonly List<(Transform transform, Vector3 start)> playerStarts = new();
+        private readonly HashSet<FootballPlayerController> offsideCandidates = new();
+        private int offsideTeamDirection;
+        private int offsideExemptionDirection;
+
+        private const float HalfDurationSeconds = 90f;
+
+        private BallController ball;
+        private FootballPlayerController userPlayer;
+        private BroadcastCameraController broadcastCamera;
+        private int homeScore;
+        private int awayScore;
+        private bool resetting;
+        private bool paused;
+        private bool confirmRestart;
+        private bool confirmAbandon;
+        private bool live;
+        private bool halfTimePending;
+        private int half;
+        private float halfElapsed;
+        private float autoSwitchTimer;
+        private float homePossession;
+        private float awayPossession;
+        private int homeShots;
+        private int awayShots;
+        private int homeShotsOnTarget;
+        private int awayShotsOnTarget;
+        private int homeTacklesWon;
+        private int awayTacklesWon;
+        private GUIStyle scoreStyle;
+        private GUIStyle helpStyle;
+        private GUIStyle goalStyle;
+        private float goalBannerUntil;
+        private string goalBanner = string.Empty;
+        private GUIStyle buttonStyle;
+        private GUIStyle primaryButtonStyle;
+        private GUIStyle flowButtonStyle;
+        private GUIStyle panelStyle;
+        private GUIStyle labelSmallStyle;
+        private Texture2D joystickDisc;
+        private Texture2D modalBackdrop;
+        private float matchElapsed;
+        private float nextCommentaryAt = 8f;
+        private string commentary = "The referee gets us underway!";
+        private bool matchFinished;
+        private bool penaltyPending;
+        private FootballPlayerController penaltyTaker;
+        private bool cornerPrepActive;
+        private int cornerPrepDirection;
+        private Vector3 cornerPrepSpot;
+        private FootballPlayerController cornerTaker;
+        private float cornerShapeHoldUntil;
+        private bool resultSaved;
+        private GUIStyle commentaryStyle;
+        private GUIStyle fullTimeStyle;
+        private GUIStyle teamNameStyle;
+        private GUIStyle clockStyle;
+        private GUIStyle brandStyle;
+        private GUIStyle scoreboardStyle;
+        private GUIStyle pauseIconStyle;
+        private GUIStyle pauseCloseStyle;
+        private GUIStyle actionPrimaryStyle;
+        private GUIStyle actionSecondaryStyle;
+        private int styleScreenWidth = -1;
+        private int styleScreenHeight = -1;
+
+        private Vector3[] homeFormation;
+        private string formationId = "4-3-3";
+        private string homeTeamName = "HOME";
+        private string awayTeamName = "AWAY";
+        private WorldClub homeClub;
+        private WorldClub awayClub;
+        private CareerSaveData careerSave;
+        private CareerNextFixture nextFixture;
+        private bool cupTie;
+        private MatchTacticPreset selectedTactic = MatchTacticPreset.Balanced;
+        private MatchDifficultyPreset selectedDifficulty = MatchDifficultyPreset.Standard;
+        private bool cupShootoutPending;
+        private CareerShootout cupShootout;
+        private string matchLabel = "LEAGUE";
+
+        public static MatchManager3D Instance { get; private set; }
+        public static bool IsLive => Instance != null && Instance.live;
+        public bool Live => live;
+        public bool IsPenaltyTaker(FootballPlayerController controller) =>
+            penaltyPending && penaltyTaker == controller && ball != null && ball.IsOwnedBy(controller);
+
+        public static bool IsCornerPrep => Instance != null && Instance.cornerPrepActive;
+        public int CornerPrepDirection => cornerPrepDirection;
+        public Vector3 CornerPrepSpot => cornerPrepSpot;
+        public FootballPlayerController CornerPrepTaker => cornerTaker;
+        public bool CornerPlayersPositioning => cornerPrepActive ||
+            (cornerTaker != null && ball != null &&
+             (ball.IsOwnedBy(cornerTaker) ||
+              (Time.time < cornerShapeHoldUntil && ball.LastKicker == cornerTaker.transform)));
+
+
+        private void Awake()
+        {
+            Instance = this;
+            Application.targetFrameRate = 60;
+            QualitySettings.vSyncCount = 0;
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+            Screen.orientation = ScreenOrientation.AutoRotation;
+            Screen.autorotateToPortrait = false;
+            Screen.autorotateToPortraitUpsideDown = false;
+            Screen.autorotateToLandscapeLeft = true;
+            Screen.autorotateToLandscapeRight = true;
+
+            var career = CareerSaveSystem.Load();
+            careerSave = career;
+            formationId = career != null ? career.formationId : "4-3-3";
+            homeFormation = CareerFormationSystem.GetPositions(career != null ? career.formationId : null,
+                career != null ? career.tacticalStyle : null);
+            ResolveTeamNames(career);
+
+            BuildWorld();
+            CreateJoystickTexture();
+            StartCoroutine(StartMatch());
+        }
+
+        private void OnDestroy()
+        {
+            if (paused)
+                Time.timeScale = 1f;
+
+            // This joystick texture belongs only to the current match instance.
+            if (joystickDisc != null)
+                Destroy(joystickDisc);
+
+            if (Instance == this)
+                Instance = null;
+        }
+
+        private void OnApplicationPause(bool isPaused)
+        {
+            // Keep active matches paused after a phone call or app switch.
+            if (isPaused && live)
+                PauseMatch();
+        }
+
+        private void ResolveTeamNames(CareerSaveData career)
+        {
+            if (career == null)
+                return;
+
+            nextFixture = CareerLeagueSystem.GetNextFixture(career);
+            cupTie = nextFixture.Kind == CareerFixtureKind.Cup;
+            matchLabel = cupTie ? CareerCupSystem.ShortRoundName(nextFixture.Round) : "LEAGUE";
+
+            homeClub = WorldDatabase.GetClub(career.managedClubId);
+            awayClub = WorldDatabase.GetClub(nextFixture.OpponentClubId);
+            homeTeamName = homeClub != null ? homeClub.Name : "HOME";
+            awayTeamName = awayClub != null ? awayClub.Name : "AWAY";
+        }
+
+        private IEnumerator StartMatch()
+        {
+            yield return new WaitForSeconds(1.1f);
+            yield return StartCoroutine(BeginKickoff(1, 0.7f));
+        }
+
+        private void Update()
+        {
+            if (matchFinished)
+                return;
+
+            if (cornerPrepActive && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
+                ConfirmCornerPreparation();
+
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
+            {
+                if (paused)
+                    ResumeMatch();
+                else if (live)
+                    PauseMatch();
+            }
+
+            if (paused)
+                return;
+
+            if (!cornerPrepActive && float.IsPositiveInfinity(cornerShapeHoldUntil) &&
+                cornerTaker != null && ball != null && ball.LastKicker == cornerTaker.transform)
+                cornerShapeHoldUntil = Time.time + 4.2f;
+
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+                ApplyHomeTactic(MatchTacticPreset.Balanced);
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+                ApplyHomeTactic(MatchTacticPreset.HighPress);
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+                ApplyHomeTactic(MatchTacticPreset.CounterAttack);
+            else if (Input.GetKeyDown(KeyCode.Alpha4))
+                ApplyCpuDifficulty(MatchDifficultyPreset.Easy);
+            else if (Input.GetKeyDown(KeyCode.Alpha5))
+                ApplyCpuDifficulty(MatchDifficultyPreset.Standard);
+            else if (Input.GetKeyDown(KeyCode.Alpha6))
+                ApplyCpuDifficulty(MatchDifficultyPreset.Hard);
+
+            if (userPlayer == null || !userPlayer.IsUserControlled)
+                FindUserPlayer();
+
+            if (halfTimePending || !live)
+                return;
+
+            halfElapsed += Time.deltaTime;
+            matchElapsed += Time.deltaTime;
+            TrackPossession();
+
+            if (halfElapsed >= HalfDurationSeconds)
+            {
+                EndHalf();
+                return;
+            }
+
+            if (matchElapsed >= nextCommentaryAt)
+            {
+                UpdateCommentary();
+                nextCommentaryAt = matchElapsed + Random.Range(12f, 21f);
+            }
+
+            UpdateAutoSwitch();
+
+            if (ball == null)
+                return;
+
+            var position = ball.transform.position;
+            if (Mathf.Abs(position.x) > PitchWidth * 0.5f + 0.35f ||
+                Mathf.Abs(position.z) > PitchLength * 0.5f + 0.35f || position.y < -2f)
+            {
+                HandleOutOfPlay(position);
+            }
+        }
+
+        private void PauseMatch()
+        {
+            if (!live || paused)
+                return;
+
+            paused = true;
+            live = false;
+            Time.timeScale = 0f;
+        }
+
+        private void ResumeMatch()
+        {
+            if (!paused)
+                return;
+
+            paused = false;
+            live = true;
+            Time.timeScale = 1f;
+            confirmRestart = false;
+            confirmAbandon = false;
+        }
+
+        private void RestartMatch()
+        {
+            if (half > 0)
+                SwitchSides();
+
+            paused = false;
+            Time.timeScale = 1f;
+            live = false;
+            homeScore = 0;
+            awayScore = 0;
+            homePossession = 0f;
+            awayPossession = 0f;
+            homeShots = awayShots = 0;
+            homeShotsOnTarget = awayShotsOnTarget = 0;
+            homeTacklesWon = awayTacklesWon = 0;
+            half = 0;
+            halfElapsed = 0f;
+            matchElapsed = 0f;
+            nextCommentaryAt = 8f;
+            autoSwitchTimer = 0f;
+            matchFinished = false;
+            resultSaved = false;
+            halfTimePending = false;
+            cupShootoutPending = false;
+            resetting = false;
+            confirmRestart = false;
+            confirmAbandon = false;
+            goalBanner = string.Empty;
+            goalBannerUntil = 0f;
+            commentary = "The referee gets us underway!";
+            userPlayer?.ClearQueuedActions();
+            StartCoroutine(BeginKickoff(1, 0.45f));
+        }
+
+        private void AbandonMatch()
+        {
+            ResumeMatch();
+            CompleteCareerMatch(false);
+        }
+
+        private void FindUserPlayer()
+        {
+            foreach (var controller in FootballPlayerController.All)
+            {
+                if (controller == null || !controller.IsUserControlled)
+                    continue;
+                userPlayer = controller;
+                broadcastCamera?.SetControlledPlayer(userPlayer.transform);
+                return;
+            }
+        }
+
+        private void TrackPossession()
+        {
+            var owner = ball != null ? ball.Owner : null;
+            if (owner == null)
+                return;
+
+            if (owner.TeamId == 1) homePossession += Time.deltaTime;
+            else awayPossession += Time.deltaTime;
+        }
+
+        public void RecordShot(int teamId, bool onTarget)
+        {
+            if (teamId == 1)
+            {
+                homeShots++;
+                if (onTarget) homeShotsOnTarget++;
+            }
+            else
+            {
+                awayShots++;
+                if (onTarget) awayShotsOnTarget++;
+            }
+        }
+
+        public void RecordTackleWon(int teamId)
+        {
+            if (teamId == 1) homeTacklesWon++;
+            else awayTacklesWon++;
+        }
+
+        public void RegisterPassForOffside(FootballPlayerController passer)
+        {
+            offsideCandidates.Clear();
+            offsideTeamDirection = 0;
+            if (passer == null)
+                return;
+
+            if (offsideExemptionDirection == passer.TeamDirection)
+            {
+                offsideExemptionDirection = 0;
+                return;
+            }
+
+            var attackDirection = passer.TeamDirection;
+            var lastDefender = float.NegativeInfinity;
+            var secondLastDefender = float.NegativeInfinity;
+            foreach (var candidate in FootballPlayerController.All)
+            {
+                if (candidate == null || candidate.TeamDirection == attackDirection)
+                    continue;
+
+                var goalSidePosition = candidate.transform.position.z * attackDirection;
+                if (goalSidePosition > lastDefender)
+                {
+                    secondLastDefender = lastDefender;
+                    lastDefender = goalSidePosition;
+                }
+                else if (goalSidePosition > secondLastDefender)
+                {
+                    secondLastDefender = goalSidePosition;
+                }
+            }
+
+            if (secondLastDefender == float.NegativeInfinity)
+                return;
+
+            var ballPosition = ball != null ? ball.Position : passer.transform.position;
+            var offsideLine = Mathf.Max(ballPosition.z * attackDirection, secondLastDefender);
+            foreach (var candidate in FootballPlayerController.All)
+            {
+                if (candidate == null || candidate == passer || candidate.TeamDirection != attackDirection)
+                    continue;
+
+                var goalSidePosition = candidate.transform.position.z * attackDirection;
+                if (goalSidePosition > 0f && goalSidePosition > offsideLine)
+                    offsideCandidates.Add(candidate);
+            }
+
+            if (offsideCandidates.Count > 0)
+                offsideTeamDirection = attackDirection;
+        }
+
+        public bool CheckOffsideContact(FootballPlayerController player)
+        {
+            if (player == null || !live || resetting)
+                return false;
+
+            var isOffside = player.TeamDirection == offsideTeamDirection &&
+                            offsideCandidates.Contains(player);
+            offsideCandidates.Clear();
+            offsideTeamDirection = 0;
+            offsideExemptionDirection = 0;
+
+            if (!isOffside)
+                return false;
+
+            var spot = new Vector3(
+                Mathf.Clamp(player.transform.position.x, -PitchWidth * 0.5f + 1f, PitchWidth * 0.5f - 1f),
+                0.14f,
+                Mathf.Clamp(player.transform.position.z, -PitchLength * 0.5f + 1f, PitchLength * 0.5f - 1f));
+            commentary = "Offside. The defending team will restart play.";
+            StartCoroutine(RestartPlay(spot, -player.TeamDirection, false, 0.9f, "OFFSIDE"));
+            return true;
+        }
+
+        private void UpdateAutoSwitch()
+        {
+            if (userPlayer == null || ball == null)
+                return;
+
+            autoSwitchTimer = Mathf.Max(0f, autoSwitchTimer - Time.deltaTime);
+            if (autoSwitchTimer > 0f)
+                return;
+
+            var owner = ball.Owner;
+            if (owner == null || owner.TeamDirection == userPlayer.TeamDirection)
+                return;
+
+            var ballPosition = ball.Position;
+            var userDistance = FlatDistance(userPlayer.transform.position, ballPosition);
+            var best = FootballPlayerController.FindNearestTo(ballPosition, userPlayer.TeamDirection, true);
+            if (best == null || best == userPlayer)
+                return;
+
+            var bestDistance = FlatDistance(best.transform.position, ballPosition);
+            if (bestDistance > userDistance - 5f)
+                return;
+
+            var switched = userPlayer.SwitchToNearestTeammate();
+            if (switched != null && switched != userPlayer)
+            {
+                userPlayer = switched;
+                broadcastCamera?.SetControlledPlayer(switched.transform);
+                autoSwitchTimer = 0.9f;
+            }
+        }
+
+        private static float FlatDistance(Vector3 a, Vector3 b)
+        {
+            a.y = 0f;
+            b.y = 0f;
+            return Vector3.Distance(a, b);
+        }
+
+        private void EndHalf()
+        {
+            if (half == 0)
+            {
+                halfTimePending = true;
+                live = false;
+                commentary = "Half time. The players head in for the break.";
+                return;
+            }
+
+            FinishMatch();
+        }
+
+        private void ApplyHomeTactic(MatchTacticPreset preset)
+        {
+            selectedTactic = preset;
+            foreach (var player in FootballPlayerController.All)
+            {
+                if (player == null || player.TeamId != 1)
+                    continue;
+
+                var ai = player.GetComponent<SimpleFootballAI>();
+                if (ai != null)
+                    ai.SetTacticPreset(preset);
+            }
+        }
+
+        private void ApplyCpuDifficulty(MatchDifficultyPreset preset)
+        {
+            selectedDifficulty = preset;
+            foreach (var player in FootballPlayerController.All)
+            {
+                if (player == null || player.TeamId == 1)
+                    continue;
+
+                var ai = player.GetComponent<SimpleFootballAI>();
+                if (ai != null)
+                    ai.SetDifficultyPreset(preset);
+            }
+        }
+
+        public void BeginSecondHalf()
+        {
+            if (!halfTimePending)
+                return;
+
+            halfTimePending = false;
+            half = 1;
+            halfElapsed = 0f;
+            commentary = "The second half is under way.";
+            SwitchSides();
+            StartCoroutine(BeginKickoff(1, 1.05f));
+        }
+
+        private void FinishMatch()
+        {
+            matchFinished = true;
+            live = false;
+            halfTimePending = false;
+            commentary = "Full time! The referee brings the match to an end.";
+            goalBannerUntil = 0f;
+
+            if (!cupTie || homeScore != awayScore || careerSave == null)
+                return;
+
+            var tie = CareerCupSystem.GetUserTie(careerSave);
+            if (tie == null)
+                return;
+
+            cupShootout = CareerCupSystem.SimulateShootout(careerSave, tie, tie.Round);
+            cupShootoutPending = true;
+            commentary = cupShootout.UserWon
+                ? $"Penalties! {homeTeamName} win the shootout {cupShootout.UserScore}-{cupShootout.OpponentScore}."
+                : $"Penalties! {awayTeamName} win the shootout {cupShootout.OpponentScore}-{cupShootout.UserScore}.";
+        }
+
+        private void SwitchSides()
+        {
+            foreach (var controller in FootballPlayerController.All)
+            {
+                if (controller == null)
+                    continue;
+                controller.FlipSides();
+                var ai = controller.GetComponent<SimpleFootballAI>();
+                if (ai != null)
+                    ai.FlipSides();
+            }
+
+            for (var i = 0; i < playerStarts.Count; i++)
+            {
+                var entry = playerStarts[i];
+                playerStarts[i] = (entry.transform, new Vector3(-entry.start.x, entry.start.y, -entry.start.z));
+            }
+
+            userPlayer?.ClearQueuedActions();
+        }
+
+        private IEnumerator BeginKickoff(int kickoffTeamDirection, float delay)
+        {
+            offsideCandidates.Clear();
+            offsideTeamDirection = 0;
+            offsideExemptionDirection = 0;
+            live = false;
+            resetting = true;
+
+            if (ball != null)
+                ball.ResetBall(new Vector3(0f, 0.14f, 0f));
+
+            foreach (var entry in playerStarts)
+            {
+                if (entry.transform == null) continue;
+                var rigidbody = entry.transform.GetComponent<Rigidbody>();
+                if (rigidbody != null)
+                {
+                    rigidbody.linearVelocity = Vector3.zero;
+                    rigidbody.angularVelocity = Vector3.zero;
+                }
+                entry.transform.position = entry.start;
+            }
+
+            yield return new WaitForSeconds(delay);
+            resetting = false;
+
+            if (ball != null)
+            {
+                var taker = FootballPlayerController.FindNearestTo(new Vector3(0f, 0f, 0f), kickoffTeamDirection, true);
+                if (taker != null)
+                {
+                    taker.transform.position = new Vector3(0f, taker.transform.position.y, -kickoffTeamDirection * 0.9f);
+                    if (taker.Body != null)
+                    {
+                        taker.Body.linearVelocity = Vector3.zero;
+                        taker.Body.angularVelocity = Vector3.zero;
+                    }
+                    ball.ForcePossession(taker);
+                }
+            }
+
+            goalBanner = "KICK OFF";
+            goalBannerUntil = Time.time + 1.1f;
+            live = true;
+        }
+
+        private void HandleOutOfPlay(Vector3 position)
+        {
+            if (resetting)
+                return;
+
+            var lastDirection = LastTouchDirection();
+
+            if (Mathf.Abs(position.x) > PitchWidth * 0.5f + 0.3f)
+            {
+                var awarded = lastDirection == 0 ? 1 : -lastDirection;
+                var spot = new Vector3(
+                    Mathf.Sign(position.x) * (PitchWidth * 0.5f - 0.5f),
+                    0.14f,
+                    Mathf.Clamp(position.z, -48f, 48f));
+                StartCoroutine(RestartPlay(spot, awarded, false, 1.05f, "THROW-IN"));
+                return;
+            }
+
+            if (Mathf.Abs(position.z) > PitchLength * 0.5f + 0.3f)
+            {
+                var side = Mathf.Sign(position.z);
+                var defendingDirection = -side;
+                if (lastDirection == defendingDirection)
+                {
+                    var awarded = -defendingDirection;
+                    var cornerX = Mathf.Sign(position.x == 0f ? 1f : position.x) * (PitchWidth * 0.5f - 0.5f);
+                    var spot = new Vector3(cornerX, 0.14f, side * (PitchLength * 0.5f - 0.5f));
+                    StartCoroutine(RestartPlay(spot, awarded, false, 1.3f, "CORNER"));
+                }
+                else
+                {
+                    var spot = new Vector3(0f, 0.14f, side * (PitchLength * 0.5f - 5.5f));
+                    StartCoroutine(RestartPlay(spot, defendingDirection, true, 1.1f, "GOAL KICK"));
+                }
+                return;
+            }
+
+            if (position.y < -2f)
+                StartCoroutine(RestartPlay(new Vector3(0f, 0.14f, 0f), 1, false, 0.8f, "RESTART"));
+        }
+
+        public bool AwardFoul(int fouledTeamDirection, Vector3 foulPosition)
+        {
+            if (!live || resetting || matchFinished)
+                return false;
+
+            var awardedDirection = fouledTeamDirection >= 0 ? 1 : -1;
+            var spot = new Vector3(
+                Mathf.Clamp(foulPosition.x, -PitchWidth * 0.5f + 1f, PitchWidth * 0.5f - 1f),
+                0.14f,
+                Mathf.Clamp(foulPosition.z, -PitchLength * 0.5f + 1f, PitchLength * 0.5f - 1f));
+            var distanceFromOwnGoal = -spot.z * awardedDirection;
+            var inPenaltyArea = Mathf.Abs(spot.x) <= 20.16f && distanceFromOwnGoal >= 36f;
+            var label = inPenaltyArea ? "PENALTY" : "FREE KICK";
+
+            if (inPenaltyArea)
+                spot = new Vector3(0f, 0.14f, -awardedDirection * 41.5f);
+
+            StartCoroutine(RestartPlay(spot, awardedDirection, false, 1.15f, label));
+            return true;
+        }
+
+        private IEnumerator RestartPlay(Vector3 spot, int awardedDirection, bool useGoalkeeper, float delay, string label)
+        {
+            offsideCandidates.Clear();
+            offsideTeamDirection = 0;
+            offsideExemptionDirection = label == "THROW-IN" || label == "CORNER" || label == "GOAL KICK"
+                ? awardedDirection
+                : 0;
+            resetting = true;
+            live = false;
+            cornerPrepActive = false;
+            cornerTaker = null;
+            cornerShapeHoldUntil = 0f;
+            penaltyPending = label == "PENALTY";
+            penaltyTaker = null;
+
+            if (ball != null)
+                ball.ResetBall(spot);
+
+            yield return null;
+
+            var taker = useGoalkeeper
+                ? FindGoalkeeper(awardedDirection)
+                : FootballPlayerController.FindNearestTo(spot, awardedDirection, true);
+
+            if (taker != null && ball != null)
+            {
+                var standPosition = spot - new Vector3(0f, 0f, awardedDirection * 0.8f);
+                standPosition.y = taker.transform.position.y;
+                taker.transform.position = standPosition;
+                taker.transform.rotation = Quaternion.LookRotation(new Vector3(0f, 0f, awardedDirection), Vector3.up);
+                if (taker.Body != null)
+                {
+                    taker.Body.linearVelocity = Vector3.zero;
+                    taker.Body.angularVelocity = Vector3.zero;
+                }
+                ball.ForcePossession(taker);
+                if (label == "PENALTY")
+                {
+                    penaltyTaker = taker;
+                    var goalkeeper = FindGoalkeeper(-awardedDirection);
+                    if (goalkeeper != null)
+                    {
+                        goalkeeper.transform.position = new Vector3(
+                            0f, goalkeeper.transform.position.y, -awardedDirection * 51.4f);
+                        goalkeeper.transform.rotation = Quaternion.LookRotation(
+                            new Vector3(0f, 0f, awardedDirection), Vector3.up);
+                        if (goalkeeper.Body != null)
+                        {
+                            goalkeeper.Body.linearVelocity = Vector3.zero;
+                            goalkeeper.Body.angularVelocity = Vector3.zero;
+                        }
+                    }
+                }
+            }
+
+            goalBanner = label;
+            goalBannerUntil = Time.time + delay;
+            commentary = label switch
+            {
+                "CORNER" => "A corner kick is awarded. Bodies pile into the box.",
+                "GOAL KICK" => "The goalkeeper will restart play from the back.",
+                "FREE KICK" => "A free kick is awarded after a foul.",
+                "PENALTY" => "A penalty kick is awarded.",
+                "THROW-IN" => "A throw-in restarts the game down the touchline.",
+                "OFFSIDE" => "An offside offence is given. The other team takes an indirect free kick.",
+                _ => "Play restarts."
+            };
+
+            if (label == "CORNER" && taker != null && userPlayer != null && taker.TeamId == userPlayer.TeamId)
+            {
+                BeginCornerPreparation(spot, awardedDirection, taker);
+                yield return new WaitUntil(() => !cornerPrepActive || matchFinished);
+            }
+            else
+            {
+                yield return new WaitForSeconds(delay);
+            }
+
+            resetting = false;
+            if (!matchFinished)
+                live = true;
+        }
+
+        private void BeginCornerPreparation(Vector3 spot, int awardedDirection, FootballPlayerController taker)
+        {
+            cornerPrepActive = true;
+            cornerPrepDirection = awardedDirection;
+            cornerPrepSpot = spot;
+            cornerTaker = taker;
+            goalBanner = "CORNER SETUP";
+            goalBannerUntil = float.PositiveInfinity;
+            commentary = "Move into space before delivering the corner.";
+
+            var runnerTarget = new Vector3(0f, 0f, awardedDirection * 39f);
+            FootballPlayerController runner = null;
+            var bestDistance = float.MaxValue;
+            foreach (var candidate in FootballPlayerController.All)
+            {
+                if (candidate == null || candidate == taker || candidate.IsGoalkeeper ||
+                    candidate.TeamDirection != awardedDirection)
+                    continue;
+
+                var position = candidate.transform.position;
+                var distance = Vector2.Distance(
+                    new Vector2(position.x, position.z), new Vector2(runnerTarget.x, runnerTarget.z));
+                if (candidate.Role == PlayerRole.Forward)
+                    distance -= 3f;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    runner = candidate;
+                }
+            }
+
+            if (runner != null)
+                SetControlledPlayer(runner);
+        }
+
+        private void ConfirmCornerPreparation()
+        {
+            if (!cornerPrepActive)
+                return;
+
+            cornerPrepActive = false;
+            cornerShapeHoldUntil = float.PositiveInfinity;
+            if (cornerTaker != null)
+                SetControlledPlayer(cornerTaker);
+            goalBanner = "CORNER";
+            goalBannerUntil = Time.time + 1.15f;
+            commentary = "Corner set. Deliver into the box or play short.";
+        }
+
+        private void SetControlledPlayer(FootballPlayerController selected)
+        {
+            if (selected == null)
+                return;
+            if (userPlayer != null && userPlayer != selected)
+                userPlayer.SetUserControlled(false);
+
+            selected.SetUserControlled(true);
+            userPlayer = selected;
+            broadcastCamera?.SetControlledPlayer(selected.transform);
+        }
+
+        private int LastTouchDirection()
+        {
+            if (ball == null)
+                return 0;
+            if (ball.Owner != null)
+                return ball.Owner.TeamDirection;
+
+            var last = ball.LastKicker;
+            var controller = last != null ? last.GetComponent<FootballPlayerController>() : null;
+            return controller != null ? controller.TeamDirection : 0;
+        }
+
+        private static FootballPlayerController FindGoalkeeper(int teamDirection)
+        {
+            foreach (var controller in FootballPlayerController.All)
+            {
+                if (controller != null && controller.IsGoalkeeper && controller.TeamDirection == teamDirection)
+                    return controller;
+            }
+            return null;
+        }
+
+        private void BuildWorld()
+        {
+            CreateLighting();
+            CreatePitch();
+            CreateStadiumShell();
+            CreateGoals();
+            CreateBall();
+            CreateTeams();
+            CreateBroadcastCamera();
+        }
+
+        private void CreateLighting()
+        {
+            StadiumPresentation.ApplyAtmosphere();
+            RenderSettings.ambientLight = new Color(0.34f, 0.39f, 0.47f);
+
+            var sun = new GameObject("Stadium Floodlight Sun");
+            sun.transform.SetParent(transform);
+            var light = sun.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.15f;
+            light.color = new Color(1f, 0.95f, 0.88f);
+            light.shadows = LightShadows.Soft;
+            light.shadowStrength = 0.72f;
+            sun.transform.rotation = Quaternion.Euler(46f, -38f, 0f);
+            RenderSettings.sun = light;
+
+            for (var i = 0; i < 4; i++)
+            {
+                var flood = new GameObject($"Floodlight {i + 1}");
+                flood.transform.SetParent(transform);
+                var spot = flood.AddComponent<Light>();
+                spot.type = LightType.Spot;
+                spot.range = 125f;
+                spot.intensity = 340f;
+                spot.spotAngle = 76f;
+                spot.color = new Color(0.9f, 0.95f, 1f);
+                spot.shadows = LightShadows.None;
+                var x = i % 2 == 0 ? -39f : 39f;
+                var z = i < 2 ? -46f : 46f;
+                flood.transform.position = new Vector3(x, 24f, z);
+                flood.transform.LookAt(Vector3.zero);
+            }
+
+            var metal = StadiumPresentation.CreateMetalMaterial();
+            var glow = StadiumPresentation.CreateFloodlightMaterial();
+            StadiumPresentation.CreateFloodlightTowers(transform, metal, glow);
+        }
+
+        private void CreatePitch()
+        {
+            var grass = StadiumPresentation.CreateGrassMaterial();
+            var line = CreateMaterial(new Color(0.95f, 0.97f, 1f), 0.2f);
+
+            var pitch = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            pitch.name = "3D Pitch";
+            pitch.transform.SetParent(transform);
+            pitch.transform.localScale = new Vector3(PitchWidth / 10f, 1f, PitchLength / 10f);
+            pitch.GetComponent<Renderer>().material = grass;
+
+            CreateLine(new Vector3(0, 0.035f, -PitchLength / 2f), new Vector3(PitchWidth, 0.04f, 0.12f), line);
+            CreateLine(new Vector3(0, 0.035f, PitchLength / 2f), new Vector3(PitchWidth, 0.04f, 0.12f), line);
+            CreateLine(new Vector3(-PitchWidth / 2f, 0.035f, 0), new Vector3(0.12f, 0.04f, PitchLength), line);
+            CreateLine(new Vector3(PitchWidth / 2f, 0.035f, 0), new Vector3(0.12f, 0.04f, PitchLength), line);
+            CreateLine(new Vector3(0, 0.035f, 0), new Vector3(PitchWidth, 0.04f, 0.12f), line);
+
+            // Penalty boxes give the prototype a true regulation-scale visual reference.
+            CreatePenaltyBox(-1, line);
+            CreatePenaltyBox(1, line);
+            CreatePitchDetails(line);
+        }
+
+        private void CreatePenaltyBox(int side, Material line)
+        {
+            var goalZ = side * PitchLength / 2f;
+            var boxDepth = 16.5f;
+            var boxWidth = 40.32f;
+            var insideZ = goalZ - side * boxDepth;
+            CreateLine(new Vector3(0, 0.036f, insideZ), new Vector3(boxWidth, 0.04f, 0.1f), line);
+            CreateLine(new Vector3(-boxWidth / 2f, 0.036f, goalZ - side * boxDepth / 2f), new Vector3(0.1f, 0.04f, boxDepth), line);
+            CreateLine(new Vector3(boxWidth / 2f, 0.036f, goalZ - side * boxDepth / 2f), new Vector3(0.1f, 0.04f, boxDepth), line);
+        }
+
+        private void CreatePitchDetails(Material line)
+        {
+            var sixYardDepth = 5.5f;
+            var sixYardWidth = 18.32f;
+
+            for (var side = -1; side <= 1; side += 2)
+            {
+                var goalZ = side * PitchLength / 2f;
+                var insideZ = goalZ - side * sixYardDepth;
+
+                CreateLine(new Vector3(0f, 0.035f, insideZ), new Vector3(sixYardWidth, 0.04f, 0.1f), line);
+                CreateLine(new Vector3(-sixYardWidth / 2f, 0.035f, goalZ - side * sixYardDepth / 2f), new Vector3(0.1f, 0.04f, sixYardDepth), line);
+                CreateLine(new Vector3(sixYardWidth / 2f, 0.035f, goalZ - side * sixYardDepth / 2f), new Vector3(0.1f, 0.04f, sixYardDepth), line);
+
+                var penaltyZ = side * (PitchLength / 2f - 11f);
+                CreatePitchSpot("Penalty Spot", new Vector3(0f, 0.075f, penaltyZ), line);
+
+                if (side < 0)
+                    CreatePitchCurve("South Penalty Arc", new Vector3(0f, 0.078f, penaltyZ), 9.15f, 36.9f, 143.1f, 36, line);
+                else
+                    CreatePitchCurve("North Penalty Arc", new Vector3(0f, 0.078f, penaltyZ), 9.15f, 216.9f, 323.1f, 36, line);
+            }
+
+            CreatePitchCurve("Centre Circle", new Vector3(0f, 0.078f, 0f), 9.15f, 0f, 360f, 64, line);
+            CreatePitchSpot("Centre Spot", new Vector3(0f, 0.075f, 0f), line);
+
+            var cornerRadius = 1f;
+            CreatePitchCurve("South West Corner Arc", new Vector3(-PitchWidth / 2f, 0.078f, -PitchLength / 2f), cornerRadius, 0f, 90f, 12, line);
+            CreatePitchCurve("South East Corner Arc", new Vector3(PitchWidth / 2f, 0.078f, -PitchLength / 2f), cornerRadius, 90f, 180f, 12, line);
+            CreatePitchCurve("North East Corner Arc", new Vector3(PitchWidth / 2f, 0.078f, PitchLength / 2f), cornerRadius, 180f, 270f, 12, line);
+            CreatePitchCurve("North West Corner Arc", new Vector3(-PitchWidth / 2f, 0.078f, PitchLength / 2f), cornerRadius, 270f, 360f, 12, line);
+        }
+
+        private void CreatePitchSpot(string name, Vector3 position, Material material)
+        {
+            var spot = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            spot.name = name;
+            spot.transform.SetParent(transform);
+            spot.transform.position = position;
+            spot.transform.localScale = new Vector3(0.34f, 0.025f, 0.34f);
+            spot.GetComponent<Renderer>().material = material;
+            Destroy(spot.GetComponent<Collider>());
+        }
+
+        private void CreatePitchCurve(string name, Vector3 center, float radius, float startDegrees, float endDegrees, int segments, Material material)
+        {
+            var curve = new GameObject(name);
+            curve.transform.SetParent(transform);
+
+            var renderer = curve.AddComponent<LineRenderer>();
+            renderer.useWorldSpace = true;
+            renderer.loop = false;
+            renderer.positionCount = segments + 1;
+            renderer.startWidth = 0.11f;
+            renderer.endWidth = 0.11f;
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.numCapVertices = 2;
+            renderer.numCornerVertices = 2;
+
+            for (var i = 0; i <= segments; i++)
+            {
+                var angle = Mathf.Lerp(startDegrees, endDegrees, i / (float)segments) * Mathf.Deg2Rad;
+                renderer.SetPosition(i, new Vector3(
+                    center.x + Mathf.Cos(angle) * radius,
+                    center.y,
+                    center.z + Mathf.Sin(angle) * radius));
+            }
+        }
+
+        private void CreateGoalNet(int side, float goalZ, Material material)
+        {
+            const float depth = 2.5f;
+            const int acrossCount = 8;
+            const int depthCount = 4;
+            const int heightCount = 4;
+
+            var backZ = goalZ + side * depth;
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+
+            for (var i = 0; i <= acrossCount; i++)
+            {
+                var x = Mathf.Lerp(-GoalWidth / 2f, GoalWidth / 2f, i / (float)acrossCount);
+                AddNetSegment(vertices, triangles, new Vector3(x, 0.05f, backZ), new Vector3(x, GoalHeight, backZ));
+            }
+
+            for (var i = 0; i <= heightCount; i++)
+            {
+                var y = Mathf.Lerp(0.05f, GoalHeight, i / (float)heightCount);
+                AddNetSegment(vertices, triangles, new Vector3(-GoalWidth / 2f, y, backZ), new Vector3(GoalWidth / 2f, y, backZ));
+            }
+
+            for (var edge = -1; edge <= 1; edge += 2)
+            {
+                var x = edge * GoalWidth / 2f;
+                for (var i = 0; i <= depthCount; i++)
+                {
+                    var z = Mathf.Lerp(goalZ, backZ, i / (float)depthCount);
+                    AddNetSegment(vertices, triangles, new Vector3(x, 0.05f, z), new Vector3(x, GoalHeight, z));
+                }
+
+                for (var i = 0; i <= heightCount; i++)
+                {
+                    var y = Mathf.Lerp(0.05f, GoalHeight, i / (float)heightCount);
+                    AddNetSegment(vertices, triangles, new Vector3(x, y, goalZ), new Vector3(x, y, backZ));
+                }
+            }
+
+            for (var i = 0; i <= acrossCount; i++)
+            {
+                var x = Mathf.Lerp(-GoalWidth / 2f, GoalWidth / 2f, i / (float)acrossCount);
+                AddNetSegment(vertices, triangles, new Vector3(x, GoalHeight, goalZ), new Vector3(x, GoalHeight, backZ));
+            }
+
+            for (var i = 0; i <= depthCount; i++)
+            {
+                var z = Mathf.Lerp(goalZ, backZ, i / (float)depthCount);
+                AddNetSegment(vertices, triangles, new Vector3(-GoalWidth / 2f, GoalHeight, z), new Vector3(GoalWidth / 2f, GoalHeight, z));
+            }
+
+            var mesh = new Mesh { name = "Goal Net Mesh" };
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+
+            var net = new GameObject("Goal Net");
+            net.transform.SetParent(transform);
+            var filter = net.AddComponent<MeshFilter>();
+            var renderer = net.AddComponent<MeshRenderer>();
+            filter.sharedMesh = mesh;
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+        }
+
+        private static void AddNetSegment(List<Vector3> vertices, List<int> triangles, Vector3 start, Vector3 end)
+        {
+            var direction = (end - start).normalized;
+            var side = Vector3.Cross(direction, Vector3.up);
+            if (side.sqrMagnitude < 0.001f)
+                side = Vector3.Cross(direction, Vector3.forward);
+            side = side.normalized * 0.018f;
+
+            var first = vertices.Count;
+            vertices.Add(start - side);
+            vertices.Add(start + side);
+            vertices.Add(end + side);
+            vertices.Add(end - side);
+            triangles.Add(first);
+            triangles.Add(first + 1);
+            triangles.Add(first + 2);
+            triangles.Add(first);
+            triangles.Add(first + 2);
+            triangles.Add(first + 3);
+        }
+
+        private void CreateLine(Vector3 position, Vector3 scale, Material material)
+        {
+            var line = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            line.name = "Pitch Line";
+            line.transform.SetParent(transform);
+            line.transform.position = position;
+            line.transform.localScale = scale;
+            line.GetComponent<Renderer>().material = material;
+            Destroy(line.GetComponent<Collider>());
+        }
+
+        private void CreateStadiumShell()
+        {
+            var concrete = CreateMaterial(new Color(0.055f, 0.075f, 0.11f), 0.55f);
+            var crowdBlue = StadiumPresentation.CreateCrowdMaterial(new Color(0.12f, 0.3f, 0.6f), new Color(0.92f, 0.92f, 0.95f));
+            var crowdGold = StadiumPresentation.CreateCrowdMaterial(new Color(0.75f, 0.45f, 0.06f), new Color(0.92f, 0.9f, 0.82f));
+
+            CreateStand("West Stand", new Vector3(-47f, 6f, 0), new Vector3(20f, 12f, 118f), concrete, crowdBlue);
+            CreateStand("East Stand", new Vector3(47f, 6f, 0), new Vector3(20f, 12f, 118f), concrete, crowdGold);
+            CreateStand("North Stand", new Vector3(0, 6f, 66f), new Vector3(76f, 12f, 20f), concrete, crowdBlue);
+            CreateStand("South Stand", new Vector3(0, 6f, -66f), new Vector3(76f, 12f, 20f), concrete, crowdGold);
+
+            var canopy = CreateMaterial(new Color(0.025f, 0.04f, 0.065f), 0.62f);
+            CreateStadiumBlock("West Canopy", new Vector3(-47f, 17.6f, 0f), new Vector3(21f, 0.8f, 120f), canopy);
+            CreateStadiumBlock("East Canopy", new Vector3(47f, 17.6f, 0f), new Vector3(21f, 0.8f, 120f), canopy);
+            CreateStadiumBlock("North Canopy", new Vector3(0f, 17.6f, 66f), new Vector3(78f, 0.8f, 21f), canopy);
+            CreateStadiumBlock("South Canopy", new Vector3(0f, 17.6f, -66f), new Vector3(78f, 0.8f, 21f), canopy);
+
+            var fascia = StadiumPresentation.CreateAdBoardMaterial(new Color(0.12f, 0.68f, 0.9f));
+            CreateStadiumBlock("West LED Fascia", new Vector3(-36.7f, 1.15f, 0f), new Vector3(0.35f, 0.7f, 104f), fascia);
+            CreateStadiumBlock("East LED Fascia", new Vector3(36.7f, 1.15f, 0f), new Vector3(0.35f, 0.7f, 104f), fascia);
+            CreateStadiumBlock("North LED Fascia", new Vector3(0f, 1.15f, 52.2f), new Vector3(66f, 0.7f, 0.35f), fascia);
+            CreateStadiumBlock("South LED Fascia", new Vector3(0f, 1.15f, -52.2f), new Vector3(66f, 0.7f, 0.35f), fascia);
+        }
+
+        private void CreateStadiumBlock(string name, Vector3 position, Vector3 scale, Material material)
+        {
+            var block = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            block.name = name;
+            block.transform.SetParent(transform);
+            block.transform.position = position;
+            block.transform.localScale = scale;
+            block.GetComponent<Renderer>().material = material;
+            Destroy(block.GetComponent<Collider>());
+        }
+
+        private void CreateStand(string name, Vector3 position, Vector3 scale, Material baseMaterial, Material crowdMaterial)
+        {
+            var stand = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            stand.name = name;
+            stand.transform.SetParent(transform);
+            stand.transform.position = position;
+            stand.transform.localScale = scale;
+            stand.GetComponent<Renderer>().material = baseMaterial;
+
+            var horizontal = scale.x > scale.z;
+            var inward = horizontal
+                ? new Vector3(0f, 0f, -Mathf.Sign(position.z))
+                : new Vector3(-Mathf.Sign(position.x), 0f, 0f);
+            var halfDepth = (horizontal ? scale.z : scale.x) * 0.5f;
+            var tierDepth = halfDepth * 0.3f;
+
+            for (var tier = 0; tier < 3; tier++)
+            {
+                var tierPosition = position
+                                   + inward * (halfDepth - tier * tierDepth - tierDepth * 0.5f)
+                                   + Vector3.up * (-4.6f + tier * 3.4f);
+                var tierScale = horizontal
+                    ? new Vector3(scale.x * 0.94f, 1.1f, tierDepth)
+                    : new Vector3(tierDepth, 1.1f, scale.z * 0.94f);
+                CreateStadiumBlock($"{name} Tier {tier + 1}", tierPosition, tierScale, crowdMaterial);
+            }
+
+            var crowd = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            crowd.name = name + " Crowd";
+            crowd.transform.SetParent(transform);
+            crowd.transform.position = position + Vector3.up * 6.4f;
+            crowd.transform.localScale = new Vector3(scale.x * 0.92f, 1.3f, scale.z * 0.92f);
+            crowd.GetComponent<Renderer>().material = crowdMaterial;
+            Destroy(crowd.GetComponent<Collider>());
+        }
+
+        private void CreateGoals()
+        {
+            var white = CreateMaterial(Color.white, 0.1f);
+            CreateGoal(-1, white, true);
+            CreateGoal(1, white, false);
+        }
+
+        private void CreateGoal(int side, Material material, bool homeGoal)
+        {
+            var z = side * (PitchLength / 2f + 0.25f);
+            var left = -GoalWidth / 2f;
+            var right = GoalWidth / 2f;
+
+            CreatePost(new Vector3(left, GoalHeight / 2f, z), new Vector3(0.12f, GoalHeight, 0.12f), material);
+            CreatePost(new Vector3(right, GoalHeight / 2f, z), new Vector3(0.12f, GoalHeight, 0.12f), material);
+            CreatePost(new Vector3(0, GoalHeight, z), new Vector3(GoalWidth, 0.12f, 0.12f), material);
+
+            var trigger = new GameObject(homeGoal ? "Home Goal Trigger" : "Away Goal Trigger");
+            trigger.transform.SetParent(transform);
+            trigger.transform.position = new Vector3(0f, GoalHeight * 0.5f, z + side * 1.15f);
+            var collider = trigger.AddComponent<BoxCollider>();
+            collider.isTrigger = true;
+            collider.size = new Vector3(GoalWidth - 0.15f, GoalHeight, 2.2f);
+            var goalTrigger = trigger.AddComponent<GoalTrigger>();
+            goalTrigger.HomeGoal = homeGoal;
+            goalTrigger.Match = this;
+            CreateGoalNet(side, z, material);
+        }
+
+        private void CreatePost(Vector3 position, Vector3 scale, Material material)
+        {
+            var post = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            post.name = "Goal Post";
+            post.transform.SetParent(transform);
+            post.transform.position = position;
+            post.transform.localScale = scale;
+            post.GetComponent<Renderer>().material = material;
+        }
+
+        private void CreateBall()
+        {
+            var ballObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            ballObject.name = "FC2026 Match Ball";
+            ballObject.transform.SetParent(transform);
+            ballObject.transform.position = new Vector3(0f, 0.14f, 0f);
+            ballObject.transform.localScale = Vector3.one * 0.22f;
+            ballObject.GetComponent<Renderer>().material = StadiumPresentation.CreateBallMaterial();
+            ballObject.AddComponent<Rigidbody>();
+            ball = ballObject.AddComponent<BallController>();
+        }
+
+        private void CreateTeams()
+        {
+            var homePrimary = homeClub != null ? ToColor(homeClub.PrimaryColor) : new Color(0.96f, 0.96f, 0.99f);
+            var homeSecondary = homeClub != null ? ToColor(homeClub.SecondaryColor) : new Color(0.08f, 0.1f, 0.18f);
+            var awayPrimary = awayClub != null ? ToColor(awayClub.PrimaryColor) : new Color(0.07f, 0.28f, 0.72f);
+            var awaySecondary = awayClub != null ? ToColor(awayClub.SecondaryColor) : new Color(0.03f, 0.08f, 0.2f);
+            if (homeClub != null && careerSave != null && homeClub.Id == careerSave.managedClubId)
+            {
+                var activeKitSlot = CareerKitSystem.GetActiveMatchSlot(homeClub.Id);
+                homePrimary = CareerKitSystem.GetPrimary(homeClub.Id, activeKitSlot, homePrimary);
+                homeSecondary = CareerKitSystem.GetSecondary(homeClub.Id, activeKitSlot, homeSecondary);
+            }
+            if (homeClub != null && awayClub != null && ColorDistance(awayPrimary, homePrimary) < 0.4f)
+            {
+                awayPrimary = ColorDistance(awaySecondary, homePrimary) >= 0.4f
+                    ? ToColor(awayClub.SecondaryColor)
+                    : homePrimary.grayscale > 0.5f
+                        ? new Color(0.07f, 0.12f, 0.26f)
+                        : new Color(0.96f, 0.96f, 0.99f);
+            }
+
+            var homeShirt = CreateMaterial(homePrimary, 0.3f);
+            var awayShirt = CreateMaterial(awayPrimary, 0.32f);
+            var homeKeeperColor = homeClub != null ? ToColor(homeClub.GoalkeeperColor) : new Color(0.95f, 0.65f, 0.08f);
+            if (homeClub != null && careerSave != null && homeClub.Id == careerSave.managedClubId)
+                homeKeeperColor = CareerKitSystem.GetPrimary(homeClub.Id, 3, homeKeeperColor);
+            var homeKeeper = CreateMaterial(homeKeeperColor, 0.3f);
+            var awayKeeper = CreateMaterial(awayClub != null ? ToColor(awayClub.GoalkeeperColor) : new Color(0.88f, 0.17f, 0.22f), 0.3f);
+            var homeShorts = CreateMaterial(homeSecondary, 0.35f);
+            var awayShorts = CreateMaterial(awaySecondary, 0.35f);
+
+            var homeLineup = BuildLineup(
+                CareerTransferSystem.GetSquad(careerSave, homeClub != null ? homeClub.Id : string.Empty));
+            var awayLineup = BuildLineup(
+                CareerTransferSystem.GetSquad(careerSave, awayClub != null ? awayClub.Id : string.Empty));
+
+            for (var i = 0; i < homeFormation.Length; i++)
+            {
+                var player = homeLineup[i];
+                var role = RoleForIndex(i, formationId);
+                var isUser = i == 9;
+                var playerName = player != null ? player.Name : $"Home Player {i + 1}";
+                var profile = BuildMatchProfile(player, i, playerName);
+                var created = CreatePlayer(
+                    playerName,
+                    homeFormation[i],
+                    role == PlayerRole.Goalkeeper ? homeKeeper : homeShirt,
+                    homeShorts,
+                    isUser,
+                    1,
+                    role,
+                    profile);
+                if (isUser)
+                    userPlayer = created.GetComponent<FootballPlayerController>();
+            }
+
+            for (var i = 0; i < homeFormation.Length; i++)
+            {
+                var player = awayLineup[i];
+                var mirrored = new Vector3(-homeFormation[i].x, 0f, -homeFormation[i].z);
+                var role = RoleForIndex(i, formationId);
+                var playerName = player != null ? player.Name : $"Away Player {i + 1}";
+                var profile = BuildMatchProfile(player, i + 11, playerName);
+                CreatePlayer(
+                    playerName,
+                    mirrored,
+                    role == PlayerRole.Goalkeeper ? awayKeeper : awayShirt,
+                    awayShorts,
+                    false,
+                    -1,
+                    role,
+                    profile);
+            }
+        }
+
+        private static PlayerMatchProfile BuildMatchProfile(WorldPlayer player, int index, string playerName)
+        {
+            // Keep career ratings and generated appearance data together in one named profile.
+            return new PlayerMatchProfile(
+                heightScale: HeightScaleFor(player, index),
+                widthScale: WidthScaleFor(player, index),
+                shooting: ShootingFor(player),
+                passing: PassingFor(player),
+                defending: DefendingFor(player),
+                pace: SpeedFor(player),
+                physical: PhysicalFor(player),
+                skinTone: player != null ? player.SkinTone : WorldHash.Index(playerName, 3),
+                hairColor: player != null ? player.HairColor : WorldHash.Index(playerName, 4),
+                faceVariant: player != null ? player.FaceVariant : -1,
+                leftFooted: player != null && player.LeftFooted);
+        }
+
+        private WorldPlayer[] BuildLineup(WorldPlayer[] squad)
+        {
+            var lineup = new WorldPlayer[homeFormation.Length];
+            if (squad == null || squad.Length == 0)
+                return lineup;
+
+            var keepers = squad.Where(item => item != null && item.Position == PlayerPosition.Goalkeeper)
+                .OrderByDescending(item => item.Overall).ToArray();
+            var defenders = squad.Where(item => item != null && item.Position == PlayerPosition.Defender)
+                .OrderByDescending(item => item.Overall).ToArray();
+            var midfielders = squad.Where(item => item != null && item.Position == PlayerPosition.Midfielder)
+                .OrderByDescending(item => item.Overall).ToArray();
+            var forwards = squad.Where(item => item != null && item.Position == PlayerPosition.Forward)
+                .OrderByDescending(item => item.Overall).ToArray();
+
+            var keeperIndex = 0;
+            var defenderIndex = 0;
+            var midfielderIndex = 0;
+            var forwardIndex = 0;
+            for (var i = 0; i < lineup.Length; i++)
+            {
+                var role = RoleForIndex(i, formationId);
+                lineup[i] = role switch
+                {
+                    PlayerRole.Goalkeeper => NextPlayer(keepers, ref keeperIndex),
+                    PlayerRole.Defender => NextPlayer(defenders, ref defenderIndex),
+                    PlayerRole.Midfielder => NextPlayer(midfielders, ref midfielderIndex),
+                    _ => NextPlayer(forwards, ref forwardIndex)
+                };
+            }
+            return lineup;
+        }
+
+        private static WorldPlayer NextPlayer(WorldPlayer[] players, ref int index)
+        {
+            if (players.Length == 0)
+                return null;
+            var player = players[Mathf.Min(index, players.Length - 1)];
+            index++;
+            return player;
+        }
+
+        private static PlayerRole RoleForIndex(int index, string formation)
+        {
+            if (index == 0)
+                return PlayerRole.Goalkeeper;
+
+            return formation switch
+            {
+                "4-2-3-1" => index <= 4 ? PlayerRole.Defender : index <= 9 ? PlayerRole.Midfielder : PlayerRole.Forward,
+                "4-4-2" => index <= 4 ? PlayerRole.Defender : index <= 8 ? PlayerRole.Midfielder : PlayerRole.Forward,
+                "3-5-2" => index <= 3 ? PlayerRole.Defender : index <= 8 ? PlayerRole.Midfielder : PlayerRole.Forward,
+                _ => index <= 4 ? PlayerRole.Defender : index <= 7 ? PlayerRole.Midfielder : PlayerRole.Forward
+            };
+        }
+
+        private static float Attribute01(int value)
+        {
+            return Mathf.Clamp01((value - 40f) / 54f);
+        }
+
+        private static float ShootingFor(WorldPlayer player)
+        {
+            return player == null ? 0.6f : Mathf.Lerp(0.32f, 0.95f, Attribute01(player.Shooting));
+        }
+
+        private static float PassingFor(WorldPlayer player)
+        {
+            return player == null ? 0.6f : Mathf.Lerp(0.32f, 0.95f, Attribute01(player.Passing));
+        }
+
+        private static float DefendingFor(WorldPlayer player)
+        {
+            return player == null ? 0.6f : Mathf.Lerp(0.32f, 0.95f, Attribute01(player.Defending));
+        }
+
+        private static float PhysicalFor(WorldPlayer player)
+        {
+            return player == null ? 0.5f : Mathf.Lerp(0.32f, 0.95f, Attribute01(player.Physical));
+        }
+
+        private static float SpeedFor(WorldPlayer player)
+        {
+            return player == null ? 0.96f : 0.88f + Attribute01(player.Pace) * 0.26f;
+        }
+
+        private static float HeightScaleFor(WorldPlayer player, int index)
+        {
+            if (player != null)
+                return Mathf.Clamp(player.HeightCm / 182f, 0.88f, 1.18f);
+            return 0.95f + ((index * 7) % 11) * 0.012f;
+        }
+
+        private static float WidthScaleFor(WorldPlayer player, int index)
+        {
+            if (player != null)
+                return Mathf.Clamp(0.9f + Attribute01(player.Physical) * 0.24f, 0.82f, 1.18f);
+            return index is 2 or 3 or 9 ? 1.07f : 0.96f;
+        }
+
+        private static Color ToColor(WorldColor color)
+        {
+            return new Color(color.R, color.G, color.B);
+        }
+
+        private static float ColorDistance(Color left, Color right)
+        {
+            var red = left.r - right.r;
+            var green = left.g - right.g;
+            var blue = left.b - right.b;
+            return Mathf.Sqrt(red * red + green * green + blue * blue);
+        }
+
+        private static Color SkinColorFor(int skinTone)
+        {
+            switch (Mathf.Clamp(skinTone, 0, 4))
+            {
+                case 0:
+                    return new Color(0.86f, 0.68f, 0.55f);
+                case 1:
+                    return new Color(0.76f, 0.56f, 0.42f);
+                case 2:
+                    return new Color(0.64f, 0.44f, 0.31f);
+                case 3:
+                    return new Color(0.45f, 0.29f, 0.20f);
+                default:
+                    return new Color(0.32f, 0.20f, 0.14f);
+            }
+        }
+
+        private static Color HairColorFor(int hairColor)
+        {
+            switch (Mathf.Clamp(hairColor, 0, 3))
+            {
+                case 0:
+                    return new Color(0.035f, 0.025f, 0.02f);
+                case 1:
+                    return new Color(0.13f, 0.08f, 0.05f);
+                case 2:
+                    return new Color(0.26f, 0.16f, 0.08f);
+                default:
+                    return new Color(0.62f, 0.48f, 0.24f);
+            }
+        }
+
+        private GameObject CreatePlayer(string name, Vector3 start, Material shirt, Material shorts,
+            bool user, int attackDirection, PlayerRole role, PlayerMatchProfile profile)
+        {
+            var player = new GameObject(name);
+            player.transform.SetParent(transform);
+            player.transform.position = start;
+
+            var rigidbody = player.AddComponent<Rigidbody>();
+            rigidbody.mass = 78f;
+            rigidbody.linearDamping = 4.2f;
+            rigidbody.angularDamping = 8f;
+            rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+            rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+
+            var capsule = player.AddComponent<CapsuleCollider>();
+            capsule.height = 1.82f * profile.HeightScale;
+            capsule.radius = 0.31f * profile.WidthScale;
+            capsule.center = new Vector3(0, capsule.height / 2f, 0);
+
+            var torso = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            torso.name = "3D Body";
+            torso.transform.SetParent(player.transform);
+            torso.transform.localPosition = new Vector3(0, 0.9f * profile.HeightScale, 0);
+            torso.transform.localScale = new Vector3(0.62f * profile.WidthScale, 0.9f * profile.HeightScale, 0.5f * profile.WidthScale);
+            torso.GetComponent<Renderer>().material = shirt;
+            Destroy(torso.GetComponent<Collider>());
+
+            var lower = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            lower.name = "Shorts";
+            lower.transform.SetParent(player.transform);
+            lower.transform.localPosition = new Vector3(0, 0.78f * profile.HeightScale, 0);
+            lower.transform.localScale = new Vector3(0.62f * profile.WidthScale, 0.34f, 0.46f * profile.WidthScale);
+            lower.GetComponent<Renderer>().material = shorts;
+            Destroy(lower.GetComponent<Collider>());
+
+            var resolvedSkinTone = profile.SkinTone;
+            var resolvedHairColor = profile.HairColor;
+            var skin = CreateMaterial(SkinColorFor(resolvedSkinTone), 0.38f);
+            var head = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            head.name = "Head";
+            head.transform.SetParent(player.transform);
+            head.transform.localPosition = new Vector3(0, 1.95f * profile.HeightScale, 0.04f);
+            head.transform.localScale = Vector3.one * 0.42f;
+            head.GetComponent<Renderer>().material = skin;
+            Destroy(head.GetComponent<Collider>());
+
+            var hair = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            hair.name = "Hair";
+            hair.transform.SetParent(head.transform);
+            hair.transform.localPosition = new Vector3(0, 0.34f, -0.02f);
+            hair.transform.localScale = new Vector3(1.02f, 0.45f, 1.02f);
+            hair.GetComponent<Renderer>().material = CreateMaterial(HairColorFor(resolvedHairColor), 0.52f);
+            Destroy(hair.GetComponent<Collider>());
+
+            var controller = player.AddComponent<FootballPlayerController>();
+            controller.Configure(role, start, attackDirection, profile);
+            controller.SetUserControlled(user);
+
+            var ai = player.AddComponent<SimpleFootballAI>();
+            ai.Configure(start, attackDirection, role, role == PlayerRole.Goalkeeper ? 0.9f : profile.Pace);
+            ai.SetDifficultyPreset(player.TeamId == 1
+                ? MatchDifficultyPreset.Standard
+                : selectedDifficulty);
+            ai.enabled = !user;
+
+            playerStarts.Add((player.transform, start));
+            return player;
+        }
+
+        private void CreateBroadcastCamera()
+        {
+            var previousHubCamera = transform.Find("Career Hub Camera");
+            if (previousHubCamera != null)
+                previousHubCamera.gameObject.SetActive(false);
+
+            var cameraObject = new GameObject("Broadcast Camera");
+            cameraObject.transform.SetParent(transform);
+            cameraObject.transform.position = new Vector3(0f, 27f, -31f);
+            var camera = cameraObject.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.Skybox;
+            camera.allowHDR = true;
+            camera.depth = 1f;
+            cameraObject.AddComponent<AudioListener>();
+            broadcastCamera = cameraObject.AddComponent<BroadcastCameraController>();
+            broadcastCamera.Configure(ball.transform, userPlayer != null ? userPlayer.transform : null);
+        }
+
+        private Material CreateMaterial(Color color, float smoothness)
+        {
+            var shader = Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Sprites/Default");
+            var material = new Material(shader) { color = color };
+            if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", smoothness);
+            return material;
+        }
+
+        public void RegisterGoal(bool homeGoal)
+        {
+            if (resetting || matchFinished || !live)
+                return;
+
+            offsideCandidates.Clear();
+            offsideTeamDirection = 0;
+            offsideExemptionDirection = 0;
+            var goalSide = homeGoal ? -1 : 1;
+            var scoringTeamId = 1;
+            foreach (var controller in FootballPlayerController.All)
+            {
+                if (controller != null && controller.TeamDirection == goalSide)
+                {
+                    scoringTeamId = controller.TeamId;
+                    break;
+                }
+            }
+
+            if (scoringTeamId == 1) homeScore++;
+            else awayScore++;
+
+            var scoringName = scoringTeamId == 1 ? homeTeamName : awayTeamName;
+            goalBanner = $"GOAL — {scoringName.ToUpperInvariant()}";
+            commentary = $"GOAL for {scoringName}! The crowd erupts!";
+            nextCommentaryAt = matchElapsed + 14f;
+            goalBannerUntil = Time.time + 2.4f;
+            StartCoroutine(ResetAfterGoal(homeGoal));
+        }
+
+        private IEnumerator ResetAfterGoal(bool homeGoal)
+        {
+            resetting = true;
+            live = false;
+            if (ball != null)
+            {
+                ball.Body.linearVelocity = Vector3.zero;
+                ball.Body.angularVelocity = Vector3.zero;
+            }
+
+            yield return new WaitForSeconds(1.5f);
+            yield return StartCoroutine(BeginKickoff(homeGoal ? 1 : -1, 0.9f));
+            resetting = false;
+        }
+
+        private void OnGUI()
+        {
+            if (styleScreenWidth != Screen.width || styleScreenHeight != Screen.height)
+            {
+                styleScreenWidth = Screen.width;
+                styleScreenHeight = Screen.height;
+                scoreStyle = helpStyle = goalStyle = null;
+                buttonStyle = primaryButtonStyle = flowButtonStyle = panelStyle = null;
+                labelSmallStyle = commentaryStyle = fullTimeStyle = null;
+                teamNameStyle = clockStyle = brandStyle = scoreboardStyle = null;
+                pauseIconStyle = pauseCloseStyle = actionPrimaryStyle = actionSecondaryStyle = null;
+            }
+
+            scoreStyle ??= HubTheme.Label(
+                HubTheme.ResponsiveFontSize(30f, 18, 34), HubTheme.TextColor, TextAnchor.MiddleCenter, true);
+            helpStyle ??= HubTheme.Label(
+                HubTheme.ResponsiveFontSize(52f, 13, 24), HubTheme.SecondaryTextColor, TextAnchor.UpperLeft, true, true);
+            goalStyle ??= HubTheme.Label(
+                HubTheme.ResponsiveFontSize(12f, 38, 82), HubTheme.GoldTextColor, TextAnchor.MiddleCenter, true);
+
+            var hudButtonFontSize = Mathf.Clamp(
+                Mathf.RoundToInt(Mathf.Clamp(Screen.height * 0.105f, 62f, 88f) / 6f), 10, 16);
+            buttonStyle ??= HubTheme.SecondaryButton(hudButtonFontSize);
+            primaryButtonStyle ??= HubTheme.PrimaryButton(hudButtonFontSize);
+            flowButtonStyle ??= HubTheme.PrimaryButton(HubTheme.ResponsiveFontSize(36f, 14, 22));
+            panelStyle ??= HubTheme.Panel();
+            labelSmallStyle ??= HubTheme.Label(
+                HubTheme.ResponsiveFontSize(65f, 11, 18), HubTheme.SecondaryTextColor, TextAnchor.MiddleCenter, true);
+            labelSmallStyle.clipping = TextClipping.Ellipsis;
+            teamNameStyle ??= HubTheme.Label(
+                HubTheme.ResponsiveFontSize(56f, 11, 17), HubTheme.TextColor, TextAnchor.MiddleCenter, true);
+            teamNameStyle.clipping = TextClipping.Clip;
+            clockStyle ??= HubTheme.Label(
+                HubTheme.ResponsiveFontSize(62f, 10, 16), HubTheme.SecondaryTextColor, TextAnchor.MiddleCenter, true);
+            clockStyle.clipping = TextClipping.Ellipsis;
+            brandStyle ??= HubTheme.Label(
+                HubTheme.ResponsiveFontSize(64f, 10, 16), HubTheme.AccentTextColor, TextAnchor.MiddleCenter, true);
+            scoreboardStyle ??= HubTheme.Card();
+            pauseIconStyle ??= HubTheme.CircleButton(HubTheme.ResponsiveFontSize(46f, 13, 20));
+            pauseCloseStyle ??= HubTheme.CircleButton(HubTheme.ResponsiveFontSize(52f, 12, 18));
+
+            var safeArea = Screen.safeArea;
+            var safeTop = Screen.height - safeArea.yMax;
+            var boardWidth = Mathf.Min(Mathf.Clamp(safeArea.width * 0.62f, 320f, 720f),
+                Mathf.Max(0f, safeArea.width - 24f));
+            var boardHeight = Mathf.Clamp(safeArea.height * 0.115f, 78f, 102f);
+            var boardRect = new Rect(
+                safeArea.xMin + (safeArea.width - boardWidth) * 0.5f, safeTop + 8f, boardWidth, boardHeight);
+            GUI.Box(boardRect, GUIContent.none, scoreboardStyle);
+
+            var boardPad = Mathf.Clamp(boardWidth * 0.02f, 8f, 14f);
+            var crestSize = Mathf.Clamp(boardHeight * 0.34f, 22f, 34f);
+            var crestY = boardRect.y + boardPad;
+            var crestFont = HubTheme.ResponsiveFontSize(78f, 7, 12);
+            HubTheme.Crest(new Rect(boardRect.x + boardPad, crestY, crestSize, crestSize),
+                ClubPrimary32(homeClub), ClubSecondary32(homeClub),
+                CrestInitials(homeClub, homeTeamName), crestFont);
+            var awayCrestX = boardRect.xMax - boardPad - crestSize;
+            HubTheme.Crest(new Rect(awayCrestX, crestY, crestSize, crestSize),
+                ClubPrimary32(awayClub), ClubSecondary32(awayClub),
+                CrestInitials(awayClub, awayTeamName), crestFont);
+
+            var nameWidth = Mathf.Clamp(boardWidth * 0.27f, 60f, 168f);
+            GUI.Label(new Rect(boardRect.x + boardPad + crestSize + 6f, crestY, nameWidth, crestSize),
+                homeTeamName.ToUpperInvariant(), teamNameStyle);
+            GUI.Label(new Rect(awayCrestX - 6f - nameWidth, crestY, nameWidth, crestSize),
+                awayTeamName.ToUpperInvariant(), teamNameStyle);
+            GUI.Label(new Rect(boardRect.x + boardWidth * 0.3f, crestY - 3f, boardWidth * 0.4f, crestSize + 6f),
+                $"{homeScore}  —  {awayScore}", scoreStyle);
+
+            var totalPossession = homePossession + awayPossession;
+            var homePossessionPercent = totalPossession > 0.5f ? Mathf.RoundToInt(homePossession / totalPossession * 100f) : 50;
+            var minute = CurrentMinute();
+            GUI.Label(new Rect(boardRect.x + boardPad, boardRect.yMax - boardPad - 18f,
+                    boardRect.width - boardPad * 2f, 18f),
+                $"{matchLabel}   •   {(half == 0 ? "1ST HALF" : "2ND HALF")}  {minute:00}'   •   POSSESSION {homePossessionPercent}% - {100 - homePossessionPercent}%",
+                clockStyle);
+
+            DrawStaminaMeter(boardRect);
+
+            if ((live || cornerPrepActive) && !halfTimePending && !matchFinished)
+            {
+                if (live)
+                {
+                    var pauseSize = Mathf.Clamp(safeArea.height * 0.08f, 42f, 56f);
+                    var pauseRect = new Rect(safeArea.xMax - pauseSize - 12f, safeTop + 12f, pauseSize, pauseSize);
+                    if (GUI.Button(pauseRect, "II", pauseIconStyle))
+                        PauseMatch();
+                }
+                if (Application.isMobilePlatform)
+                    DrawMobileControls();
+            }
+            else if (Application.isMobilePlatform)
+            {
+                userPlayer?.SetMobileMove(Vector2.zero, false);
+            }
+
+            if (!Application.isMobilePlatform)
+            {
+                var desktopSafeArea = Screen.safeArea;
+                var safeBottom = Screen.height - desktopSafeArea.yMin;
+                GUI.Label(new Rect(desktopSafeArea.xMin + 18f, safeBottom - 48f,
+                    Mathf.Max(0f, desktopSafeArea.width - 36f), 36f),
+                    "WASD / arrows: move   •   Shift: sprint   •   Space: shoot   •   E: pass/hold lob   •   R: lob   •   Q: through ball   •   F: cross   •   G: teammate run / E+G: pass & follow   •   Corner: Enter to deliver   •   Hold Z: avoid, hold V: shield   •   X: tackle   •   C: call pressure   •   V: shield   •   B: low shot   •   Tab: switch   •   P / Esc: pause",
+                    helpStyle);
+            }
+
+            if (cornerPrepActive)
+                GUI.Label(new Rect(0, Screen.height * 0.33f, Screen.width, 100f),
+                    "CORNER SETUP  •  MOVE YOUR ATTACKER, THEN DELIVER", goalStyle);
+            else if (Time.time < goalBannerUntil)
+                GUI.Label(new Rect(0, Screen.height * 0.33f, Screen.width, 100f), goalBanner, goalStyle);
+
+            // On landscape phones the touch controls occupy the lower half of the
+            // display, so omit the non-essential commentary strip when space is tight.
+            if (!Application.isMobilePlatform || safeArea.height > 480f)
+            {
+                commentaryStyle ??= HubTheme.Label(
+                    HubTheme.ResponsiveFontSize(48f, 14, 24), HubTheme.TextColor, TextAnchor.MiddleCenter, true, true);
+                var commentaryY = Mathf.Max(boardRect.yMax + 32f, safeTop + 120f);
+                var commentaryRect = new Rect(safeArea.xMin + safeArea.width * 0.12f, commentaryY,
+                    safeArea.width * 0.76f, 42f);
+                GUI.Box(commentaryRect, string.Empty, panelStyle);
+                GUI.Label(commentaryRect, commentary, commentaryStyle);
+            }
+
+            if (paused || halfTimePending || matchFinished)
+            {
+                modalBackdrop ??= HubTheme.SolidTexture(new Color(0.02f, 0.035f, 0.05f, 0.72f));
+                GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), modalBackdrop);
+            }
+
+            if (paused)
+            {
+                fullTimeStyle ??= CreatePanelStyle();
+                var confirm = confirmRestart || confirmAbandon;
+                var compactPauseLayout = Screen.height < 480f;
+                var pausePanelHeight = compactPauseLayout
+                    ? Mathf.Min(Screen.height * 0.92f, 520f)
+                    : Mathf.Min(Mathf.Max(Screen.height * 0.86f, 420f), 520f);
+                var panel = HubTheme.CenteredPanel(
+                    Mathf.Min(Screen.width * 0.86f, 520f),
+                    pausePanelHeight,
+                    12f);
+                GUI.Box(panel, string.Empty, panelStyle);
+                GUI.Label(new Rect(panel.x + 56f, panel.y + 12f, panel.width - 112f, 20f), "SOCCER 27",
+                    brandStyle);
+
+                var title = confirmRestart ? "RESTART MATCH?" : confirmAbandon ? "LEAVE MATCH?" : "MATCH PAUSED";
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 32f, panel.width - 24f, 40f), title, fullTimeStyle);
+
+                DrawModalScore(new Rect(panel.x + 16f, panel.y + 74f, panel.width - 32f, 70f), 44f);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 146f, panel.width - 24f, 20f),
+                    $"{homeTeamName}  {homeScore}  —  {awayScore}  {awayTeamName}", labelSmallStyle);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 166f, panel.width - 24f, 18f),
+                    $"{CurrentMinute():00}'  •  {(half == 0 ? "1ST HALF" : "2ND HALF")}", clockStyle);
+
+                if (!confirm)
+                {
+                    var closeSize = Mathf.Clamp(panel.width * 0.1f, 32f, 42f);
+                    if (GUI.Button(new Rect(panel.xMax - closeSize - 12f, panel.y + 12f, closeSize, closeSize),
+                        "X", pauseCloseStyle))
+                        ResumeMatch();
+                }
+
+                var buttonX = panel.x + panel.width * 0.14f;
+                var buttonWidth = panel.width * 0.72f;
+                const float buttonGap = 5f;
+                var buttonHeight = compactPauseLayout
+                    ? Mathf.Clamp((panel.height - 200f) / 3f, 22f, 42f)
+                    : Mathf.Clamp((panel.height - 220f) / 5f, 30f, 42f);
+                var buttonY = panel.y + (compactPauseLayout ? 190f : 198f);
+
+                if (confirm)
+                {
+                    var prompt = confirmRestart
+                        ? "The score and match clock will reset."
+                        : "Leave without recording this match in your career?";
+                    GUI.Label(new Rect(panel.x + 18f, buttonY, panel.width - 36f, 30f), prompt, labelSmallStyle);
+                    buttonY += 34f;
+                    if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight),
+                        confirmRestart ? "RESTART MATCH" : "LEAVE MATCH", flowButtonStyle))
+                    {
+                        if (confirmRestart) RestartMatch();
+                        else AbandonMatch();
+                    }
+                    buttonY += buttonHeight + buttonGap;
+                    if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight),
+                        confirmRestart ? "CANCEL" : "KEEP PLAYING", buttonStyle))
+                    {
+                        confirmRestart = false;
+                        confirmAbandon = false;
+                    }
+                }
+                else if (compactPauseLayout)
+                {
+                    var halfButtonWidth = (buttonWidth - buttonGap) * 0.5f;
+                    if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight),
+                        "RESUME MATCH", flowButtonStyle))
+                        ResumeMatch();
+                    buttonY += buttonHeight + buttonGap;
+
+                    var nextTactic = (MatchTacticPreset)(((int)selectedTactic + 1) % 3);
+                    var tacticName = selectedTactic switch
+                    {
+                        MatchTacticPreset.Balanced => "BALANCED",
+                        MatchTacticPreset.HighPress => "HIGH PRESS",
+                        _ => "COUNTER ATTACK"
+                    };
+                    if (GUI.Button(new Rect(buttonX, buttonY, halfButtonWidth, buttonHeight),
+                        $"TACTIC: {tacticName}", buttonStyle))
+                        ApplyHomeTactic(nextTactic);
+
+                    var nextDifficulty = (MatchDifficultyPreset)(((int)selectedDifficulty + 1) % 3);
+                    var difficultyName = selectedDifficulty switch
+                    {
+                        MatchDifficultyPreset.Easy => "EASY",
+                        MatchDifficultyPreset.Standard => "STANDARD",
+                        _ => "HARD"
+                    };
+                    if (GUI.Button(new Rect(buttonX + halfButtonWidth + buttonGap, buttonY,
+                        halfButtonWidth, buttonHeight), $"CPU: {difficultyName}", buttonStyle))
+                        ApplyCpuDifficulty(nextDifficulty);
+                    buttonY += buttonHeight + buttonGap;
+
+                    if (GUI.Button(new Rect(buttonX, buttonY, halfButtonWidth, buttonHeight),
+                        "RESTART", buttonStyle))
+                        confirmRestart = true;
+                    if (GUI.Button(new Rect(buttonX + halfButtonWidth + buttonGap, buttonY,
+                        halfButtonWidth, buttonHeight), "RETURN TO CAREER", buttonStyle))
+                        confirmAbandon = true;
+                }
+                else
+                {
+                    if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight),
+                        "RESUME MATCH", flowButtonStyle))
+                        ResumeMatch();
+                    buttonY += buttonHeight + buttonGap;
+
+                    var nextTactic = (MatchTacticPreset)(((int)selectedTactic + 1) % 3);
+                    var tacticName = selectedTactic switch
+                    {
+                        MatchTacticPreset.Balanced => "BALANCED",
+                        MatchTacticPreset.HighPress => "HIGH PRESS",
+                        _ => "COUNTER ATTACK"
+                    };
+                    if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight),
+                        $"TEAM TACTIC: {tacticName}", buttonStyle))
+                        ApplyHomeTactic(nextTactic);
+                    buttonY += buttonHeight + buttonGap;
+
+                    var nextDifficulty = (MatchDifficultyPreset)(((int)selectedDifficulty + 1) % 3);
+                    var difficultyName = selectedDifficulty switch
+                    {
+                        MatchDifficultyPreset.Easy => "EASY",
+                        MatchDifficultyPreset.Standard => "STANDARD",
+                        _ => "HARD"
+                    };
+                    if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight),
+                        $"CPU LEVEL: {difficultyName}", buttonStyle))
+                        ApplyCpuDifficulty(nextDifficulty);
+                    buttonY += buttonHeight + buttonGap;
+
+                    if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight),
+                        "RESTART MATCH", buttonStyle))
+                        confirmRestart = true;
+                    buttonY += buttonHeight + buttonGap;
+                    if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight),
+                        "RETURN TO CAREER", buttonStyle))
+                        confirmAbandon = true;
+                }
+            }
+
+            if (halfTimePending)
+            {
+                fullTimeStyle ??= CreatePanelStyle();
+                var panel = HubTheme.CenteredPanel(
+                    Mathf.Min(Screen.width * 0.68f, 620f),
+                    Mathf.Min(Mathf.Max(Screen.height * 0.5f, 360f), 400f),
+                    12f);
+                GUI.Box(panel, string.Empty, panelStyle);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 10f, panel.width - 24f, 20f), "SOCCER 27",
+                    brandStyle);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 30f, panel.width - 24f, 42f), "HALF TIME",
+                    fullTimeStyle);
+                DrawModalScore(new Rect(panel.x + 16f, panel.y + 76f, panel.width - 32f, 64f), 40f);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 144f, panel.width - 24f, 20f),
+                    $"{homeTeamName}  {homeScore}  —  {awayScore}  {awayTeamName}", labelSmallStyle);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 164f, panel.width - 24f, 18f),
+                    $"{CurrentMinute():00}'", clockStyle);
+                DrawMatchStats(panel, panel.y + 184f);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 260f, panel.width - 24f, 16f),
+                    "SECOND-HALF TEAM TACTICS", brandStyle);
+                var tacticGap = 6f;
+                var tacticWidth = (panel.width - 36f - tacticGap * 2f) / 3f;
+                var tacticY = panel.y + 278f;
+                var tacticHeight = 32f;
+                if (GUI.Button(new Rect(panel.x + 18f, tacticY, tacticWidth, tacticHeight),
+                    selectedTactic == MatchTacticPreset.Balanced ? "BALANCED ✓" : "BALANCED", buttonStyle))
+                    ApplyHomeTactic(MatchTacticPreset.Balanced);
+                if (GUI.Button(new Rect(panel.x + 18f + tacticWidth + tacticGap, tacticY, tacticWidth, tacticHeight),
+                    selectedTactic == MatchTacticPreset.HighPress ? "HIGH PRESS ✓" : "HIGH PRESS", buttonStyle))
+                    ApplyHomeTactic(MatchTacticPreset.HighPress);
+                if (GUI.Button(new Rect(panel.x + 18f + (tacticWidth + tacticGap) * 2f, tacticY, tacticWidth, tacticHeight),
+                    selectedTactic == MatchTacticPreset.CounterAttack ? "COUNTER ✓" : "COUNTER", buttonStyle))
+                    ApplyHomeTactic(MatchTacticPreset.CounterAttack);
+                if (GUI.Button(new Rect(panel.x + panel.width * 0.16f, panel.yMax - 72f,
+                    panel.width * 0.68f, 52f), "START SECOND HALF", flowButtonStyle))
+                    BeginSecondHalf();
+            }
+
+            if (matchFinished)
+            {
+                fullTimeStyle ??= CreatePanelStyle();
+                var panel = HubTheme.CenteredPanel(
+                    Mathf.Min(Screen.width * 0.7f, 680f),
+                    Mathf.Min(Mathf.Max(Screen.height * 0.52f, 360f), 440f),
+                    12f);
+                GUI.Box(panel, string.Empty, panelStyle);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 12f, panel.width - 24f, 20f), "SOCCER 27",
+                    brandStyle);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 32f, panel.width - 24f, 42f),
+                    cupShootoutPending ? "PENALTIES" : "FULL TIME", fullTimeStyle);
+                DrawModalScore(new Rect(panel.x + 16f, panel.y + 78f, panel.width - 32f, 64f), 40f);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 146f, panel.width - 24f, 20f),
+                    $"{homeTeamName}  {homeScore}  —  {awayScore}  {awayTeamName}", labelSmallStyle);
+                GUI.Label(new Rect(panel.x + 12f, panel.y + 166f, panel.width - 24f, 18f),
+                    $"{CurrentMinute():00}'", clockStyle);
+                if (cupShootoutPending)
+                    GUI.Label(new Rect(panel.x + 12f, panel.y + 186f, panel.width - 24f, 30f),
+                        $"SHOOTOUT  {cupShootout.UserScore} — {cupShootout.OpponentScore}  •  {(cupShootout.UserWon ? homeTeamName + " ADVANCE" : awayTeamName + " ADVANCE")}",
+                        labelSmallStyle);
+                DrawMatchStats(panel, panel.y + (cupShootoutPending ? 218f : 194f));
+                if (GUI.Button(new Rect(panel.x + panel.width * 0.15f, panel.yMax - 72f,
+                    panel.width * 0.7f, 52f), "SAVE RESULT & RETURN TO CAREER", flowButtonStyle))
+                    CompleteCareerMatch();
+            }
+        }
+
+        private int CurrentMinute()
+        {
+            return Mathf.Clamp(half * 45 + Mathf.FloorToInt(halfElapsed / HalfDurationSeconds * 45f), 0, 90);
+        }
+
+        private void DrawMatchStats(Rect panel, float top)
+        {
+            GUI.Label(new Rect(panel.x + 12f, top, panel.width - 24f, 18f), "MATCH STATS", brandStyle);
+
+            var possessionTotal = homePossession + awayPossession;
+            var homePossessionPercent = possessionTotal > 0.01f
+                ? Mathf.RoundToInt(homePossession / possessionTotal * 100f)
+                : 50;
+            var awayPossessionPercent = 100 - homePossessionPercent;
+            var contentX = panel.x + 18f;
+            var contentWidth = panel.width - 36f;
+            var sideWidth = contentWidth * 0.25f;
+            var metricWidth = contentWidth - sideWidth * 2f;
+            DrawMatchStatRow(contentX, top + 14f, sideWidth, metricWidth,
+                $"{homePossessionPercent}%", "POSSESSION", $"{awayPossessionPercent}%");
+            DrawMatchStatRow(contentX, top + 28f, sideWidth, metricWidth,
+                homeShots.ToString(), "SHOTS", awayShots.ToString());
+            DrawMatchStatRow(contentX, top + 42f, sideWidth, metricWidth,
+                homeShotsOnTarget.ToString(), "ON TARGET", awayShotsOnTarget.ToString());
+            DrawMatchStatRow(contentX, top + 56f, sideWidth, metricWidth,
+                homeTacklesWon.ToString(), "TACKLES WON", awayTacklesWon.ToString());
+        }
+
+        private void DrawMatchStatRow(float x, float y, float sideWidth, float metricWidth,
+            string homeValue, string metric, string awayValue)
+        {
+            GUI.Label(new Rect(x, y, sideWidth, 14f), homeValue, labelSmallStyle);
+            GUI.Label(new Rect(x + sideWidth, y, metricWidth, 14f), metric, labelSmallStyle);
+            GUI.Label(new Rect(x + sideWidth + metricWidth, y, sideWidth, 14f), awayValue, labelSmallStyle);
+        }
+
+        private void DrawModalScore(Rect area, float crestSize)
+        {
+            var mid = area.x + area.width * 0.5f;
+            var crestY = area.y + (area.height - crestSize) * 0.5f;
+            var crestFont = HubTheme.ResponsiveFontSize(78f, 7, 12);
+            HubTheme.Crest(new Rect(mid - area.width * 0.27f - crestSize * 0.5f, crestY, crestSize, crestSize),
+                ClubPrimary32(homeClub), ClubSecondary32(homeClub), CrestInitials(homeClub, homeTeamName),
+                crestFont);
+            HubTheme.Crest(new Rect(mid + area.width * 0.27f - crestSize * 0.5f, crestY, crestSize, crestSize),
+                ClubPrimary32(awayClub), ClubSecondary32(awayClub), CrestInitials(awayClub, awayTeamName),
+                crestFont);
+            GUI.Label(new Rect(area.x, area.y, area.width, area.height), $"{homeScore}  —  {awayScore}",
+                scoreStyle);
+        }
+
+        private static string CrestInitials(WorldClub club, string teamName)
+        {
+            if (club != null && !string.IsNullOrEmpty(club.ShortName))
+                return club.ShortName;
+            if (string.IsNullOrEmpty(teamName))
+                return "?";
+            return teamName.Substring(0, teamName.Length < 3 ? teamName.Length : 3).ToUpperInvariant();
+        }
+
+        private static Color32 ClubPrimary32(WorldClub club)
+        {
+            return club == null ? new Color32(0x2A, 0x4A, 0x66, 0xFF) : ToColor32(club.PrimaryColor);
+        }
+
+        private static Color32 ClubSecondary32(WorldClub club)
+        {
+            return club == null ? new Color32(0x0F, 0x22, 0x33, 0xFF) : ToColor32(club.SecondaryColor);
+        }
+
+        private static Color32 ToColor32(WorldColor color)
+        {
+            return new Color32(
+                (byte)Mathf.Clamp(color.R * 255f, 0f, 255f),
+                (byte)Mathf.Clamp(color.G * 255f, 0f, 255f),
+                (byte)Mathf.Clamp(color.B * 255f, 0f, 255f),
+                0xFF);
+        }
+
+        // Show the selected player's energy so sprinting and fatigue are visible during play.
+        private void DrawStaminaMeter(Rect boardRect)
+        {
+            if (userPlayer == null)
+                return;
+
+            var stamina = Mathf.Clamp01(userPlayer.Stamina01);
+            var width = Mathf.Clamp(boardRect.width * 0.52f, 160f, 340f);
+            var rect = new Rect(boardRect.x + (boardRect.width - width) * 0.5f, boardRect.yMax + 7f, width, 16f);
+            var labelWidth = Mathf.Clamp(width * 0.3f, 52f, 84f);
+            GUI.Label(new Rect(rect.x, rect.y - 1f, labelWidth, rect.height),
+                $"STA  {Mathf.RoundToInt(stamina * 100f)}%", labelSmallStyle);
+            var bar = new Rect(rect.x + labelWidth + 4f, rect.y + 4f, rect.width - labelWidth - 8f, 8f);
+            var fill = stamina < 0.25f
+                ? new Color32(0xEC, 0x40, 0x38, 0xFF)
+                : stamina < 0.55f
+                    ? new Color32(0xFA, 0xB8, 0x33, 0xFF)
+                    : new Color32(0x40, 0xDB, 0x94, 0xFF);
+            HubTheme.Bar(bar, stamina, fill);
+        }
+
+        private static GUIStyle CreatePanelStyle()
+        {
+            return HubTheme.Label(
+                HubTheme.ResponsiveFontSize(16f, 28, 54), HubTheme.TextColor, TextAnchor.MiddleCenter, true, true);
+        }
+
+        private void UpdateCommentary()
+        {
+            var lines = new List<string>();
+            var minute = CurrentMinute();
+            var owner = ball != null ? ball.Owner : null;
+
+            if (owner == null)
+            {
+                lines.Add(ball != null && ball.Speed > 9f
+                    ? "The ball breaks loose and both sides race to the second ball."
+                    : "Both teams close in as possession hangs in the balance.");
+            }
+            else if (owner.IsGoalkeeper)
+            {
+                var team = owner.TeamId == 1 ? homeTeamName : awayTeamName;
+                lines.Add($"{team}'s goalkeeper settles the ball and looks upfield.");
+                lines.Add($"{team} can reset their shape from the back.");
+            }
+            else
+            {
+                var team = owner.TeamId == 1 ? homeTeamName : awayTeamName;
+                var progress = Mathf.Clamp01(
+                    owner.transform.position.z * owner.TeamDirection / (PitchLength * 0.5f));
+                var nearestOpponent = float.PositiveInfinity;
+
+                foreach (var candidate in FootballPlayerController.All)
+                {
+                    if (candidate == null || candidate.TeamId == owner.TeamId)
+                        continue;
+
+                    var separation = candidate.transform.position - owner.transform.position;
+                    separation.y = 0f;
+                    nearestOpponent = Mathf.Min(nearestOpponent, separation.magnitude);
+                }
+
+                var trailing = owner.TeamId == 1 ? homeScore < awayScore : awayScore < homeScore;
+                if (minute >= 75 && trailing)
+                    lines.Add($"{team} push forward in search of an equaliser.");
+                if (progress >= 0.68f)
+                    lines.Add($"{team} work the ball into the attacking third.");
+                if (nearestOpponent < 3.2f)
+                    lines.Add("The nearest defender closes quickly; the ball carrier has little time.");
+                else if (progress < 0.32f)
+                    lines.Add($"{team} build patiently from the back.");
+
+                var totalPossession = homePossession + awayPossession;
+                if (totalPossession > 12f)
+                {
+                    var homeShare = homePossession / totalPossession;
+                    if (homeShare > 0.62f)
+                        lines.Add($"{homeTeamName} have controlled much of the possession so far.");
+                    else if (homeShare < 0.38f)
+                        lines.Add($"{awayTeamName} have controlled much of the possession so far.");
+                }
+
+                if (lines.Count == 0)
+                    lines.Add($"{team} keep the ball moving through midfield.");
+            }
+
+            if (minute >= 85 && homeScore == awayScore)
+                lines.Add("The match is finely balanced as the final minutes tick away.");
+
+            commentary = lines[Random.Range(0, lines.Count)];
+        }
+
+        private void CompleteCareerMatch(bool saveResult = true)
+        {
+            if (resultSaved) return;
+            resultSaved = true;
+            var save = saveResult ? CareerSaveSystem.Load() : null;
+            if (save != null)
+            {
+                // The managed club always plays the left/home side of this scene,
+                // so homeScore belongs to the user regardless of the fixture venue.
+                if (!CareerLeagueSystem.CompleteNextFixture(save, homeScore, awayScore))
+                    Debug.LogWarning("FC 2026: could not apply this match to the career.");
+                else if (!CareerSaveSystem.Save(save))
+                    Debug.LogWarning("FC 2026: match finished, but career result could not be saved.");
+            }
+            // The hub and match manager share this root. Preserve it and remove only generated children.
+            for (var i = transform.childCount - 1; i >= 0; i--)
+                Destroy(transform.GetChild(i).gameObject);
+
+            var hasActiveCamera = false;
+            foreach (var candidateCamera in FindObjectsByType<Camera>(FindObjectsSortMode.None))
+            {
+                if (candidateCamera == null)
+                    continue;
+                if (candidateCamera.transform.IsChildOf(transform))
+                {
+                    candidateCamera.gameObject.SetActive(false);
+                    continue;
+                }
+                hasActiveCamera = true;
+            }
+
+            if (!hasActiveCamera)
+            {
+                var hubCameraObject = new GameObject("Career Hub Camera");
+                hubCameraObject.transform.SetParent(transform);
+                hubCameraObject.transform.position = new Vector3(0f, 1.8f, -7f);
+                hubCameraObject.transform.rotation = Quaternion.Euler(3f, 0f, 0f);
+                var hubCamera = hubCameraObject.AddComponent<Camera>();
+                hubCamera.clearFlags = CameraClearFlags.SolidColor;
+                hubCamera.backgroundColor = new Color(0.015f, 0.04f, 0.07f);
+                hubCamera.fieldOfView = 60f;
+                hubCamera.nearClipPlane = 0.1f;
+                hubCamera.farClipPlane = 120f;
+                hubCameraObject.AddComponent<AudioListener>();
+            }
+
+            var hub = GetComponent<CareerHubManager>();
+            if (hub != null)
+            {
+                hub.RefreshCareer(saveResult);
+                hub.enabled = true;
+            }
+
+            // Remove this match component so the career hub can create a fresh manager
+            // next time. Merely disabling it leaves a stale component that blocks rematches.
+            Destroy(this);
+        }
+
+        private void DrawMobileControls()
+        {
+            if (userPlayer == null)
+                return;
+
+            var move = Vector2.zero;
+            var safeArea = Screen.safeArea;
+            var safeLeft = safeArea.xMin;
+            var safeRight = safeArea.xMax;
+            var safeTop = Screen.height - safeArea.yMax;
+            var safeBottom = Screen.height - safeArea.yMin;
+            var radius = Mathf.Clamp(Screen.height * 0.115f, 64f, 94f);
+            var joyCenter = new Vector2(safeLeft + radius + 28f, safeBottom - radius - 30f);
+            var stickOffset = Vector2.zero;
+            for (var i = 0; i < Input.touchCount; i++)
+            {
+                var touch = Input.GetTouch(i);
+                var point = new Vector2(touch.position.x, Screen.height - touch.position.y);
+                var delta = point - joyCenter;
+                if (point.x < safeLeft + safeArea.width * 0.44f && delta.sqrMagnitude <= radius * radius * 2.6f)
+                {
+                    stickOffset = Vector2.ClampMagnitude(delta, radius);
+                    move = stickOffset / radius;
+                    break;
+                }
+            }
+
+            DrawJoystick(joyCenter, radius, stickOffset);
+
+            var right = safeRight - 24f;
+            var bottom = safeBottom - 24f;
+            var preferredActionSize = Mathf.Clamp(Screen.height * 0.105f, 62f, 88f);
+            var availableControlHeight = Mathf.Max(0f, safeBottom - 24f - safeTop - 18f);
+            var actionSize = Mathf.Clamp(
+                Mathf.Min(preferredActionSize, availableControlHeight / 6.5f), 42f, 88f);
+            var gap = actionSize * 0.1f;
+            var actionFont = Mathf.Clamp(Mathf.RoundToInt(actionSize * 0.16f), 8, 15);
+            actionPrimaryStyle ??= HubTheme.CircleButton(actionFont, true);
+            actionSecondaryStyle ??= HubTheme.CircleButton(actionFont);
+            Rect ActionRect(int column, int row) => new Rect(
+                right - actionSize - column * (actionSize + gap),
+                bottom - actionSize - row * (actionSize + gap), actionSize, actionSize);
+
+            if (cornerPrepActive)
+            {
+                userPlayer.SetMobileMove(move, false);
+                var avoiding = GUI.RepeatButton(ActionRect(1, 0), "AVOID", actionSecondaryStyle);
+                userPlayer.SetMobileCornerAvoidanceHeld(avoiding);
+                var shielding = GUI.RepeatButton(ActionRect(0, 1), "SHIELD", actionSecondaryStyle);
+                userPlayer.SetMobileCornerShieldHeld(shielding);
+                if (GUI.Button(ActionRect(0, 0), "DELIVER", actionPrimaryStyle))
+                    ConfirmCornerPreparation();
+                GUI.color = Color.white;
+                return;
+            }
+
+            var shotHeld = GUI.RepeatButton(
+                ActionRect(0, 0),
+                userPlayer.ShotCharge01 > 0.04f ? $"SHOOT {Mathf.RoundToInt(userPlayer.ShotCharge01 * 100f)}%" : "SHOOT",
+                actionPrimaryStyle);
+            userPlayer.SetMobileShotHeld(shotHeld);
+            var passHeld = GUI.RepeatButton(
+                ActionRect(1, 0),
+                userPlayer.PassHold01 > 0.03f ? $"LOB {Mathf.RoundToInt(userPlayer.PassHold01 * 100f)}%" : "PASS/LOB",
+                actionSecondaryStyle);
+            userPlayer.SetMobilePassHeld(passHeld);
+            if (GUI.Button(ActionRect(0, 1), "TACKLE", actionSecondaryStyle))
+                userPlayer.QueueTackle();
+
+            var defending = BallController.Instance != null &&
+                            BallController.Instance.Owner != null &&
+                            BallController.Instance.Owner.TeamId != userPlayer.TeamId;
+            if (defending)
+            {
+                var pressHeld = GUI.RepeatButton(ActionRect(1, 1), "PRESS", actionSecondaryStyle);
+                userPlayer.SetMobileSecondManPressHeld(pressHeld);
+            }
+            else
+            {
+                userPlayer.SetMobileSecondManPressHeld(false);
+                if (GUI.Button(ActionRect(1, 1), "THROUGH", actionSecondaryStyle))
+                    userPlayer.QueueThroughBall();
+            }
+            var sprint = GUI.RepeatButton(ActionRect(0, 2), "SPRINT", actionSecondaryStyle);
+            if (GUI.Button(ActionRect(1, 2), "SWITCH", actionSecondaryStyle))
+                userPlayer.SwitchToNearestTeammate();
+            var crossAvailable = userPlayer.HasBall &&
+                                 Mathf.Abs(userPlayer.transform.position.x) >= 14f &&
+                                 userPlayer.transform.position.z * userPlayer.TeamDirection >= 8f;
+            if (GUI.Button(ActionRect(0, 3), crossAvailable ? "CROSS" : "CHIP", actionSecondaryStyle))
+            {
+                if (crossAvailable)
+                    userPlayer.QueueCross();
+                else
+                    userPlayer.QueueChipShot();
+            }
+            if (GUI.Button(ActionRect(1, 3), "FINESSE", actionSecondaryStyle))
+                userPlayer.QueueFinesseShot();
+
+            if (userPlayer.HasBall)
+            {
+                var shieldHeld = GUI.RepeatButton(ActionRect(0, 4), "SHIELD", actionSecondaryStyle);
+                userPlayer.SetMobileShieldHeld(shieldHeld);
+                if (GUI.Button(ActionRect(1, 4), "LOW", actionSecondaryStyle))
+                    userPlayer.QueueLowDrivenShot();
+            }
+            else
+            {
+                userPlayer.SetMobileShieldHeld(false);
+            }
+
+            var teamInPossession = BallController.Instance != null &&
+                                   BallController.Instance.Owner != null &&
+                                   BallController.Instance.Owner.TeamId == userPlayer.TeamId;
+            if (teamInPossession && GUI.Button(ActionRect(0, 5), "RUN", actionSecondaryStyle))
+                SimpleFootballAI.TriggerCurvedRun(userPlayer);
+            if (teamInPossession && userPlayer.HasBall &&
+                GUI.Button(ActionRect(1, 5), userPlayer.PassFollowArmed ? "FOLLOW ✓" : "FOLLOW",
+                    actionSecondaryStyle))
+                userPlayer.TogglePassFollowArm();
+
+            // Keep the analogue stick live while another finger taps an action.
+            userPlayer.SetMobileMove(move, sprint);
+
+            GUI.color = Color.white;
+        }
+
+        private void DrawJoystick(Vector2 center, float radius, Vector2 offset)
+        {
+            if (joystickDisc == null)
+                CreateJoystickTexture();
+            GUI.color = new Color(0.03f, 0.08f, 0.13f, 0.45f);
+            GUI.DrawTexture(new Rect(center.x - radius, center.y - radius, radius * 2f, radius * 2f),
+                joystickDisc);
+            GUI.color = new Color(0.31f, 0.86f, 0.97f, 0.9f);
+            GUI.DrawTexture(new Rect(center.x - radius, center.y - radius, radius * 2f, radius * 2f),
+                HubTheme.RingTexture());
+            var knobRadius = radius * 0.37f;
+            var knobCenter = center + offset;
+            GUI.color = new Color(0.9f, 0.97f, 1f, 0.92f);
+            GUI.DrawTexture(new Rect(knobCenter.x - knobRadius, knobCenter.y - knobRadius,
+                knobRadius * 2f, knobRadius * 2f), joystickDisc);
+            GUI.color = Color.white;
+        }
+
+        private void CreateJoystickTexture()
+        {
+            if (joystickDisc != null)
+                return;
+            const int size = 64;
+            joystickDisc = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                name = "FC 2026 Virtual Joystick Disc",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear
+            };
+            for (var y = 0; y < size; y++)
+            for (var x = 0; x < size; x++)
+            {
+                var distance = Vector2.Distance(new Vector2(x, y), new Vector2((size - 1) * 0.5f, (size - 1) * 0.5f));
+                var alpha = Mathf.Clamp01((size * 0.48f - distance) / 2f);
+                joystickDisc.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+            joystickDisc.Apply(false, true);
+        }
+    }
+}
