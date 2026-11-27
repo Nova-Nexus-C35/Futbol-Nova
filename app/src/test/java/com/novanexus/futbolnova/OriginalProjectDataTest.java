@@ -40,19 +40,19 @@ public final class OriginalProjectDataTest {
     }
     @Test
     public void customFriendlyClubsAreFirstAndContainOwnerAssignedPlayers() {
-        StringBuilder json = new StringBuilder("{\\"rosters\\":[");
+        StringBuilder json = new StringBuilder("{\"rosters\":[");
         String[] clubs = {"FN-CUB-NOVA-C35", "FN-ARG-FC-RIO-DE-ARGENTI"};
         String[] names = {"Nova C35", "FC Río de Argenti"};
         String[] stars = {"Anier Cumbá", "Raymond"};
         for (int c=0;c<clubs.length;c++) {
             if(c>0) json.append(',');
-            json.append("{\\"club_id\\":\\"").append(clubs[c]).append("\\",\\"club_name\\":\\"")
-                    .append(names[c]).append("\\",\\"competition_id\\":\\"nova_friendly_custom_clubs\\",\\"division_level\\":0,\\"players\\":[");
+            json.append("{\"club_id\":\"").append(clubs[c]).append("\",\"club_name\":\"")
+                    .append(names[c]).append("\",\"competition_id\":\"nova_friendly_custom_clubs\",\"division_level\":0,\"players\":[");
             for(int i=0;i<11;i++) {
                 if(i>0) json.append(',');
                 String playerName=(c==0 && i==6) ? "Máximo Padilla" : (c==0 && i==7) ? "Anier Cumbá" : (c==1 && i==7) ? "Raymond" : "Jugador provisional "+i;
-                json.append("{\\"id\\":\\"").append(clubs[c]).append('-').append(i).append("\\",\\"name\\":\\"")
-                        .append(playerName).append("\\",\\"position\\":\\"MC\\",\\"estimated_overall\\":65,\\"attributes\\":[65]}");
+                json.append("{\"id\":\"").append(clubs[c]).append('-').append(i).append("\",\"name\":\"")
+                        .append(playerName).append("\",\"position\":\"MC\",\"estimated_overall\":65,\"attributes\":[65]}");
             }
             json.append("]}");
         }
