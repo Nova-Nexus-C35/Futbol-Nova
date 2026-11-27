@@ -200,6 +200,23 @@ def main():
             if club.get("status") != "playable":
                 draft_custom_clubs.add(club_id)
 
+        # The saved default friendly pairing must resolve by stable IDs.
+        # Its draft status does not make it playable; runtime still requires
+        # complete, verified 22-player rosters before enabling the match.
+        defaults = manifest.get("default_friendly_match")
+        if not isinstance(defaults, dict):
+            fail("native_runtime_manifest.json: default_friendly_match is required")
+        home_id = str(defaults.get("home_team_id", "")).strip()
+        away_id = str(defaults.get("away_team_id", "")).strip()
+        if not home_id or not away_id or home_id == away_id:
+            fail("native_runtime_manifest.json: default friendly teams must be distinct stable IDs")
+        for team_id, name_key in ((home_id, "home_team_name"), (away_id, "away_team_name")):
+            club = clubs_by_id.get(team_id)
+            if club is None:
+                fail(f"native_runtime_manifest.json: default friendly club {team_id} is unknown")
+            if defaults.get(name_key) != club.get("display_name"):
+                fail(f"native_runtime_manifest.json: saved display name for {team_id} does not match the canonical club catalog")
+
         # Preferences are retained as profile metadata; they do not create
         # national-team call-ups or playable squads on their own.
         for player in custom:
