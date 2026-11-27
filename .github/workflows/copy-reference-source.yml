@@ -1,0 +1,65 @@
+name: Complete Soccer 27 reference copy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/copy-reference-source.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  copy-upstream-reference:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Fútbol Nova
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone exact Soccer 27 source revision
+        env:
+          SOURCE_COMMIT: f741b5d5ae3d531db367e1105023a7b39a1ffe3d
+        run: |
+          git clone --no-checkout https://github.com/Wilberforcedev/Soccer-26-game.git /tmp/soccer27-source
+          git -C /tmp/soccer27-source checkout --detach "$SOURCE_COMMIT"
+          test "$(git -C /tmp/soccer27-source rev-parse HEAD)" = "$SOURCE_COMMIT"
+
+      - name: Copy all source files and assets
+        run: |
+          mkdir -p reference/Soccer-27
+          rsync -a --delete --exclude='.git/' /tmp/soccer27-source/ reference/Soccer-27/
+          FILES="$(find reference/Soccer-27 -type f | wc -l | tr -d ' ')"
+          BYTES="$(du -sb reference/Soccer-27 | cut -f1)"
+          cat > reference/Soccer-27/REFERENCE_COPY_MANIFEST.md <<EOF
+          # Soccer 27 — complete reference copy
+
+          - Source repository: https://github.com/Wilberforcedev/Soccer-26-game
+          - Exact source commit: `$SOURCE_COMMIT`
+          - Copied to: `reference/Soccer-27/`
+          - Files present after copy: $FILES
+          - Total folder size in bytes: $BYTES
+
+          This directory is a source reference snapshot, separate from the NOVA implementation. The original repository is not modified.
+
+          All tracked and untracked working-tree source files at the pinned revision are copied, including text, configuration, JSON data, images, icons, and other binary assets. The source `.git` metadata is excluded.
+
+          ## License notice
+          The upstream README declares Apache-2.0, but the pinned revision has no root `LICENSE` file. Before redistribution or commercial publication, verify the full license text with the author and inspect third-party package and asset licenses. This copy does not grant additional rights to third-party assets.
+          EOF
+          echo "Copied $FILES files ($BYTES bytes)."
+
+      - name: Commit completed reference snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f reference/Soccer-27
+          if git diff --cached --quiet; then
+            echo "Reference snapshot already complete; no changes to commit."
+          else
+            git commit -m "Complete Soccer 27 reference snapshot including binary assets"
+            git push origin HEAD:main
+          fi
