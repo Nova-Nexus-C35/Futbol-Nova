@@ -124,10 +124,22 @@ public final class MainActivity extends Activity {
         info.addView(text("Solo se habilitan para jugar las plantillas verificadas con 22 futbolistas e identificadores únicos.",12,0xFFFFD18A,false));
         for(String warning:data.warnings)info.addView(text("Aviso: "+warning,11,0xFFFFB0A0,false));
         info.addView(text("Versión de datos: "+data.dataVersion,11,0xFF9EB3B9,false));
+        LinearLayout originals=card();originals.addView(text("CLUBES ORIGINALES",17,0xFFB8E85A,true));
+        for(org.json.JSONObject club:data.originalClubs){
+            org.json.JSONObject roster=club.optJSONObject("roster");
+            org.json.JSONArray ids=roster==null?null:roster.optJSONArray("known_player_ids");
+            int count=ids==null?0:ids.length();
+            boolean complete=roster!=null&&"complete_22_verified_game_profiles".equals(roster.optString("status"))&&count==22;
+            org.json.JSONObject stadium=club.optJSONObject("stadium");
+            String venue=stadium==null?"Estadio pendiente":stadium.optString("name","Estadio pendiente");
+            originals.addView(text(club.optString("name","Club")+" · "+venue,14,Color.WHITE,true));
+            originals.addView(text(complete?"22/22 · Plantilla disponible para amistosos":"Catálogo · "+count+"/22 jugadores registrados; no seleccionable todavía",12,complete?0xFFB8E85A:0xFFFFD18A,false));
+        }
         LinearLayout custom=card();custom.addView(text("JUGADORES PERSONALIZADOS",17,0xFFB8E85A,true));
         for(org.json.JSONObject p:data.customPlayers){
             custom.addView(text(p.optString("name","Jugador")+" · "+p.optString("position","")+" · GRL "+p.optInt("overall",0)+" / POT "+p.optInt("potential",0),14,Color.WHITE,true));
             custom.addView(text(p.optString("id","")+" · "+p.optString("club_id","Club pendiente"),11,0xFFB6C7CB,false));
+            if(p.has("original_club_name"))custom.addView(text("Club original: "+p.optString("original_club_name",""),11,0xFF9EB3B9,false));
             String nationalTeam=p.optString("national_team_name",p.optString("preferred_national_team","Selección pendiente"));
             custom.addView(text("Selección: "+nationalTeam,12,0xFFB8E85A,true));
         }
