@@ -40,7 +40,9 @@
     "balls": "league_official_balls.json",
     "realism": "modules/realism/realism_profile.json",
     "player_statistics_schema": "player_statistics_schema.json",
-    "runtime_database_schema": "runtime_database_schema_v1.json"
+    "runtime_database_schema": "runtime_database_schema_v1.json",
+    "original_clubs": "original_clubs_2026.json",
+    "original_club_rosters": "players/nova_original_club_rosters_2026.json"
   },
   "eligibility": {
     "team_requires_exactly": 22,
@@ -48,7 +50,9 @@
     "preserve_club_and_player_ids": true,
     "draft_or_unverified_club_rosters_not_playable": true,
     "fictional_player_profiles_must_remain_marked_fictional": true,
-    "apply_custom_profile_only_when_roster_player_id_matches": true
+    "apply_custom_profile_only_when_roster_player_id_matches": true,
+    "original_exhibition_teams_require_exactly_22": true,
+    "incomplete_original_club_rosters_not_playable": true
   },
   "visual_policy": {
     "reference_mix": [
@@ -63,9 +67,12 @@
     "first_division_file": "players/cuba_first_division.json",
     "second_division_file": "players/cuba_second_division.json",
     "third_division_file": "cuba_players.json",
-    "other_league_rosters": "catalogued_but_not_enabled_until_roster_and_engine_validation"
+    "other_league_rosters": "catalogued_but_not_enabled_until_roster_and_engine_validation",
+    "original_club_catalog": "original_clubs_2026.json",
+    "original_club_rosters_file": "players/nova_original_club_rosters_2026.json",
+    "original_club_roster_status": "Nova C35 and FC Río de Argenti are complete 22-player exhibition teams; Nova Génesis and Sangre Galáctica remain catalog-only until verified player records exist."
   },
-  "status": "native_shell_and_initial_3d_match_prototype_under_development",
+  "status": "native_shell_and_3d_match_prototype_with_two_original_exhibition_rosters_under_development",
   "default_friendly_match": {
     "home_team_id": "FN-ESP-REAL-MADRID",
     "home_team_name": "Albor Madrid",
