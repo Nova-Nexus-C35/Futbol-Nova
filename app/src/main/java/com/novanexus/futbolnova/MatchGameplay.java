@@ -46,18 +46,19 @@ public final class MatchGameplay {
     /** Prefers onside receivers; if every viable forward option is offside, returns the best flagged option. */
     public static PassTargetDecision findForwardPassDecision(List<MatchSimulation.PlayerState> players,
             int passerIndex,float originX,float originZ,boolean homeTeam,boolean homeAttacksNegativeZ) {
-        if(players==null||passerIndex<0||passerIndex>=players.size()||!players.get(passerIndex).active)
-            return new PassTargetDecision(NO_OWNER,false);
+        if(players==null||passerIndex<0||passerIndex>=players.size()
+                ||!isUsablePlayer(players.get(passerIndex)))return new PassTargetDecision(NO_OWNER,false);
         float attackSign=homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
         List<Float> defenders=new ArrayList<>();
-        for(MatchSimulation.PlayerState player:players)if(player.active&&player.homeTeam!=homeTeam)defenders.add(player.z);
+        for(MatchSimulation.PlayerState player:players)
+            if(isUsablePlayer(player)&&player.homeTeam!=homeTeam)defenders.add(player.z);
         int bestOnside=NO_OWNER,bestAny=NO_OWNER;
         float bestOnsideScore=Float.NEGATIVE_INFINITY,bestAnyScore=Float.NEGATIVE_INFINITY;
         boolean bestAnyOffside=false;
         for(int i=0;i<players.size();i++){
             if(i==passerIndex)continue;
             MatchSimulation.PlayerState player=players.get(i);
-            if(!player.active||player.homeTeam!=homeTeam||"GK".equals(player.role))continue;
+            if(!isUsablePlayer(player)||player.homeTeam!=homeTeam||"GK".equals(player.role))continue;
             float distance=distance(originX,originZ,player.x,player.z);
             float gain=(player.z-originZ)*attackSign;
             if(distance<3f||distance>19f||gain<1f)continue;
@@ -91,7 +92,7 @@ public final class MatchGameplay {
             float x,float z,boolean homeTeam) {
         float nearest=Float.MAX_VALUE;
         for(MatchSimulation.PlayerState player:players) {
-            if(!player.active||player.homeTeam==homeTeam)continue;
+            if(!isUsablePlayer(player)||player.homeTeam==homeTeam)continue;
             nearest=Math.min(nearest,distance(x,z,player.x,player.z));
         }
         return nearest==Float.MAX_VALUE?0f:nearest;
@@ -99,12 +100,14 @@ public final class MatchGameplay {
 
     public static boolean isPassLaneClear(List<MatchSimulation.PlayerState> players,
             float x1,float z1,float x2,float z2,boolean passingHome,int passerIndex,int receiverIndex) {
+        if(players==null||!Float.isFinite(x1)||!Float.isFinite(z1)
+                ||!Float.isFinite(x2)||!Float.isFinite(z2))return false;
         float sx=x2-x1, sz=z2-z1, length2=sx*sx+sz*sz;
-        if(length2<0.001f) return false;
+        if(!Float.isFinite(length2)||length2<0.001f)return false;
         for(int i=0;i<players.size();i++){
             if(i==passerIndex||i==receiverIndex) continue;
             MatchSimulation.PlayerState p=players.get(i);
-            if(!p.active||p.homeTeam==passingHome) continue;
+            if(!isUsablePlayer(p)||p.homeTeam==passingHome)continue;
             float t=clamp(((p.x-x1)*sx+(p.z-z1)*sz)/length2,0f,1f);
             float dx=p.x-(x1+sx*t), dz=p.z-(z1+sz*t);
             if(dx*dx+dz*dz<1.15f*1.15f) return false;
@@ -157,7 +160,8 @@ public final class MatchGameplay {
      */
     public static Vector3 chooseAiCarryTarget(List<MatchSimulation.PlayerState> players,
             int ownerIndex,boolean homeAttacksNegativeZ) {
-        if(players==null||ownerIndex<0||ownerIndex>=players.size()||!players.get(ownerIndex).active)return new Vector3();
+        if(players==null||ownerIndex<0||ownerIndex>=players.size()
+                ||!isUsablePlayer(players.get(ownerIndex)))return new Vector3();
         MatchSimulation.PlayerState owner=players.get(ownerIndex);
         float attackSign=owner.homeTeam?(homeAttacksNegativeZ?-1f:1f):(homeAttacksNegativeZ?1f:-1f);
         float targetZ=clamp(owner.z+attackSign*5.5f,
@@ -169,7 +173,7 @@ public final class MatchGameplay {
                     -MatchSimulation.FIELD_HALF_WIDTH+2f,MatchSimulation.FIELD_HALF_WIDTH-2f);
             float nearestOpponent=Float.MAX_VALUE;
             for(MatchSimulation.PlayerState candidate:players){
-                if(!candidate.active||candidate.homeTeam==owner.homeTeam)continue;
+                if(!isUsablePlayer(candidate)||candidate.homeTeam==owner.homeTeam)continue;
                 float dx=candidate.x-candidateX,dz=candidate.z-targetZ;
                 nearestOpponent=Math.min(nearestOpponent,(float)Math.sqrt(dx*dx+dz*dz));
             }
@@ -245,9 +249,13 @@ public final class MatchGameplay {
 
     public static MatchSimulation.TackleResult tackle(MatchSimulation.PlayerState attacker,
             MatchSimulation.PlayerState target,float reach) {
-        if(attacker==null||target==null) return null;
+        if(!isUsablePlayer(attacker)||!isUsablePlayer(target)||!Float.isFinite(reach)||reach<=0f)return null;
         return MatchSimulation.evaluateTackle(attacker.x,attacker.z,attacker.forwardX,attacker.forwardZ,
                 target.x,target.z,target.forwardX,target.forwardZ,reach);
+    }
+
+    private static boolean isUsablePlayer(MatchSimulation.PlayerState player){
+        return player!=null&&player.active&&Float.isFinite(player.x)&&Float.isFinite(player.z);
     }
 
     private static float distance(float x1,float z1,float x2,float z2){
