@@ -322,3 +322,9 @@ Algunos métodos de decisiones de juego asumían que todas las entradas de la al
 
 **Siguiente paso obligatorio**
 Esperar CI #449. Si pasa, continuar con pruebas de integración del ciclo de partido y revisar las distancias/pausas de reinicios. Si falla, leer logs completos y corregir antes de añadir más cambios.
+
+## Prueba adicional de estado inválido de tackle — 2026-11-27
+
+- Se amplió `MatchGameplayTest` para comprobar que un jugador con coordenada NaN y un alcance infinito/cero no producen un resultado de tackle aceptable.
+- Commit de prueba: `e458458a417cdb2494be7783df601536869feb04`; archivo re-leído desde GitHub y fragmento nuevo verificado.
+- Este commit es parte del mismo sprint P0 de Amistosos. La ejecución CI limpia debe ejecutarse sobre el HEAD actual, no sobre una versión anterior.
