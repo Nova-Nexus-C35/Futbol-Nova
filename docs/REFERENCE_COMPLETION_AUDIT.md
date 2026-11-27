@@ -51,6 +51,21 @@ El catálogo `data/custom_players.json` contiene dos perfiles adicionales. Sus I
 - Se aplican algunos atributos del perfil del jugador al runtime.
 - Se muestran catálogos de habilidades, técnicas, balones, clubes, módulos y jugadores personalizados.
 
+## Configuración personalizada recuperada y protegida — 2026-11-27
+
+Se revisaron las fichas y decisiones guardadas antes de continuar el desarrollo:
+
+- Fuente estructurada única: `data/custom_players.json`.
+- Anier Cumbá (`NOVA-PLAYER-0035)): club `FN-ESP-REAL-MADRID` (nombre de juego: Albor Madrid), MCO/MC, GRL 92, POT 97, dorsal 35, capitán y especialización Velocista. Se conserva la separación entre `base_attributes` / `confirmed_attributes` y atributos efectivos con bonificación; no volver a sumar Velocista al GRL.
+- Máximo Padilla (`NOVA-PLAYER-0036`): club `FN-ESP-BARCELONA` (nombre de juego: Litoral Barcelona), MCD/MC, GRL 94, POT 97, dorsal 30. Sus medidas de blockout siguen siendo provisionales y no se convierten en biografía confirmada.
+- La confirmación del propietario del 2026-11-19 asigna a Anier y Máximo a Cuba (`CUB`). El JSON de Anier aún indicaba `BRA`; se corrigió a `CUB` en `data/custom_players.json` y se verificó la escritura. Esta preferencia no equivale a una convocatoria oficial.
+- Se mantienen las preferencias visuales individuales registradas en las fichas; no se sustituyen ni se inventan rasgos.
+- Los IDs de Anier y Máximo están enlazados en `data/spain_clubs_2026_27.json` a sus clubes por ID estable. Ambos clubes siguen con `status=draft_review_required`; esa referencia no es una plantilla completa ni los habilita para jugar.
+- `data/national_teams_manifest.json` declara cero paquetes de selecciones publicados y plantillas nacionales aún no construidas. La preferencia CUB no crea una selección jugable ni una convocatoria.
+- El runtime Android actual solo carga las tres fuentes de plantillas cubanas (52 equipos). No carga todavía las plantillas españolas de Albor Madrid y Litoral Barcelona. Por tanto, los perfiles personalizados siguen visibles en el catálogo, pero no se deben insertar artificialmente en una plantilla cubana ni anunciar como jugadores ya integrados en el amistoso nativo.
+
+El validador `tools/validate_native_data.py` ahora comprueba que cada perfil personalizado apunte al club correcto mediante `club_id` y que el club contenga su ID estable en `player_ids`. También conserva la distinción entre preferencia nacional y convocatoria. La compilación/ejecución CI de este cambio queda pendiente de resultado.
+
 ## Pendiente confirmado
 
 | Área | Estado real | Criterio para darla por terminada |
