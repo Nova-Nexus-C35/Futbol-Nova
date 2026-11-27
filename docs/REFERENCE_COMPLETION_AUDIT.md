@@ -152,10 +152,55 @@ La validación de datos existente está en `tools/validate_native_data.py`. El w
 No marcar un apartado como terminado hasta adjuntar evidencia: prueba automatizada, resultado CI o prueba manual reproducible.
 
 
-## Raymond — perfil pendiente de recuperar, no omitir — 2026-11-27
+## Raymond Valdez y clubes originales — recuperación desde fuentes históricas — 2026-11-27
 
-- Raymond debe figurar en el inventario de jugadores personalizados pendientes; no debe quedar excluido por no aparecer todavía en `data/custom_players.json`.
-- La configuración confirmada disponible está en `docs/PLAYER_APPEARANCE_UPDATE_2026-11-16.md`: comparte con Anier el modelo de guantes; ambos usan camiseta interior ajustada de manga larga y medias por encima de las rodillas.
-- En Anier se conserva la paleta de guantes negra con detalles rojos y dorados. Esa paleta es de Anier y no debe copiarse a Raymond.
-- La documentación consultada indica expresamente que no se encontró una ficha canónica independiente de Raymond. Por tanto, no se inventan ID, posición, GRL, POT, atributos, nacionalidad, club, dorsal ni rasgos visuales adicionales.
-- Pendiente: recuperar/localizar la ficha canónica de Raymond y, cuando esté disponible, incorporarlo a los datos estructurados y validar su representación 3D. La ausencia actual de la ficha no significa que Raymond no forme parte de la configuración del proyecto.
+### Perfil canónico recuperado
+
+La búsqueda ampliada encontró el perfil completo de Raymond en el repositorio histórico `Nova-Nexus-C35/Nova-Workspace`, commit `0e92d59bf4b0ae365ffb9ea69ac32bf3cbb00db3`:
+
+- Fuente estructurada: `proyectos/juegos/futbol-nova/data/custom_players.json`; ID `NOVA-PLAYER-0037`.
+- Documento de perfil y plantillas: `docs/ORIGINAL_CLUB_ROSTERS_AND_RAYMOND_2026-11-20.md`.
+- Implementación: `docs/ORIGINAL_CLUBS_FRIENDLY_IMPLEMENTATION_2026-11-20.md`.
+- Perfil: Raymond Valdez; dorsal 5; DC, secundaria MCO; nacimiento 2007-05-26; edad registrada 19; 171 cm; 63 kg; GRL 91; POT 96.
+- Nacionalidad: `UNK` (no confirmada; no inferir).
+- Club histórico: `FN-NOVA-RDA` — FC Río de Argenti.
+- Atributos individuales: existen en `custom_players.json` como `attributes` y `base_attributes`, pero están marcados `provisional_generated_pending_owner_review`; no presentarlos como confirmados.
+- Estadísticas de carrera/temporada: sin partidos registrados; los contadores empiezan en cero.
+- Perfil de juego: delantero creativo/regateador, con rasgos generales inspirados por el propietario en Messi y Neymar; no copiar modelos, clips ni capturas de movimiento.
+- Celebración original: `raymond_messi_inspired_skyward_point`; secuencia descrita en el documento de plantillas, pendiente de clip 3D final.
+- Habilidades registradas: Regate corto básica (`FN-SK-L1-172`), Regate explosivo (`FN-SK-L2-003`) y Giro en el área legendaria (`FN-SK-L3-187`).
+- Referencia facial del propietario: `/Nova/Workspace/Recursos gráficos/Ficha de Jugador - Raymond Valdez.png` (PNG, 2.49 MB; Dropbox, modificado 2026-11-15).
+- Guantes: el perfil conserva la referencia visual del propietario; la actualización compartida del 2026-11-16 confirma que Anier utiliza el mismo modelo de guantes que Raymond, manteniendo Anier su propia paleta negra/roja/dorada. No trasladar automáticamente esa paleta a Raymond.
+
+### Equipos originales, estadios y equipaciones recuperados
+
+Fuente estructurada: `data/original_clubs_2026.json` y fichas individuales del mismo repositorio histórico. Los cuatro equipos son originales/ficticios de Fútbol Nova:
+
+| Club | ID | Estadio (capacidad de diseño) | Identidad y primera equipación |
+|---|---|---|---|
+| Nova C35 | `FN-NOVA-C35` | Estadio del Fénix (105.000) | Azul marino/cian, plata y blanco; camiseta local azul marino con banda diagonal cian y micro-líneas plateadas; escudo conceptual C35 con alas de fénix. |
+| FC Río de Argenti | `FN-NOVA-RDA` | Estadio Río de Argenti (105.000) | Plata, azul río, azul marino y blanco; la camiseta local tiene una referencia original del propietario en Dropbox que debe tratarse como fuente visual de verdad. Escudo conceptual con río y monograma RDA. |
+| Nova Génesis | `FN-NOVA-GEN` | Arena Nova Génesis (105.000) | Blanco/azul marino con acentos rojos y verdes; camiseta local v2 aprobada visualmente, paneles geométricos/texturizados y líneas angulares; letras GEN entrelazadas. |
+| Sangre Galáctica | `FN-NOVA-SAG` | Estadio Sangre de Estrellas (105.000) | Morado/rojo dominantes, amarillo/blanco secundarios; camiseta local propuesta en morado profundo con diagonal roja, detalles de estrellas doradas y números blancos. |
+
+Detalles de equipaciones alternativas documentadas:
+- Nova C35: visitante blanca con hombros navy y paneles cian; alternativa cian con bloques navy; portero amarillo señal con paneles navy y ribetes cian.
+- FC Río de Argenti: visitante blanca con motivo de río plateado y acentos azul río; alternativa navy con línea diagonal plateada; portero ámbar con paneles navy y plata.
+- Nova Génesis: visitante navy con paneles angulares blancos y acentos rojos/verdes; alternativa roja; portero verde eléctrico.
+- Sangre Galáctica: visitante blanca con hombros morados y degradado rojo; alternativa roja con textura estelar morada; portero dorado.
+
+### Archivos gráficos localizados en Dropbox
+
+- Raymond: `/Nova/Workspace/Recursos gráficos/Ficha de Jugador - Raymond Valdez.png`.
+- Nova C35: `/Apps/Futbol Nova/Assets/Clubs/Nova C35/Kits/nova_c35_home_kit_reference.jpg`.
+- FC Río de Argenti: `/Apps/Futbol Nova/Assets/Clubs/RDA/Kits/rda_home_kit_reference.jpg`.
+- Nova Génesis: carpeta `/Apps/Futbol Nova/Assets/Clubs/Nova Génesis/`; existe una propuesta histórica PNG y el manifiesto identifica una propuesta local v2 aprobada como adjunto Paper, pendiente de incorporación binaria.
+- Sangre Galáctica: no se encontró un archivo binario específico en la carpeta de activos revisada; su kit permanece como propuesta descrita en JSON.
+
+### Autoría, estudios y derechos
+
+No se encontró un estudio externo de diseño, fabricante de equipaciones ni patrocinador confirmado para estos cuatro clubes. Las fichas describen identidades y conceptos originales del proyecto; no atribuirlos a Nike, Adidas, Puma ni a un estudio externo sin fuente. El documento maestro exige auditoría de derechos por activo y diseños originales cuando no exista licencia. Los conceptos marcados como propuesta no deben presentarse como kit final aprobado.
+
+### Límite de migración al runtime actual
+
+El perfil y los clubes anteriores proceden del repositorio histórico `Nova-Workspace`. La rama activa de este repositorio `Futbol-Nova` usa actualmente IDs de clubes españoles para Anier y Máximo y el amistoso predeterminado Albor Madrid vs Litoral Barcelona; no contiene aún el catálogo `FN-NOVA-RDA`/Nova C35 ni importa estas plantillas al runtime Android nativo. Por eso, el perfil recuperado queda identificado con su club histórico correcto y no se reasigna a Albor, Litoral ni a un club cubano/español por conveniencia. La migración de Raymond y de los cuatro clubes originales requiere una decisión explícita de alcance y la integración/validación de sus catálogos en el runtime actual.
