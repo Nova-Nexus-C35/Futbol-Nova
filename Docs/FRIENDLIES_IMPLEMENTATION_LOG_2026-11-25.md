@@ -290,3 +290,35 @@ CI demuestra que las pruebas unitarias pasaron, que ambos GLB y clips fueron gen
 - Run 445 detectó `home.glb` con 29 joints y detuvo CI antes de Gradle; fue un fallo del supuesto de validación (25 total), no una falla del asset.
 - Ara documenta 25 huesos `game_lite` más socket `WeaponR` y joints faciales `jaw` + ambos ojos. Se corrigió el validador a 25–29 y se actualizó README y research.
 - Se mantiene `SceneManager` con `maxBones` dinámico; CI también comprueba mesh+skin y canales no vacíos de cada acción requerida. Pendiente run siguiente.
+
+## Endurecimiento de decisiones de gameplay para amistosos — 2026-11-27
+
+**Archivos modificados**
+- `app/src/main/java/com/novanexus/futbolnova/MatchGameplay.java`
+- `app/src/test/java/com/novanexus/futbolnova/MatchGameplayTest.java`
+
+**Problema encontrado**
+Algunos métodos de decisiones de juego asumían que todas las entradas de la alineación eran objetos válidos con coordenadas finitas. Una sustitución, expulsión, restauración dañada o estado transitorio podría dejar una entrada nula/inactiva/corrupta y contaminar la selección de pase, la evaluación del carril o la conducción de IA.
+
+**Cambio propio aplicado**
+- Se centralizó la validación de jugador utilizable: objeto no nulo, activo y con X/Z finitos.
+- La búsqueda de receptores ignora entradas no utilizables y rechaza un pasador no válido.
+- La evaluación del carril de pase rechaza listas/coordenadas de origen o destino inválidas y omite rivales corruptos.
+- La distancia al rival y la elección de carril de conducción ignoran rivales nulos/inactivos/no finitos.
+- La evaluación de tackle devuelve `null` ante jugadores o alcance inválidos, evitando resultados ambiguos.
+
+**Pruebas añadidas**
+- Rechazo de pasador nulo y de carril con coordenadas inválidas.
+- Rechazo seguro de lista nula.
+- Rechazo de tackle con atacante nulo.
+- Verificación de que un rival con coordenadas NaN/infinito no contamina el carril de pase ni la selección de conducción.
+
+**Commits y verificación**
+- Código: `f83516a4db0350aa11d630809511effdf72432b3`.
+- Pruebas: `2623f33d15d4e7c6a9a762aad43f730558788ab9`.
+- Ambos archivos se releyeron desde GitHub después de escribirlos y se comprobaron los fragmentos nuevos.
+- CI Android #449 (`45973618051`) se inició para el commit de pruebas; al momento de esta anotación seguía en ejecución. El CI #448 se canceló automáticamente al llegar el siguiente push; no se interpreta como fallo del código.
+- No se ha afirmado todavía compilación aprobada ni prueba física.
+
+**Siguiente paso obligatorio**
+Esperar CI #449. Si pasa, continuar con pruebas de integración del ciclo de partido y revisar las distancias/pausas de reinicios. Si falla, leer logs completos y corregir antes de añadir más cambios.
