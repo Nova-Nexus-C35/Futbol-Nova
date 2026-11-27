@@ -150,3 +150,12 @@ El validador `tools/validate_native_data.py` ahora comprueba que cada perfil per
 La validación de datos existente está en `tools/validate_native_data.py`. El workflow actual compila y comprueba la APK y la biblioteca ARM64. La compilación CI no sustituye una prueba de juego en dispositivo real.
 
 No marcar un apartado como terminado hasta adjuntar evidencia: prueba automatizada, resultado CI o prueba manual reproducible.
+
+
+## Raymond — perfil pendiente de recuperar, no omitir — 2026-11-27
+
+- Raymond debe figurar en el inventario de jugadores personalizados pendientes; no debe quedar excluido por no aparecer todavía en `data/custom_players.json`.
+- La configuración confirmada disponible está en `docs/PLAYER_APPEARANCE_UPDATE_2026-11-16.md`: comparte con Anier el modelo de guantes; ambos usan camiseta interior ajustada de manga larga y medias por encima de las rodillas.
+- En Anier se conserva la paleta de guantes negra con detalles rojos y dorados. Esa paleta es de Anier y no debe copiarse a Raymond.
+- La documentación consultada indica expresamente que no se encontró una ficha canónica independiente de Raymond. Por tanto, no se inventan ID, posición, GRL, POT, atributos, nacionalidad, club, dorsal ni rasgos visuales adicionales.
+- Pendiente: recuperar/localizar la ficha canónica de Raymond y, cuando esté disponible, incorporarlo a los datos estructurados y validar su representación 3D. La ausencia actual de la ficha no significa que Raymond no forme parte de la configuración del proyecto.
