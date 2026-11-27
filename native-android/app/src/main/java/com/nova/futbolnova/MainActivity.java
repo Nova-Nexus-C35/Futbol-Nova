@@ -51,7 +51,16 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         hideSystemBars();
         data=new CanonicalDataRepository(this);
-        if(data.playableTeams.size()>1){homeTeam=data.playableTeams.get(0);awayTeam=data.playableTeams.get(1);}
+        org.json.JSONObject defaults=data.runtimeManifest==null?null:data.runtimeManifest.optJSONObject("default_friendly_match");
+        if(defaults!=null){
+            homeTeam=data.findTeamById(defaults.optString("home_team_id",""));
+            awayTeam=data.findTeamById(defaults.optString("away_team_id",""));
+            if(homeTeam==null||awayTeam==null){
+                data.warnings.add("El amistoso predeterminado guardado es "+defaults.optString("home_team_name","equipo local")+
+                    " vs "+defaults.optString("away_team_name","equipo visitante")+
+                    ", pero sus plantillas aún no están habilitadas en el runtime nativo. No se sustituirán por clubes aleatorios.");
+            }
+        }
         buildShell();
         showScreen("INICIO");
     }
@@ -98,7 +107,11 @@ public final class MainActivity extends Activity {
         LinearLayout match=card();
         match.addView(text("PARTIDO AMISTOSO",20,0xFFB8E85A,true));
         match.addView(text("Partido local 11 contra 11. Selecciona los equipos, prepara el encuentro y entra al estadio 3D.",14,0xFFE4ECEE,false));
-        TextView teams=text((homeTeam==null?"Sin plantilla":homeTeam.name)+"   VS   "+(awayTeam==null?"Sin plantilla":awayTeam.name),18,Color.WHITE,true);teams.setPadding(0,dp(14),0,dp(10));match.addView(teams);
+        org.json.JSONObject defaults=data.runtimeManifest==null?null:data.runtimeManifest.optJSONObject("default_friendly_match");
+        String homeLabel=homeTeam==null?(defaults==null?"Equipo local pendiente":defaults.optString("home_team_name","Equipo local pendiente")):homeTeam.name;
+        String awayLabel=awayTeam==null?(defaults==null?"Equipo visitante pendiente":defaults.optString("away_team_name","Equipo visitante pendiente")):awayTeam.name;
+        TextView teams=text(homeLabel+"   VS   "+awayLabel,18,Color.WHITE,true);teams.setPadding(0,dp(14),0,dp(10));match.addView(teams);
+        if(homeTeam==null||awayTeam==null)match.addView(text("La pareja predeterminada está guardada, pero sus plantillas completas todavía no están habilitadas. Puedes elegir equipos entre las plantillas verificadas disponibles.",12,0xFFFFD18A,false));
         match.addView(button("ELEGIR EQUIPO LOCAL",()->chooseTeam(true)));
         match.addView(button("ELEGIR EQUIPO VISITANTE",()->chooseTeam(false)));
         match.addView(button("DURACIÓN: "+matchMinutes+" MIN POR TIEMPO",()->chooseMatchDuration()));
