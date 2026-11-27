@@ -81,7 +81,16 @@ final class CanonicalDataRepository {
             JSONArray ballArray=balls.optJSONArray("available_balls");officialBallCount=ballArray==null?0:ballArray.length();
             if(playableTeams.isEmpty()) warnings.add("No se encontraron plantillas completas y únicas para un amistoso.");
         } catch (Exception e) {
-            warnings.add("Error leyendo datos canónicos: "+e.getMessage());
+            // Fail closed: never expose a partially loaded database as playable.
+            playableTeams.clear();
+            modules.clear();
+            customPlayers.clear();
+            customPlayersById.clear();
+            baseClubCount=generatedClubCount=customPlayerCount=baseLeagueCount=0;
+            firstDivisionTeams=secondDivisionTeams=thirdDivisionTeams=0;
+            skillCount=techniqueCount=officialBallCount=0;
+            warnings.clear();
+            warnings.add("Datos canónicos incompletos: se deshabilitó el partido hasta corregir el paquete. "+e.getMessage());
         }
     }
 
@@ -90,25 +99,24 @@ final class CanonicalDataRepository {
         JSONArray a=manifest.optJSONArray("modules");
         if(a!=null) for(int i=0;i<a.length();i++) modules.add(new Module(a.getJSONObject(i)));
     }
-    private void loadRosterFile(Context c,String file,String division) {
-        try {
-            JSONObject root=read(c,file);
-            JSONArray rosters=root.optJSONArray("rosters");
-            if(rosters==null)return;
-            int playableBefore=playableTeams.size();
-            for(int i=0;i<rosters.length();i++) {
-                JSONObject r=rosters.getJSONObject(i);
-                JSONArray players=r.optJSONArray("players");
-                Team t=new Team(r.optString("club_id",""),r.optString("club_name","Club"),
-                    r.optString("competition_id",""),division,players);
-                if(t.isPlayable()) playableTeams.add(t);
-                else warnings.add("Plantilla no habilitada: "+t.name+" (requiere 22 jugadores únicos).");
-            }
-            int verifiedCount=playableTeams.size()-playableBefore;
-            if("Primera división".equals(division)) firstDivisionTeams=verifiedCount;
-            else if("Segunda división".equals(division)) secondDivisionTeams=verifiedCount;
-            else if("Tercera división".equals(division)) thirdDivisionTeams=verifiedCount;
-        } catch(Exception e) { warnings.add("No se pudo cargar "+file+": "+e.getMessage()); }
+    private void loadRosterFile(Context c,String file,String division) throws Exception {
+        JSONObject root=read(c,file);
+        JSONArray rosters=root.optJSONArray("rosters");
+        if(rosters==null)throw new IllegalStateException(file+" no contiene el arreglo rosters");
+        int playableBefore=playableTeams.size();
+        for(int i=0;i<rosters.length();i++) {
+            JSONObject r=rosters.optJSONObject(i);
+            if(r==null)throw new IllegalStateException(file+" contiene una plantilla que no es un objeto");
+            JSONArray players=r.optJSONArray("players");
+            Team t=new Team(r.optString("club_id",""),r.optString("club_name","Club"),
+                r.optString("competition_id",""),division,players);
+            if(t.isPlayable()) playableTeams.add(t);
+            else warnings.add("Plantilla no habilitada: "+t.name+" (requiere 22 jugadores únicos).");
+        }
+        int verifiedCount=playableTeams.size()-playableBefore;
+        if("Primera división".equals(division)) firstDivisionTeams=verifiedCount;
+        else if("Segunda división".equals(division)) secondDivisionTeams=verifiedCount;
+        else if("Tercera división".equals(division)) thirdDivisionTeams=verifiedCount;
     }
     JSONObject read(Context c,String name) throws Exception {
         try(InputStream in=c.getAssets().open(name); ByteArrayOutputStream out=new ByteArrayOutputStream()) {
