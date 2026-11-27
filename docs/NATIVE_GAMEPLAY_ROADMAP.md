@@ -13,7 +13,8 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 
 ## P0 — Base estable
 
-- [ ] Resolver la integración de perfiles personalizados sin alterar IDs estables ni atribuirlos a clubes incorrectos.
+- [ ] Integrar perfiles personalizados por ID estable y `club_id`, conservando todas las preferencias confirmadas. Anier (`NOVA-PLAYER-0035`) pertenece a Albor Madrid (`FN-ESP-REAL-MADRID`) y Máximo (`NOVA-PLAYER-0036`) a Litoral Barcelona (`FN-ESP-BARCELONA`); ambos tienen preferencia nacional CUB registrada. No asignarlos a clubes/selecciones por nombre, nacionalidad o preferencia solamente.
+- [ ] Habilitar la pareja predeterminada guardada Albor Madrid vs Litoral Barcelona únicamente después de importar y validar sus plantillas completas de 22 jugadores. Actualmente el runtime nativo carga 52 plantillas cubanas; los dos clubes españoles están en `draft_review_required` y no son seleccionables todavía.
 - [ ] Definir el contrato de atributos entre JSON, Java y C++ y comprobar especialmente las seis estadísticas de portero.
 - [ ] Conectar el catálogo de habilidades/técnicas a acciones de juego reales o mantenerlas claramente desactivadas hasta su integración.
 
