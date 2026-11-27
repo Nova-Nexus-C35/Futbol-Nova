@@ -1,11 +1,12 @@
 name: Fútbol Nova — Android nativo ARM64
 on:
   push:
-    branches: [main, "work/native-engine-mainline", "work/native-3d-engine"]
+    branches: [main, "work/native-engine-mainline", "work/native-3d-engine", "work/futbol-nova-completion-audit-2026-11-27"]
     paths:
       - "native-android/**"
       - "data/**"
       - "tools/validate_native_data.py"
+      - "docs/**"
       - ".github/workflows/futbol-nova-native-android.yml"
   pull_request:
     branches: [main]
