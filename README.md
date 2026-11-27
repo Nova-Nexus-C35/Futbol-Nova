@@ -33,7 +33,7 @@ La validación previa a la compilación está en `tools/validate_native_data.py`
 
 ## Estado real
 
-La rama de migración incorpora un shell Android nativo, navegación de cuatro pantallas, selección de plantillas cubanas verificadas, controles táctiles y un prototipo de partido 3D con 22 actores procedurales, balón, cámara, marcador y reloj inicial. Es una base jugable en desarrollo, no un juego terminado.
+La rama de migración incorpora un shell Android nativo, navegación de cuatro pantallas, selección de plantillas cubanas y dos clubes originales de exhibición, controles táctiles y un prototipo de partido 3D con 22 actores procedurales, balón, cámara, marcador y reloj inicial. Es una base jugable en desarrollo, no un juego terminado.
 
 Pendiente de completar y probar: modelos humanos y animaciones, porteros avanzados, árbitro, faltas, fueras de juego, saques, sustituciones, física completa, IA táctica, estadísticas, guardados nativos, Manager, Leyenda, ligas/copas y prueba física en teléfonos Android.
 
@@ -50,9 +50,10 @@ Pendiente de completar y probar: modelos humanos y animaciones, porteros avanzad
 
 - [Auditoría de finalización](docs/REFERENCE_COMPLETION_AUDIT.md): funcionalidades verificadas, brechas y riesgos técnicos.
 - [Hoja de ruta de juego nativo](docs/NATIVE_GAMEPLAY_ROADMAP.md): tareas ordenadas por prioridad y criterios de aceptación.
+- [Auditoría de jugadores, ligas y selecciones](docs/CUSTOM_PLAYERS_LEAGUES_NATIONAL_TEAMS_AUDIT_2026-11-27.md): perfiles personalizados, cuatro clubes originales, 100 ligas catalogadas y 211 asociaciones nacionales.
 - Validación de datos: `python3 tools/validate_native_data.py` (fuentes JSON, IDs, plantillas, atributos y política de motor nativo).
 
-La revisión de las plantillas cubanas confirma 52 equipos y 1.144 futbolistas ficticios con IDs únicos y 35 atributos por jugador. Los dos perfiles personalizados adicionales siguen catalogados, pero no están asociados a IDs de esas plantillas y no se aplican aún a sus alineaciones.
+La base cubana contiene 52 equipos y 1.144 futbolistas ficticios con IDs únicos y 35 atributos por jugador. Se recuperaron Nova C35 y FC Río de Argenti con 22 jugadores cada uno (Anier, Máximo y Raymond más 41 perfiles ficticios); Nova Génesis y Sangre Galáctica están catalogados, pero aún no tienen plantillas jugables. El catálogo personalizado contiene tres perfiles. Anier y Máximo mantienen sus clubes activos actuales y registran Nova C35 como afiliación histórica; Raymond conserva FC Río de Argenti.
 
 ## Desarrollo desde GitHub
 
