@@ -46,6 +46,14 @@ Pendiente de completar y probar: modelos humanos y animaciones, porteros avanzad
 - `project.godot`, `scenes/` y `scripts/` son material histórico de la implementación anterior. Se mantienen temporalmente para portar sus reglas y sistemas; no se compilan, no se empaquetan y no son el motor oficial.
 - Ultimate Team está excluido. La identidad, código, modelos, equipaciones, escudos, música y demás recursos del producto deben ser originales o contar con licencias compatibles.
 
+## Auditoría y hoja de ruta
+
+- [Auditoría de finalización](docs/REFERENCE_COMPLETION_AUDIT.md): funcionalidades verificadas, brechas y riesgos técnicos.
+- [Hoja de ruta de juego nativo](docs/NATIVE_GAMEPLAY_ROADMAP.md): tareas ordenadas por prioridad y criterios de aceptación.
+- Validación de datos: `python3 tools/validate_native_data.py` (fuentes JSON, IDs, plantillas, atributos y política de motor nativo).
+
+La revisión de las plantillas cubanas confirma 52 equipos y 1.144 futbolistas ficticios con IDs únicos y 35 atributos por jugador. Los dos perfiles personalizados adicionales siguen catalogados, pero no están asociados a IDs de esas plantillas y no se aplican aún a sus alineaciones.
+
 ## Desarrollo desde GitHub
 
 No hace falta PC ni instalar un motor en el teléfono. Los cambios se guardan en el repositorio y GitHub Actions compila la APK. El repositorio maestro NOVA y la sincronización de cambios se gestionan por separado para evitar sobrescribir datos.
