@@ -699,3 +699,15 @@ Esta sección prevalece sobre las notas de estado anteriores cuando haya contrad
 8. Preparar una release firmada y verificable después de la aceptación de dispositivo.
 
 **Estado honesto:** la persistencia lógica del partido tiene una primera implementación completa a nivel de snapshot y almacenamiento local y pasa CI; la experiencia integral de recuperación aún requiere prueba física. La escena 3D es un prototipo nativo ampliado, no un producto comparable visualmente a FIFA todavía.
+
+### Requisito confirmado: prioridad de clubes en Amistosos (2026-11-27)
+
+- Orden solicitado para el selector de clubes del modo Amistosos:
+  1. **Nova C35** — primera opción.
+  2. **FC Río de Argenti (RDA)** — segunda opción.
+- Esta prioridad determina el orden inicial del catálogo; no elimina los demás clubes que se incorporen después.
+- Referencia documental de identidad y activos: `Nova-Nexus-C35/Nova-Workspace`, `proyectos/FUTBOL_NOVA/ACTIVOS_Y_CLUBES.md` y `Archive/Nova-Nexus/proyectos/FUTBOL_NOVA/ACTIVOS_Y_CLUBES.md`. Allí constan referencias de equipación para ambos clubes.
+- Bloqueo comprobado en la rama actual: `cuba_players.json` contiene 20 plantillas cubanas de 22 jugadores y ninguna corresponde a Nova C35 ni a FC Río de Argenti. `custom_players.json` contiene actualmente un solo perfil personalizado (Anier Cumbá, asociado a Real Madrid), no plantillas de esos dos clubes.
+- Por tanto, el orden queda registrado como requisito confirmado, pero no se debe mostrar ninguno como equipo completamente jugable hasta disponer de su plantilla de 11/22 jugadores y enlazar sus identificadores/activos correctamente. No inventar jugadores ni reutilizar una plantilla cubana con otro nombre.
+- Siguiente implementación: incorporar registros canónicos de ambos clubes y sus plantillas/activos; adaptar el selector para fijarlos en las posiciones 1 y 2 y conservar el resto del catálogo; añadir pruebas que verifiquen el orden, IDs estables, carga de 22 jugadores y selección local/visitante.
+- Estado: **requisito guardado; implementación del selector y plantillas pendiente**. No se declara terminado ni validado en Android.
