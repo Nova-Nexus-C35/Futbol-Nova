@@ -244,4 +244,16 @@ public final class MatchGameplayTest {
   assertTrue(Float.isFinite(target.x));
   assertTrue(Float.isFinite(target.z));
  }
+
+ @Test public void tackleRejectsNonFinitePlayerStateAndInvalidReach(){
+  MatchSimulation simulation=new MatchSimulation();assertTrue(simulation.start("home","away"));
+  MatchSimulation.PlayerState attacker=simulation.getPlayers().get(9);
+  MatchSimulation.PlayerState target=simulation.getPlayers().get(18);
+  float originalX=target.x;
+  target.x=Float.NaN;
+  assertNull(MatchGameplay.tackle(attacker,target,1.7f));
+  target.x=originalX;
+  assertNull(MatchGameplay.tackle(attacker,target,Float.POSITIVE_INFINITY));
+  assertNull(MatchGameplay.tackle(attacker,target,0f));
+ }
 }
