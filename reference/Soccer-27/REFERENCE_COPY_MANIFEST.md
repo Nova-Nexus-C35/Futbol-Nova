@@ -13,12 +13,145 @@
 
 Esta carpeta conserva el contenido del commit fuente para consulta, comparación y auditoría. No es todavía el espacio de desarrollo NOVA: los cambios propios deben hacerse fuera de esta carpeta.
 
-La instantánea `reference/Soccer-27/` está fijada al commit indicado y debe permanecer sin modificaciones. En la raíz del repositorio no aparece actualmente una ruta `vendor/Soccer-27`; por tanto, no se considera creado ni disponible un submódulo Git separado. Para revisar la fuente, utilizar el repositorio original y el commit fijado arriba.
+El submódulo `vendor/Soccer-27` permanece como enlace Git a la fuente original y permite actualizar o revisar el proyecto fuente de forma independiente. La carpeta `reference/Soccer-27` es una instantánea separada y fijada al commit anterior.
 
 ## Licencias
 
-El README original declara Apache-2.0, pero en el commit auditado no se encontró un archivo `LICENSE` en la raíz. La auditoría documental está en [REFERENCE_LICENSE_AUDIT.md](../REFERENCE_LICENSE_AUDIT.md). Antes de redistribuir el proyecto o publicar una versión derivada, verificar el texto de licencia con el autor y revisar licencias de paquetes, modelos, imágenes, sonidos y demás recursos de terceros. Esta copia no concede derechos adicionales.
+El README original declara Apache-2.0, pero en el commit auditado no se encontró un archivo `LICENSE` en la raíz. Consultar `reference/REFERENCE_LICENSE_AUDIT.md`. Antes de redistribuir el proyecto o publicar una versión derivada, verificar el texto de licencia con el autor y revisar licencias de paquetes, modelos, imágenes, sonidos y demás recursos de terceros. Esta copia no concede derechos adicionales.
 
 ## Inventario fuente
 
-El inventario de los 134 archivos originales, con tamaños y SHA, se conserva en este manifiesto a continuación.
+- `.github/workflows/unity-android-release.yml` — 4359 bytes — `38b329e62d29feaa1b8877da584c83cd0969e6f8`
+- `.github/workflows/unity-android.yml` — 1526 bytes — `720592c7a4b6dabdf63b660eef9cb44690a80b3b`
+- `.gitignore` — 424 bytes — `c0d68ab7fe9b3a1e570d7cbef4d6a5a801474ad8`
+- `README.md` — 5245 bytes — `4db4a91fbd6733e560b37d4411d38b1d6468975c`
+- `TODO.md` — 3420 bytes — `864dd057d33d63c1e7396b86f042bb829e7c582f`
+- `UNITY_3D.md` — 13497 bytes — `33058c4d091b17a731f3dd02f00e94d309ecac05`
+- `docs/screenshots/home-screen.jpg` — 139576 bytes — `e88b704e7aa6ed680be7fb1b58649f39e4b0462e`
+- `docs/screenshots/team-selection.jpg` — 114517 bytes — `8dce230f97966061bc4e8ffdf535f09c64b3efda`
+- `flutter_app/.gitignore` — 746 bytes — `79f7ecabd5c79ed432e463c2304a605523961083`
+- `flutter_app/.metadata` — 964 bytes — `d1984f342d1bb5f0d40ea2fffbd9d4ff94c52161`
+- `flutter_app/README.md` — 634 bytes — `ef15467ec641465dc8076c9aec62d50c1679963f`
+- `flutter_app/analysis_options.yaml` — 1470 bytes — `6ba33d01f0b7c6d69c3b1e53e4c498f4d65d08dc`
+- `flutter_app/assets/images/fictional_player.webp` — 211548 bytes — `015d8832aabc685f78cab9b3744a18e44872f30a`
+- `flutter_app/assets/images/opponent_player.webp` — 225106 bytes — `39f205325594e643839bb9a14248addbbc55a520`
+- `flutter_app/lib/main.dart` — 66899 bytes — `afca99c1abc23ec9249ede0925e90f5ee21e323a`
+- `flutter_app/lib/models/club_player.dart` — 3674 bytes — `9e30632684aac72fcf9827de90badf677d27a457`
+- `flutter_app/lib/theme/game_theme.dart` — 623 bytes — `777fb65158e37282e0231afdd5e33d1227baa3c6`
+- `flutter_app/lib/widgets/game_painters.dart` — 11670 bytes — `ce31dfb01a93e85752575b3fe0bc796da24c4938`
+- `flutter_app/public/index.html` — 91197 bytes — `ed326fb5545ddd3d0d96619aa0a1e9ee92430cb8`
+- `flutter_app/pubspec.lock` — 6086 bytes — `01423b852db50f1197baaee2d1aafd1cdc49d943`
+- `flutter_app/pubspec.yaml` — 371 bytes — `0c10f6b31d478f6137f995eeb9f7349c5c75ea53`
+- `flutter_app/test/widget_test.dart` — 638 bytes — `b1c81c66a84e5a1b33ceb15f46d2995c8f3f46aa`
+- `flutter_app/vercel.json` — 157 bytes — `05fcf2994a2e039c65d3107f1b86d6581790c3ec`
+- `flutter_app/web/favicon.png` — 917 bytes — `8aaa46ac1ae21512746f852a42ba87e4165dfdd1`
+- `flutter_app/web/icons/Icon-192.png` — 5292 bytes — `b749bfef07473333cf1dd31e9eed89862a5d52aa`
+- `flutter_app/web/icons/Icon-512.png` — 8252 bytes — `88cfd48dff1169879ba46840804b412fe02fefd6`
+- `flutter_app/web/icons/Icon-maskable-192.png` — 5594 bytes — `eb9b4d76e525556d5d89141648c724331630325d`
+- `flutter_app/web/icons/Icon-maskable-512.png` — 20998 bytes — `d69c56691fbdb0b7efa65097c7cc1edac12a6d3e`
+- `flutter_app/web/index.html` — 1529 bytes — `d2c99988761fc0072199f0fdca3793ecc0d78232`
+- `flutter_app/web/manifest.json` — 920 bytes — `cbd58d155f7563535f88851c3a69d33e12461f0a`
+- `public/index.html` — 91197 bytes — `ed326fb5545ddd3d0d96619aa0a1e9ee92430cb8`
+- `ui-previews/ui-career-mobile.png` — 111375 bytes — `7f0ebde9a95ae0fcc3d393d8b34d1e06a326615a`
+- `ui-previews/ui-home-mobile.png` — 287773 bytes — `4410bc5eaf781b69af2c765b4c27b8ffa8597b63`
+- `ui-previews/ui-kickoff-mobile.png` — 198379 bytes — `27f350ae401ccd3219759bce71ce1b799b7df487`
+- `ui-previews/ui-kit-mobile.png` — 263401 bytes — `999f49e9f2dedc9d1d6d4efa195c892df83c7373`
+- `ui-previews/ui-match-mobile.png` — 85193 bytes — `1f9334e44c301bc38ef8e9d786985b259f441e95`
+- `ui-previews/ui-practice-mobile.png` — 80737 bytes — `ba6535da7dca484c9c37361b3fc4433caf3d56e6`
+- `ui-previews/ui-squad-mobile.png` — 287900 bytes — `903855342b1275764e34956345a872d2b597156f`
+- `ui-previews/ui-store-mobile.png` — 79394 bytes — `ce387d007a5a6c4c00920b3f3bf62ca4647be478`
+- `ui-previews/ui-tournament-mobile.png` — 97735 bytes — `15cc7badbfac90c68478712da8c2018005b835a9`
+- `unity/FC2026Unity/Assets/Editor/AndroidBuilder.cs` — 17503 bytes — `6f031f542a1bbeffd69ea6075953795241a174f0`
+- `unity/FC2026Unity/Assets/Resources/PlayerFaces/face_01.jpg` — 60060 bytes — `458790a5ad4096390b85ed7f3f3188dd87ef48fb`
+- `unity/FC2026Unity/Assets/Resources/PlayerFaces/face_02.jpg` — 53436 bytes — `65713e451861b3ac2358a73cf929cd1f84f2b966`
+- `unity/FC2026Unity/Assets/Resources/PlayerFaces/face_03.jpg` — 60060 bytes — `74e468d07945c48cff02f39a75c9cfed9b544028`
+- `unity/FC2026Unity/Assets/Resources/PlayerFaces/owner_face.jpg` — 60060 bytes — `3e24269987926297ba8b6a14815be5d37b809c6c`
+- `unity/FC2026Unity/Assets/Resources/PlayerFaces/owner_jersey_portrait.jpg` — 60061 bytes — `a2dad0ab4bfacf17c94cba9be3a8d244524fef88`
+- `unity/FC2026Unity/Assets/Scenes/Bootstrap.unity` — 3416 bytes — `c6d868a6c2756d46633c38751eecbdf72a666dc6`
+- `unity/FC2026Unity/Assets/Scenes/Bootstrap.unity.meta` — 155 bytes — `0d053ea6ad5475be0ff9211965d6ecb9931107c7`
+- `unity/FC2026Unity/Assets/Scripts/Core/CareerCupSystem.cs` — 16351 bytes — `e55cc909b35a3050626212b13947294dff4c1317`
+- `unity/FC2026Unity/Assets/Scripts/Core/CareerFormationSystem.cs` — 3811 bytes — `6be4b3b05c93f4250aa99637add64b13015b0d75`
+- `unity/FC2026Unity/Assets/Scripts/Core/CareerHubManager.cs` — 124077 bytes — `7a01e39a1818ef0c850ef31e84b4991f434fb06c`
+- `unity/FC2026Unity/Assets/Scripts/Core/CareerKitSystem.cs` — 3280 bytes — `32c51a35d1d232002396e69df437948f1b13ebf3`
+- `unity/FC2026Unity/Assets/Scripts/Core/CareerLeagueSystem.cs` — 15248 bytes — `82dfc50f67cae0b4844585771ad279ec25fa6d14`
+- `unity/FC2026Unity/Assets/Scripts/Core/CareerModels.cs` — 3838 bytes — `24c5e748cdf417cd7439a16853c7d578e5e76099`
+- `unity/FC2026Unity/Assets/Scripts/Core/CareerSaveSystem.cs` — 10530 bytes — `1fb849d4fdae9070d4dca320a68179e0699141ed`
+- `unity/FC2026Unity/Assets/Scripts/Core/CareerTransferSystem.cs` — 34281 bytes — `4156019f20231202f1b3b233db9569116d3f35e6`
+- `unity/FC2026Unity/Assets/Scripts/Core/FC2026Bootstrap.cs` — 750 bytes — `99f802aeda5ec028c363cf3bb1c47fb433996066`
+- `unity/FC2026Unity/Assets/Scripts/Core/HubTheme.cs` — 32890 bytes — `2e335ba3f17dc4d8402975314f46c2b601776a00`
+- `unity/FC2026Unity/Assets/Scripts/Core/MatchManager3D.cs` — 105566 bytes — `a264ab5729b5872c3aa6e936f7aa6b339b1c60b0`
+- `unity/FC2026Unity/Assets/Scripts/Core/StadiumPresentation.cs` — 10220 bytes — `e3c0a5705a9fac503dee542b22c8bec01dbf5b9e`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/BallController.cs` — 14979 bytes — `caf613075d70d48e92ce6435912bb606d30d687b`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/BroadcastCameraController.cs` — 3976 bytes — `31689edf8e4b07aede20d373f0e002f522740690`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/FootballMotionAnimator.cs` — 13988 bytes — `5923b1928e45068b673d14f1116cbe01305b7f3a`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/FootballPlayerController.cs` — 50094 bytes — `be55da1afef78a64664d44f6dc312c0c7c99a190`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/FootballVisualFactory.cs` — 3587 bytes — `798f8b1392c44f63e5a89d91d01710e6de0cc1b7`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/GoalTrigger.cs` — 1237 bytes — `0cbc8438635c23908278178f1a5e0abe47f22ec1`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/PlayerMatchProfile.cs` — 1380 bytes — `ac594c100ee61cf88832556f7d5b777b9c86d852`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/PlayerRole.cs` — 143 bytes — `305fd42a61b0de319a4e93e6aab4d3a7abb1d5d2`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/ProceduralHumanoidRig.cs` — 20588 bytes — `9a25ced6e6d5961cd58f80230650309b5688ddd0`
+- `unity/FC2026Unity/Assets/Scripts/Gameplay/SimpleFootballAI.cs` — 37758 bytes — `b20e8001e4681c607c0a8a8d76a7f0cb8e9b8c98`
+- `unity/FC2026Unity/Assets/Scripts/World/WorldData.cs` — 4050 bytes — `71add617ffbad76b0a70a0b190af5645cb7b11ec`
+- `unity/FC2026Unity/Assets/Scripts/World/WorldDatabase.cs` — 28987 bytes — `f28ec9f83ce37a2b84e6c3758a63674d01b588c7`
+- `unity/FC2026Unity/Assets/Scripts/World/WorldNames.cs` — 9801 bytes — `9d7abe329b04c9667e000da6b48360b4e3708bdb`
+- `unity/FC2026Unity/Assets/Scripts/World/WorldRandom.cs` — 1783 bytes — `64c1367647bcfb26188bc4b8797b55bfa8114a68`
+- `unity/FC2026Unity/Assets/Scripts/World/WorldSimulation.cs` — 2061 bytes — `b00c6b9b6e1fea4955435ef9dcf7af170defff52`
+- `unity/FC2026Unity/Packages/manifest.json` — 761 bytes — `13bd300dd91a7778157e62fa6e1b4128c7a3c5ca`
+- `unity/FC2026Unity/ProjectSettings/EditorBuildSettings.asset` — 255 bytes — `7282f889fe7c84f789d5a0fabeffec0e6dda53a7`
+- `unity/FC2026Unity/ProjectSettings/ProjectVersion.txt` — 70 bytes — `2f421ff6fec4a5556b4b3450faaf0fe51f56e0da`
+- `unity_app/.gitignore` — 149 bytes — `18b16361ab0f1ca58b9928a4cfbf5ac356fd4e02`
+- `unity_app/Assets/Data/FootballWorld/clubs.json` — 110523 bytes — `7ef668c1922df2a5164f63cd79df361b835ecfa6`
+- `unity_app/Assets/Data/FootballWorld/competitions.json` — 6954 bytes — `7d2a5a740d887f8f0e2dafc87bc5e3df659d0da7`
+- `unity_app/Assets/Data/FootballWorld/leagues.json` — 5379 bytes — `b9a1a6f8b0fd5c8825e4558bacd3f653cfaa402b`
+- `unity_app/Assets/Data/FootballWorld/players.json` — 3532738 bytes — `689d3973f39e5c0fe20a18a1b0ffa94f3c0a5e0f`
+- `unity_app/Assets/Editor/FootballWorldCatalogImporter.cs` — 2663 bytes — `02fa7e7b8c70aa39c4d6778592dd9cebb99bd3c1`
+- `unity_app/Assets/Scripts/AEROPitchPresentation.cs` — 7188 bytes — `8b13d4c36f82823a5b4156fb47413bffa1438ef3`
+- `unity_app/Assets/Scripts/AEROSoccer2027Branding.cs` — 1647 bytes — `574e5e353dfc904c37b89925083bf0cf49bde82c`
+- `unity_app/Assets/Scripts/BallController.cs` — 1917 bytes — `c091816de017515cd632cb1771515c895caa047d`
+- `unity_app/Assets/Scripts/CareerDashboardScreen.cs` — 11234 bytes — `fc2b0284758113d329e600a862483c9c579694c1`
+- `unity_app/Assets/Scripts/CareerManager.cs` — 6694 bytes — `e94bac5ec03f99cdbcb6bbdece5bc78e66bb3595`
+- `unity_app/Assets/Scripts/CareerMatchLiveScreen.cs` — 11736 bytes — `1f951ff53a0c8eca80f83f6786ae2d884bff3244`
+- `unity_app/Assets/Scripts/CareerMatchSimulationEngine.cs` — 7481 bytes — `ef41d8b65ee235d6df26f827bb43f8e8c9d286e7`
+- `unity_app/Assets/Scripts/CareerMatchdayController.cs` — 4096 bytes — `81550415c2eedd5183c034db9a0e969f8d3c4a2a`
+- `unity_app/Assets/Scripts/FC2026MobileHub.cs` — 44300 bytes — `35f9fd802105bc23b4dae8cb5baa4f368b3a02ee`
+- `unity_app/Assets/Scripts/FC2026UITheme.cs` — 1964 bytes — `d25578b4a248425d02a56618b005c4147139a34b`
+- `unity_app/Assets/Scripts/FootballWorldBrowserScreen.cs` — 12713 bytes — `88ff461faa6c310f332d905a1b0a35630f8101b8`
+- `unity_app/Assets/Scripts/FootballWorldCatalogLoader.cs` — 2664 bytes — `e433236e65af5ef7f8b6e0b5994872fd6274e0f4`
+- `unity_app/Assets/Scripts/FootballWorldCatalogParser.cs` — 2420 bytes — `1ad6cc7357bd5037fc59a8b9f6c54287788714ba`
+- `unity_app/Assets/Scripts/FootballWorldDatabase.cs` — 6075 bytes — `f7d0e0f8cefa5c7ab07eee31d336e758240d2217`
+- `unity_app/Assets/Scripts/FootballerController.cs` — 2319 bytes — `b45a1fe5be9360bc41bbbf4db872fda10ffbee3c`
+- `unity_app/Assets/Scripts/GameBootstrap.cs` — 3979 bytes — `a930ed98b9ad79516042427af2792b8c85de0299`
+- `unity_app/Assets/Scripts/GameModeController.cs` — 910 bytes — `b106ddf3f2dcc1baa4957828aa189912099ea97c`
+- `unity_app/Assets/Scripts/MatchArenaBootstrap.cs` — 4576 bytes — `de24ff08b02152ed8791c00be146ed7e77f0c051`
+- `unity_app/Assets/Scripts/MatchCameraController.cs` — 1548 bytes — `b1537e1250f8062748a7e9b3a69efd1092107efc`
+- `unity_app/Assets/Scripts/MatchManager.cs` — 1884 bytes — `78e499c87044f2e70cf54e129781aa09b6a4ba96`
+- `unity_app/Assets/Scripts/MobileInputController.cs` — 893 bytes — `d3bb4da3a7f38824acb45fc08fdf81848d358fee`
+- `unity_app/Assets/Scripts/NetworkMatchState.cs` — 1717 bytes — `a2cf348cf27910c080d4cfd27534d5a4bcf89b4e`
+- `unity_app/Assets/Scripts/NetworkPlayerIdentity.cs` — 1130 bytes — `fb200e963a637dca040d7855db3bda9a1435f541`
+- `unity_app/Assets/Scripts/NetworkSessionManager.cs` — 2429 bytes — `70269f79045907756ed9ce78392fec24eab13dfb`
+- `unity_app/Assets/Scripts/NetworkSessionPanel.cs` — 3462 bytes — `57fcac76d7e0234945f888542b48376cb6eb7458`
+- `unity_app/Assets/Scripts/PlayerProgressionManager.cs` — 6798 bytes — `a861103257ab1432ad9e02f5a8cee97f9e7cb402`
+- `unity_app/Assets/Scripts/ScoutingNetworkManager.cs` — 4846 bytes — `5f874ef5b8fa71aeaaf19207b535d14bf7b48cf6`
+- `unity_app/Assets/Scripts/SeasonCalendarManager.cs` — 6489 bytes — `360e15e2a0eb0bccf4d9af86b2200b33ba06a81e`
+- `unity_app/Assets/Scripts/SquadData.cs` — 1682 bytes — `e97045abbde51579b7b280bf9524e29a1b22dfb0`
+- `unity_app/Assets/Scripts/SquadManager.cs` — 1556 bytes — `1fdd1f476adf174f228d461f4f870cd43baf7f35`
+- `unity_app/Assets/Scripts/TacticalAI.cs` — 1425 bytes — `6781c97deba26b98fe98e531a4b2cfbca0cc90a0`
+- `unity_app/Assets/Scripts/TransferMarketManager.cs` — 7422 bytes — `06b8b44e74c7579164879603f054e6485c781b59`
+- `unity_app/Assets/Scripts/TransferMarketScreen.cs` — 16400 bytes — `eb8a1ee9b9622dafa34b0b4e4a5c0386312bdcca`
+- `unity_app/Assets/Scripts/TransferNegotiationManager.cs` — 4483 bytes — `97bff63cd8248d660f3beb4a0bebc56b580f9861`
+- `unity_app/Assets/Scripts/TransferSocialFeedScreen.cs` — 14612 bytes — `29ad604c01fbd14430942bd8dd4d49547c602667`
+- `unity_app/Assets/Scripts/TransferWindowManager.cs` — 3175 bytes — `5085acb3e39beb95e6d9064507bf9814512aa7d5`
+- `unity_app/Assets/Scripts/UnityServicesOnlineSession.cs` — 7246 bytes — `66f22a363eab24d1a29b3024eaa9de29eaa46c9a`
+- `unity_app/Assets/Tests/Editor/CareerMatchSimulationTests.cs` — 2379 bytes — `427369b3890b13432c37d584fff2f7b34b72d123`
+- `unity_app/Assets/Tests/Editor/FootballWorldCatalogTests.cs` — 5363 bytes — `5113b31095d868e6d684e643a3a90866ea7fc8ec`
+- `unity_app/Assets/Tests/Editor/PlayerProgressionTests.cs` — 13958 bytes — `8b27ac2549e3eea7def3763dfae14ce8f2642094`
+- `unity_app/Assets/Tests/Editor/SeasonCalendarTests.cs` — 3853 bytes — `e2e1106194dfdd780807e36244e969e9d9bd5760`
+- `unity_app/Assets/Tests/Editor/TransferNetworkTests.cs` — 2769 bytes — `b7bdba1edc992a0b493a9b56f473582825cf1e4b`
+- `unity_app/FOOTBALL_WORLD_DATABASE.md` — 2344 bytes — `5f1b65472ce8abce56638311ecdab1226f804db8`
+- `unity_app/FOOTBALL_WORLD_DATABASE_V1_PRESENTATION_SCRIPT.md` — 8573 bytes — `cc954e0cb212e08c13bda0575ac4646bb93e41e3`
+- `unity_app/Packages/manifest.json` — 1155 bytes — `85b2d8d883b25b8475dc81cc2537b5cb832e52db`
+- `unity_app/ProjectSettings/ProjectVersion.txt` — 83 bytes — `ce2457d3a468f88ce8ebf4f6fe2d4cbfa363e6e8`
+- `unity_app/README.md` — 11992 bytes — `16cfb03c5934774884d0f35936418a29ca071664`
+- `unity_app/Tools/validate_football_world.py` — 2889 bytes — `4eb7b431058c926297b063671c16146cc4498e6f`
+- `unity_app/UI_STYLE_GUIDE.md` — 2321 bytes — `667789cb820c4f2300c98da68beb3ef15f00ca75`
+- `vercel.json` — 157 bytes — `05fcf2994a2e039c65d3107f1b86d6581790c3ec`
