@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.22.1)
+project(futbolnova LANGUAGES CXX)
+add_library(futbolnova SHARED native_engine.cpp)
+target_compile_features(futbolnova PRIVATE cxx_std_17)
+target_link_libraries(futbolnova PRIVATE GLESv3 log android)

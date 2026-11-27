@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "product": "Fútbol Nova",
+  "runtime_id": "futbol-nova-native-android-arm64",
+  "engine": {
+    "implementation": "original_native",
+    "language": [
+      "Java 17",
+      "C++17"
+    ],
+    "graphics_api": "OpenGL ES 3.0",
+    "external_game_engines": []
+  },
+  "distribution": {
+    "base_package": "offline_first",
+    "playable_base_mode": "local_friendly_11v11",
+    "optional_modes_from_manifests": true,
+    "never_activate_uninstalled_modules": true
+  },
+  "navigation": [
+    "INICIO",
+    "ONLINE",
+    "MODOS",
+    "CONFIGURACIÓN"
+  ],
+  "canonical_sources": {
+    "custom_players": "custom_players.json",
+    "modules": "optional_modules_catalog.json",
+    "game_modules": "game_modules_manifest.json",
+    "league_content": "league_content_manifest.json",
+    "national_teams": "national_teams_manifest.json",
+    "base_clubs": "base_league_clubs_2026.json",
+    "season_clubs": "global_clubs.generated.json",
+    "spain_clubs": "spain_clubs_2026_27.json",
+    "cuba_first_division": "players/cuba_first_division.json",
+    "cuba_second_division": "players/cuba_second_division.json",
+    "skills": "skills/skill_catalog.json",
+    "techniques": "skills/common_gesture_techniques.json",
+    "balls": "league_official_balls.json",
+    "realism": "modules/realism/realism_profile.json",
+    "player_statistics_schema": "player_statistics_schema.json",
+    "runtime_database_schema": "runtime_database_schema_v1.json"
+  },
+  "eligibility": {
+    "team_requires_exactly": 22,
+    "unique_player_ids_required": true,
+    "preserve_club_and_player_ids": true,
+    "draft_or_unverified_club_rosters_not_playable": true,
+    "fictional_player_profiles_must_remain_marked_fictional": true,
+    "apply_custom_profile_only_when_roster_player_id_matches": true
+  },
+  "visual_policy": {
+    "reference_mix": [
+      "FIFA 23 menu hierarchy and match preparation",
+      "EA SPORTS FC 26 modern presentation and gameplay concepts"
+    ],
+    "original_nova_assets_only": true,
+    "exclude_ultimate_team": true,
+    "mens_football_only": true
+  },
+  "known_runtime_rosters": {
+    "first_division_file": "players/cuba_first_division.json",
+    "second_division_file": "players/cuba_second_division.json",
+    "other_league_rosters": "catalogued_but_not_enabled_until_roster_and_engine_validation"
+  },
+  "status": "native_shell_and_initial_3d_match_prototype_under_development"
+}
