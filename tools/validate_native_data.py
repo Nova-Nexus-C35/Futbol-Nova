@@ -27,7 +27,7 @@ def main():
     total_teams = 0
     total_players = 0
     all_team_ids = set()
-    for key in ("cuba_first_division", "cuba_second_division"):
+    for key in ("cuba_first_division", "cuba_second_division", "cuba_third_division"):
         relative = sources[key]
         payload = load_json(ROOT / "data" / relative)
         rosters = payload.get("rosters")

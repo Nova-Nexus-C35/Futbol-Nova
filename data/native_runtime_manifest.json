@@ -34,6 +34,7 @@
     "spain_clubs": "spain_clubs_2026_27.json",
     "cuba_first_division": "players/cuba_first_division.json",
     "cuba_second_division": "players/cuba_second_division.json",
+    "cuba_third_division": "cuba_players.json",
     "skills": "skills/skill_catalog.json",
     "techniques": "skills/common_gesture_techniques.json",
     "balls": "league_official_balls.json",
@@ -61,6 +62,7 @@
   "known_runtime_rosters": {
     "first_division_file": "players/cuba_first_division.json",
     "second_division_file": "players/cuba_second_division.json",
+    "third_division_file": "cuba_players.json",
     "other_league_rosters": "catalogued_but_not_enabled_until_roster_and_engine_validation"
   },
   "status": "native_shell_and_initial_3d_match_prototype_under_development"

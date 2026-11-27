@@ -49,7 +49,7 @@ final class CanonicalDataRepository {
     final Map<String,JSONObject> customPlayersById = new HashMap<>();
     final List<String> warnings = new ArrayList<>();
     int baseClubCount, generatedClubCount, customPlayerCount, baseLeagueCount;
-    int firstDivisionTeams, secondDivisionTeams, skillCount, techniqueCount, officialBallCount;
+    int firstDivisionTeams, secondDivisionTeams, thirdDivisionTeams, skillCount, techniqueCount, officialBallCount;
     JSONObject runtimeManifest;
     String dataVersion="";
 
@@ -72,6 +72,7 @@ final class CanonicalDataRepository {
             loadModules(context,sources.optString("modules","optional_modules_catalog.json"));
             loadRosterFile(context,sources.optString("cuba_first_division","players/cuba_first_division.json"),"Primera división");
             loadRosterFile(context,sources.optString("cuba_second_division","players/cuba_second_division.json"),"Segunda división");
+            loadRosterFile(context,sources.optString("cuba_third_division","cuba_players.json"),"Tercera división");
             JSONObject skills=read(context,sources.optString("skills","skills/skill_catalog.json"));
             JSONArray skillLevels=skills.optJSONArray("levels");if(skillLevels!=null)for(int i=0;i<skillLevels.length();i++){JSONArray levelSkills=skillLevels.optJSONObject(i)==null?null:skillLevels.optJSONObject(i).optJSONArray("skills");if(levelSkills!=null)skillCount+=levelSkills.length();}
             JSONObject techniques=read(context,sources.optString("techniques","skills/common_gesture_techniques.json"));
@@ -105,7 +106,8 @@ final class CanonicalDataRepository {
             }
             int verifiedCount=playableTeams.size()-playableBefore;
             if("Primera división".equals(division)) firstDivisionTeams=verifiedCount;
-            else secondDivisionTeams=verifiedCount;
+            else if("Segunda división".equals(division)) secondDivisionTeams=verifiedCount;
+            else if("Tercera división".equals(division)) thirdDivisionTeams=verifiedCount;
         } catch(Exception e) { warnings.add("No se pudo cargar "+file+": "+e.getMessage()); }
     }
     JSONObject read(Context c,String name) throws Exception {

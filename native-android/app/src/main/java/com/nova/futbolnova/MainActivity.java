@@ -107,7 +107,7 @@ public final class MainActivity extends Activity {
         match.addView(text(data.playableTeams.size()+" plantillas completas verificadas para el motor nativo · 22 jugadores por equipo.",12,0xFFB6C7CB,false));
         LinearLayout info=card();info.addView(text("BASE DE DATOS OFFLINE",17,0xFFB8E85A,true));
         info.addView(text(data.baseClubCount+" clubes catalogados · "+data.generatedClubCount+" clubes de temporada en el lote generado · "+data.customPlayerCount+" futbolistas personalizados · "+data.baseLeagueCount+" ligas base configuradas.",13,0xFFE4ECEE,false));
-        info.addView(text(data.firstDivisionTeams+" plantillas de primera + "+data.secondDivisionTeams+" de segunda cargadas · "+data.skillCount+" habilidades registradas · "+data.techniqueCount+" técnicas · "+data.officialBallCount+" balones.",12,0xFFB6C7CB,false));
+        info.addView(text(data.firstDivisionTeams+" plantillas de primera + "+data.secondDivisionTeams+" de segunda + "+data.thirdDivisionTeams+" de tercera cargadas · "+data.skillCount+" habilidades registradas · "+data.techniqueCount+" técnicas · "+data.officialBallCount+" balones.",12,0xFFB6C7CB,false));
         info.addView(text("Solo se habilitan para jugar las plantillas verificadas con 22 futbolistas e identificadores únicos.",12,0xFFFFD18A,false));
         for(String warning:data.warnings)info.addView(text("Aviso: "+warning,11,0xFFFFB0A0,false));
         info.addView(text("Versión de datos: "+data.dataVersion,11,0xFF9EB3B9,false));
