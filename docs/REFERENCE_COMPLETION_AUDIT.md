@@ -40,6 +40,11 @@ Esta auditoría inspecciona los archivos que forman la ruta nativa Android y los
 - Física simplificada de balón con gravedad, rebote, velocidad y límites del campo.
 
 ### Datos
+
+La inspección de los tres archivos de plantillas cubanas confirmó **52 equipos y 1.144 futbolistas**: primera división 16/352, segunda división 16/352 y tercera división 20/440. Los 1.144 IDs son únicos entre las tres divisiones; cada jugador tiene 35 atributos enteros entre 0 y 99 y una posición registrada. Los tres archivos marcan los datos como ficticios.
+
+El catálogo `data/custom_players.json` contiene dos perfiles adicionales. Sus IDs (`NOVA-PLAYER-0035` y `NOVA-PLAYER-0036`) no coinciden con los IDs de las plantillas cubanas, por lo que el método actual `applyTeam` no los aplica a las alineaciones cubanas. Se mantienen como perfiles catalogados, no como jugadores ya integrados en un club/plantilla nativa.
+
 - Lector Android para datos JSON canónicos.
 - Se rechazan plantillas con un número distinto de 22 jugadores o IDs vacíos/duplicados.
 - Se cargan plantillas cubanas de primera, segunda y tercera división.
