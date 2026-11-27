@@ -74,6 +74,12 @@ El catálogo `data/custom_players.json` contiene dos perfiles adicionales. Sus I
 
 ## Riesgos técnicos que deben resolverse
 
+9. Los dos perfiles de `custom_players.json` no coinciden con IDs de las plantillas cubanas; debe definirse su club/competición y completar una plantilla válida antes de presentarlos como seleccionables en el partido.
+10. Los catálogos de habilidades y técnicas están empaquetados, pero el motor C++ no los ejecuta todavía como un sistema de habilidades; el botón de regate/acción no equivale a integrar las 300 habilidades del catálogo.
+11. La UI de Online y los módulos opcionales son informativos; no existe todavía una implementación de red ni un instalador genérico de módulos.
+
+
+
 1. El runtime debe fallar de forma visible y recuperable si falta un JSON obligatorio; no debe continuar con catálogos parcialmente cargados como si fueran válidos.
 2. La lista de equipos jugables debe excluir equipos repetidos y evitar que un equipo sea seleccionado simultáneamente en ambos lados.
 3. Los atributos del jugador se aplican parcialmente: deben definirse y probarse los índices del vector de atributos, incluyendo atributos específicos de portero.
