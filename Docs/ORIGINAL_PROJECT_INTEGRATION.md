@@ -98,3 +98,17 @@ Se amplió la base Java/libGDX con:
 ### Pendiente
 
 Modelos de personajes finales con malla/esqueleto/texturas, clips de animación de fútbol, colisiones de postes/larguero, faltas y árbitro completos, control de cambio de jugador, reloj por períodos, sustituciones, audio, estadio detallado y pruebas de rendimiento en el teléfono objetivo.
+
+
+## Reconciliación completa del catálogo de datos — 2026-11-27
+
+Se comparó el árbol canónico `Nova-Nexus-C35/Nova-Workspace`, rama `main`, carpeta `Projects/Games/futbol-nova/data/`, con los datos existentes en esta rama Android.
+
+- Fuente original: **75 archivos** entre JSON y CSV.
+- Antes de esta reconciliación, 15 archivos estaban ya en `app/src/main/assets/data/original/`; los 15 coincidían byte por byte con Workspace.
+- Los 60 archivos restantes se preservan ahora en `data/original/`, y los 15 ya integrados también se espejan allí para que el catálogo completo tenga una sola raíz de archivo.
+- La copia conserva los nombres, subcarpetas y bytes originales. Los SHA de blobs de Git se cotejan con los de Workspace; no se regeneraron ni normalizaron los JSON/CSV.
+- `data/original/` es una copia fuente de preservación y **no se empaqueta automáticamente en el APK**. Los 15 assets ya existentes siguen siendo el subconjunto actualmente empaquetado; no se declara que el resto esté conectado al runtime, cargado por la app o jugable.
+- Los archivos grandes de plantillas, habilidades, competiciones históricas y directorios mundiales quedan preservados para su futura migración por módulos, sin aumentar ahora el tamaño del APK base.
+
+Índice y regla de uso: `data/README.md`. La fuente canónica permanece en Nova Workspace; cualquier futura modificación de estos datos debe reconciliarse explícitamente y volver a verificar los SHA entre ambos repositorios.
