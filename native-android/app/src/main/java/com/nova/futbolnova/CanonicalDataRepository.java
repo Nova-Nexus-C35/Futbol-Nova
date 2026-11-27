@@ -146,6 +146,11 @@ final class CanonicalDataRepository {
         else if("Segunda división".equals(division)) secondDivisionTeams=verifiedCount;
         else if("Tercera división".equals(division)) thirdDivisionTeams=verifiedCount;
     }
+    Team findTeamById(String id) {
+        if(id==null||id.trim().isEmpty())return null;
+        for(Team team:playableTeams)if(id.equals(team.id))return team;
+        return null;
+    }
     JSONObject read(Context c,String name) throws Exception {
         try(InputStream in=c.getAssets().open(name); ByteArrayOutputStream out=new ByteArrayOutputStream()) {
             byte[] b=new byte[16384]; int n;
