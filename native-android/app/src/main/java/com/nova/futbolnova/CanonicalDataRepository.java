@@ -46,6 +46,7 @@ final class CanonicalDataRepository {
     final List<Team> playableTeams = new ArrayList<>();
     final List<Module> modules = new ArrayList<>();
     final List<JSONObject> customPlayers = new ArrayList<>();
+    final List<JSONObject> originalClubs = new ArrayList<>();
     final Map<String,JSONObject> customPlayersById = new HashMap<>();
     final Set<String> loadedClubIds = new HashSet<>();
     final Set<String> loadedPlayerIds = new HashSet<>();
@@ -65,6 +66,17 @@ final class CanonicalDataRepository {
             customPlayerCount=customPlayers==null?0:customPlayers.length();
             if(customPlayers!=null) for(int i=0;i<customPlayers.length();i++){JSONObject p=customPlayers.getJSONObject(i);this.customPlayers.add(p);this.customPlayersById.put(p.optString("id",""),p);}
             dataVersion=custom.optString("schema_version","unknown");
+            JSONObject originalCatalog=read(context,sources.optString("original_clubs","original_clubs_2026.json"));
+            JSONArray originalEntries=originalCatalog.optJSONArray("clubs");
+            if(originalEntries==null||originalEntries.length()!=4)throw new IllegalStateException("original_clubs_2026.json debe contener los cuatro clubes originales");
+            Set<String> originalIds=new HashSet<>();
+            for(int i=0;i<originalEntries.length();i++){
+                JSONObject club=originalEntries.getJSONObject(i);
+                String id=club.optString("runtime_club_id","").trim();
+                if(id.isEmpty()||!originalIds.add(id))throw new IllegalStateException("Club original con ID vacío o duplicado: "+id);
+                this.originalClubs.add(club);
+            }
+
             JSONObject base=read(context,sources.optString("base_clubs","base_league_clubs_2026.json"));
             baseClubCount=base.optInt("club_count",base.optJSONArray("clubs")==null?0:base.optJSONArray("clubs").length());
             JSONObject global=read(context,sources.optString("season_clubs","global_clubs.generated.json"));
@@ -72,6 +84,7 @@ final class CanonicalDataRepository {
             JSONObject leagues=read(context,sources.optString("league_content","league_content_manifest.json"));
             baseLeagueCount=leagues.optJSONArray("base_leagues")==null?0:leagues.optJSONArray("base_leagues").length();
             loadModules(context,sources.optString("modules","optional_modules_catalog.json"));
+            loadRosterFile(context,sources.optString("original_club_rosters","players/nova_original_club_rosters_2026.json"),"Clubes originales");
             loadRosterFile(context,sources.optString("cuba_first_division","players/cuba_first_division.json"),"Primera división");
             loadRosterFile(context,sources.optString("cuba_second_division","players/cuba_second_division.json"),"Segunda división");
             loadRosterFile(context,sources.optString("cuba_third_division","cuba_players.json"),"Tercera división");
@@ -87,6 +100,7 @@ final class CanonicalDataRepository {
             playableTeams.clear();
             modules.clear();
             customPlayers.clear();
+            originalClubs.clear();
             customPlayersById.clear();
             loadedClubIds.clear();
             loadedPlayerIds.clear();
