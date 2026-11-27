@@ -276,3 +276,48 @@ Criterio de aceptación final: un partido completo 11v11 en 3D, con controles t�
 - [x] Corregir la validación inicial que asumía 25 joints totales: el rig `game_lite` tiene 25 huesos de cuerpo, y Ara añade `WeaponR`, `jaw` y ambos ojos (29 joints totales en el GLB actual).
 - [x] Ajustar los dos workflows a 25–29 joints; validar mesh+skin y que cada clip requerido tenga canales reproducibles.
 - [ ] Confirmar CI posterior a esta corrección y mantener el límite de 29 salvo que la documentación/licencia del rig cambie.
+
+## Sprint de estabilización para pruebas del propietario — 2026-11-27
+
+**Prioridad absoluta: conseguir un amistoso que pueda jugarse, pausarse, reanudarse, terminarse y volver a iniciarse en Android.** No se avanzará a Manager/Leyenda/Entrenador hasta cerrar esta aceptación.
+
+### Cambios aplicados en esta tanda
+- [x] Endurecer decisiones de pase frente a entradas nulas, jugadores inactivos y coordenadas no finitas.
+- [x] Evitar que una entrada nula o corrupta en la alineación provoque fallos al evaluar carriles de pase, rivales cercanos o conducción de IA.
+- [x] Rechazar entradas inválidas al evaluar una entrada/tackle en vez de devolver un resultado ambiguo.
+- [x] Añadir pruebas de regresión para alineaciones incompletas/corruptas y rivales con coordenadas no finitas.
+- [ ] Confirmar CI Android para el commit de código y pruebas de esta tanda.
+- [ ] Resolver cualquier fallo que reporte CI antes de seguir acumulando cambios.
+
+### Bloqueantes P0 antes de la primera prueba física
+- [ ] Verificar selección de equipos en pantalla: local, visitante, evitar duplicados y mostrar nombres completos.
+- [ ] Verificar inicio explícito del partido y saque inicial de equipo correcto.
+- [ ] Verificar joystick, diagonales, límites del campo, cambio de jugador y multitáctil mover+acción.
+- [ ] Verificar TIRO/PASE/ROBO, incluida posesión del jugador humano, recepción de pase y recuperación tras entrada.
+- [ ] Verificar goles, reinicios, saques de banda, córner, saque de puerta, falta, penalti y fuera de juego.
+- [ ] Verificar pausa, reanudación, descanso, cambio de lados, segundo tiempo y final.
+- [ ] Verificar sustituciones en descanso y ventanas, sin perder posesión ni el jugador controlado.
+- [ ] Verificar informe final, historial, exportación JSON/CSV y un segundo amistoso limpio.
+- [ ] Verificar cierre/reapertura de la app y restauración segura del partido guardado.
+- [ ] Probar modo offline con modelos GLB empaquetados y fallback procedural disponible.
+
+### Bloqueantes P1 para estabilizar la simulación
+- [ ] Completar pruebas de integración del ciclo real de balón dentro de FutbolNovaGame: pase → recepción → tiro → gol → saque inicial.
+- [ ] Añadir casos equivalentes para robo, falta/ventaja, expulsión, sustitución y reinicio.
+- [ ] Revisar que los equipos respeten las distancias reglamentarias y que los reinicios no teletransporten el partido de forma confusa.
+- [ ] Revisar el retraso visual al salir el balón: mantenerlo visible durante una breve pausa antes de ejecutar el reinicio, si no rompe la física ni la cámara.
+- [ ] Revisar que el portero distribuya el balón a un compañero libre y no siempre al más cercano.
+- [ ] Medir y corregir los casos en los que el balón queda suelto, se ancla al poseedor incorrecto o se pierde la continuidad del índice de posesión.
+- [ ] Revisar balance de IA: no disparar siempre desde el mismo punto, no despejar cuando existe un pase claro y no mantener al poseedor inmóvil.
+- [ ] Confirmar que el árbitro/ventaja no deja el partido en un estado sin reinicio.
+
+### Validación física que CI no puede sustituir
+- [ ] Instalar APK ARM64 en el Android del propietario.
+- [ ] Capturar pantalla de prepartido, controles, partido, descanso y final.
+- [ ] Probar multitáctil real, sensibilidad y alcance de pulgares.
+- [ ] Medir FPS, memoria, temperatura y batería con 22 modelos GLB.
+- [ ] Forzar pausa de Android, volver a la app y comprobar restauración.
+- [ ] Completar un amistoso de principio a fin y comenzar un segundo.
+- [ ] Registrar cada error con pasos para reproducirlo, captura y logcat cuando esté disponible.
+
+**Regla de aceptación:** el modo Amistosos solo se marca como terminado después de CI verde, pruebas automatizadas de integración y un partido completo aceptado en el dispositivo Android. La calidad visual tipo FIFA continúa como objetivo independiente y no debe confundirse con la aceptación funcional.
