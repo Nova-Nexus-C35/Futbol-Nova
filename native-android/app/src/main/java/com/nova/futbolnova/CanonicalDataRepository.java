@@ -47,6 +47,8 @@ final class CanonicalDataRepository {
     final List<Module> modules = new ArrayList<>();
     final List<JSONObject> customPlayers = new ArrayList<>();
     final Map<String,JSONObject> customPlayersById = new HashMap<>();
+    final Set<String> loadedClubIds = new HashSet<>();
+    final Set<String> loadedPlayerIds = new HashSet<>();
     final List<String> warnings = new ArrayList<>();
     int baseClubCount, generatedClubCount, customPlayerCount, baseLeagueCount;
     int firstDivisionTeams, secondDivisionTeams, thirdDivisionTeams, skillCount, techniqueCount, officialBallCount;
@@ -86,6 +88,8 @@ final class CanonicalDataRepository {
             modules.clear();
             customPlayers.clear();
             customPlayersById.clear();
+            loadedClubIds.clear();
+            loadedPlayerIds.clear();
             baseClubCount=generatedClubCount=customPlayerCount=baseLeagueCount=0;
             firstDivisionTeams=secondDivisionTeams=thirdDivisionTeams=0;
             skillCount=techniqueCount=officialBallCount=0;
@@ -102,16 +106,40 @@ final class CanonicalDataRepository {
     private void loadRosterFile(Context c,String file,String division) throws Exception {
         JSONObject root=read(c,file);
         JSONArray rosters=root.optJSONArray("rosters");
+        JSONArray attributeKeys=root.optJSONArray("attribute_keys");
         if(rosters==null)throw new IllegalStateException(file+" no contiene el arreglo rosters");
+        if(attributeKeys==null||attributeKeys.length()==0)throw new IllegalStateException(file+" no define attribute_keys");
         int playableBefore=playableTeams.size();
         for(int i=0;i<rosters.length();i++) {
             JSONObject r=rosters.optJSONObject(i);
             if(r==null)throw new IllegalStateException(file+" contiene una plantilla que no es un objeto");
+            String clubId=r.optString("club_id","").trim();
+            if(clubId.isEmpty()||!loadedClubIds.add(clubId))
+                throw new IllegalStateException(file+" contiene un club_id vacío o duplicado: "+clubId);
             JSONArray players=r.optJSONArray("players");
-            Team t=new Team(r.optString("club_id",""),r.optString("club_name","Club"),
+            if(players==null||players.length()!=22)
+                throw new IllegalStateException(file+" / "+clubId+" debe contener exactamente 22 jugadores");
+            for(int p=0;p<players.length();p++) {
+                JSONObject player=players.optJSONObject(p);
+                if(player==null)throw new IllegalStateException(file+" / "+clubId+" contiene un jugador inválido");
+                String playerId=player.optString("id","").trim();
+                if(playerId.isEmpty()||!loadedPlayerIds.add(playerId))
+                    throw new IllegalStateException(file+" contiene un player ID vacío o duplicado: "+playerId);
+                if(player.optString("name","").trim().isEmpty()||player.optString("position","").trim().isEmpty())
+                    throw new IllegalStateException(file+" / "+clubId+" / "+playerId+" no tiene nombre o posición");
+                JSONArray attributes=player.optJSONArray("attributes");
+                if(attributes==null||attributes.length()!=attributeKeys.length())
+                    throw new IllegalStateException(file+" / "+playerId+" no coincide con el contrato de atributos");
+                for(int a=0;a<attributes.length();a++) {
+                    double value=attributes.optDouble(a,Double.NaN);
+                    if(Double.isNaN(value)||Double.isInfinite(value)||value<0||value>99||value!=Math.rint(value))
+                        throw new IllegalStateException(file+" / "+playerId+" tiene un atributo fuera de 0..99");
+                }
+            }
+            Team t=new Team(clubId,r.optString("club_name","Club"),
                 r.optString("competition_id",""),division,players);
             if(t.isPlayable()) playableTeams.add(t);
-            else warnings.add("Plantilla no habilitada: "+t.name+" (requiere 22 jugadores únicos).");
+            else throw new IllegalStateException(file+" / "+clubId+" no supera la validación de plantilla");
         }
         int verifiedCount=playableTeams.size()-playableBefore;
         if("Primera división".equals(division)) firstDivisionTeams=verifiedCount;
