@@ -1,0 +1,3 @@
+[submodule "vendor/Soccer-27"]
+	path = vendor/Soccer-27
+	url = https://github.com/Wilberforcedev/Soccer-26-game.git
