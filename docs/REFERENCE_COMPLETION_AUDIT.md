@@ -204,3 +204,16 @@ No se encontró un estudio externo de diseño, fabricante de equipaciones ni pat
 ### Límite de migración al runtime actual
 
 El perfil y los clubes anteriores proceden del repositorio histórico `Nova-Workspace`. La rama activa de este repositorio `Futbol-Nova` usa actualmente IDs de clubes españoles para Anier y Máximo y el amistoso predeterminado Albor Madrid vs Litoral Barcelona; no contiene aún el catálogo `FN-NOVA-RDA`/Nova C35 ni importa estas plantillas al runtime Android nativo. Por eso, el perfil recuperado queda identificado con su club histórico correcto y no se reasigna a Albor, Litoral ni a un club cubano/español por conveniencia. La migración de Raymond y de los cuatro clubes originales requiere una decisión explícita de alcance y la integración/validación de sus catálogos en el runtime actual.
+
+
+## Actualización autorizada — cuatro clubes originales y auditoría ampliada — 2026-11-27
+
+La autorización posterior del propietario permitió integrar los cuatro clubes originales y recuperar Raymond. La nota anterior que indicaba que faltaba autorización queda supersedida por esta actualización.
+
+- Catálogo añadido: `data/original_clubs_2026.json` (Nova C35, FC Río de Argenti, Nova Génesis y Sangre Galáctica).
+- Plantillas añadidas: `data/players/nova_original_club_rosters_2026.json`. Nova C35 y FC Río de Argenti cargan 22 jugadores cada uno; Nova Génesis y Sangre Galáctica siguen sin roster y no son jugables.
+- Perfiles personalizados: `data/custom_players.json` contiene Anier, Máximo y Raymond. Anier y Máximo conservan sus clubes activos actuales y registran Nova C35 como afiliación histórica; Raymond conserva FC Río de Argenti.
+- El runtime nativo y la pantalla Inicio muestran los cuatro clubes y permiten elegir los dos con plantilla completa. El amistoso predeterminado Albor Madrid vs Litoral Barcelona se mantiene.
+- El validador comprueba las cuatro fichas de club, las dos plantillas originales, 22 jugadores por equipo, 35 atributos y vínculos actuales e históricos.
+- La investigación completa queda en `docs/CUSTOM_PLAYERS_LEAGUES_NATIONAL_TEAMS_AUDIT_2026-11-27.md`. El catálogo de 100 ligas y las 211 asociaciones no se presentan como ligas ni selecciones jugables.
+- Queda pendiente CI/compilación y la integración visual 3D de escudos, equipaciones y estadios. No se fusiona PR #5 sin autorización.
