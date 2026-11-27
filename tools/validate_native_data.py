@@ -166,6 +166,49 @@ def main():
             custom_ids.add(player_id)
         unmatched = len(custom_ids) - matched
 
+        # Custom profiles must remain attached to the exact stable club IDs
+        # recorded in the season club catalog. Names are display labels only.
+        spain_key = "spain_clubs"
+        if spain_key not in loaded:
+            fail("native_runtime_manifest.json: spain_clubs source is required to validate custom club membership")
+        season_clubs = loaded[spain_key].get("clubs")
+        if not isinstance(season_clubs, list):
+            fail(f"{sources[spain_key]}: clubs must be a list")
+        clubs_by_id = {}
+        for club in season_clubs:
+            if not isinstance(club, dict):
+                fail(f"{sources[spain_key]}: club entry must be an object")
+            club_id = str(club.get("id", "")).strip()
+            if not club_id or club_id in clubs_by_id:
+                fail(f"{sources[spain_key]}: missing or duplicate club ID {club_id!r}")
+            clubs_by_id[club_id] = club
+
+        custom_club_links = 0
+        draft_custom_clubs = set()
+        for player in custom:
+            player_id = str(player.get("id", "")).strip()
+            club_id = str(player.get("club_id", "")).strip()
+            if not club_id:
+                fail(f"{custom_source}: {player_id} has no stable club_id")
+            club = clubs_by_id.get(club_id)
+            if club is None:
+                fail(f"{custom_source}: {player_id} references unknown club_id {club_id}")
+            member_ids = club.get("player_ids")
+            if not isinstance(member_ids, list) or player_id not in member_ids:
+                fail(f"{sources[spain_key]}: {club_id} does not reference custom player {player_id}")
+            custom_club_links += 1
+            if club.get("status") != "playable":
+                draft_custom_clubs.add(club_id)
+
+        # Preferences are retained as profile metadata; they do not create
+        # national-team call-ups or playable squads on their own.
+        for player in custom:
+            preferred = player.get("preferred_national_team")
+            if preferred is not None and (
+                not isinstance(preferred, str) or len(preferred) != 3 or not preferred.isalpha()
+            ):
+                fail(f"{custom_source}: {player.get('id')} has invalid preferred_national_team")
+
     print(f"PASS: {checked} canonical JSON sources parse and remain inside data/.")
     print(f"PASS: {total_teams} Cuban rosters and {total_players} players have unique IDs and valid attributes.")
     print(f"PASS: {len(positions)} player positions are represented: {', '.join(sorted(positions))}.")
@@ -176,6 +219,13 @@ def main():
                 f"INFO: {unmatched} custom profile(s) do not match a current Cuban roster ID; "
                 "they are catalogued but are not applied to those match lineups."
             )
+        print(f"PASS: {custom_club_links} custom player profiles resolve to their exact season club IDs.")
+        if draft_custom_clubs:
+            print(
+                "INFO: custom-player clubs remain non-playable pending complete 22-player rosters: "
+                + ", ".join(sorted(draft_custom_clubs))
+            )
+        print("PASS: national-team preferences remain metadata and do not fabricate call-ups.")
     print("PASS: native-only runtime policy and product exclusions are intact.")
 
 
