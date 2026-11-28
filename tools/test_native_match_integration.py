@@ -50,6 +50,14 @@ require("originalClubsById.put(id,club)" in repository, "original club metadata 
 require("stadiumSeatingColor" in repository and "stadiumRoofColor" in repository,
         "team records must carry their stadium palette")
 require("homeTeam.stadiumName" in activity, "pre-match UI must display the selected home stadium")
+
+require("List<CanonicalDataRepository.Team> candidates" in activity,
+        "team picker must build a verified candidate list")
+require("if(!team.id.equals(otherId))candidates.add(team)" in activity,
+        "team picker must exclude the team already selected on the opposite side")
+require("CanonicalDataRepository.Team selected=candidates.get(which)" in activity,
+        "team picker must apply the selected filtered candidate, not an unfiltered index")
+
 require("nativeSetStadiumTheme(homeTeam.stadiumSeatingColor" in activity,
         "selected home stadium palette must be passed to the native renderer")
 require("Java_com_nova_futbolnova_MainActivity_nativeSetStadiumTheme" in engine, "native stadium theme JNI entry point is required")
