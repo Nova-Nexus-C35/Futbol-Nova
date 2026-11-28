@@ -65,6 +65,7 @@ final class CanonicalDataRepository {
     final Map<String,JSONObject> originalClubsById = new HashMap<>();
     final Set<String> loadedClubIds = new HashSet<>();
     final Set<String> loadedPlayerIds = new HashSet<>();
+    final List<String> nativeAttributeKeys = new ArrayList<>();
     final List<String> warnings = new ArrayList<>();
     int baseClubCount, generatedClubCount, customPlayerCount, baseLeagueCount;
     int firstDivisionTeams, secondDivisionTeams, thirdDivisionTeams, skillCount, techniqueCount, officialBallCount;
@@ -139,6 +140,17 @@ final class CanonicalDataRepository {
         JSONArray attributeKeys=root.optJSONArray("attribute_keys");
         if(rosters==null)throw new IllegalStateException(file+" no contiene el arreglo rosters");
         if(attributeKeys==null||attributeKeys.length()==0)throw new IllegalStateException(file+" no define attribute_keys");
+        List<String> currentAttributeKeys=new ArrayList<>();
+        Set<String> uniqueAttributeKeys=new HashSet<>();
+        for(int keyIndex=0;keyIndex<attributeKeys.length();keyIndex++){
+            String key=attributeKeys.optString(keyIndex,"").trim();
+            if(key.isEmpty()||!uniqueAttributeKeys.add(key))
+                throw new IllegalStateException(file+" contiene attribute_keys vacío o duplicado: "+key);
+            currentAttributeKeys.add(key);
+        }
+        if(nativeAttributeKeys.isEmpty())nativeAttributeKeys.addAll(currentAttributeKeys);
+        else if(!nativeAttributeKeys.equals(currentAttributeKeys))
+            throw new IllegalStateException(file+" no coincide con el contrato de atributos ya cargado");
         int playableBefore=playableTeams.size();
         for(int i=0;i<rosters.length();i++) {
             JSONObject r=rosters.optJSONObject(i);
@@ -224,20 +236,29 @@ final class CanonicalDataRepository {
         for(int i=0;i<Math.min(22,ordered.size());i++) {
             JSONObject p=ordered.get(i);
             JSONArray values=p.optJSONArray("attributes");
-            float acc=attribute(values,0,70),spd=attribute(values,1,70),drib=attribute(values,18,70);
-            float aware=attribute(values,22,70),tack=attribute(values,23,70),slide=attribute(values,24,70);
+            float acc=attribute(values,"acc",70),spd=attribute(values,"spd",70),drib=attribute(values,"drib",70);
+            float aware=attribute(values,"aware",70),tack=attribute(values,"tack",70),slide=attribute(values,"slide",70);
+            float dive=attribute(values,"dive",25),hand=attribute(values,"hand",25),kick=attribute(values,"kick",25);
+            float reflexes=attribute(values,"ref",25),goalkeeperSpeed=attribute(values,"gkspd",25),goalkeeperPosition=attribute(values,"gkpos",25);
             int overall=p.optInt("estimated_overall",70);
             float height=(float)p.optDouble("height_cm",175);
             JSONObject custom=customPlayersById.get(p.optString("id",""));
             if(custom!=null){
                 JSONObject ca=custom.optJSONObject("attributes");
-                if(ca!=null){acc=(float)ca.optDouble("acc",acc);spd=(float)ca.optDouble("spd",spd);drib=(float)ca.optDouble("drib",drib);aware=(float)ca.optDouble("aware",aware);tack=(float)ca.optDouble("tack",tack);slide=(float)ca.optDouble("slide",slide);}
+                if(ca!=null){
+                    acc=(float)ca.optDouble("acc",acc);spd=(float)ca.optDouble("spd",spd);drib=(float)ca.optDouble("drib",drib);
+                    aware=(float)ca.optDouble("aware",aware);tack=(float)ca.optDouble("tack",tack);slide=(float)ca.optDouble("slide",slide);
+                    dive=(float)ca.optDouble("dive",dive);hand=(float)ca.optDouble("hand",hand);kick=(float)ca.optDouble("kick",kick);
+                    reflexes=(float)ca.optDouble("ref",reflexes);goalkeeperSpeed=(float)ca.optDouble("gkspd",goalkeeperSpeed);goalkeeperPosition=(float)ca.optDouble("gkpos",goalkeeperPosition);
+                }
                 overall=custom.optInt("overall",overall);height=(float)custom.optDouble("height_cm",height);
             }
-            MainActivity.nativeSetPlayerProfile(slotStart+i,height,overall,(acc+spd)*.5f,drib,(aware+tack+slide)/3.0f);
+            MainActivity.nativeSetPlayerProfile(slotStart+i,height,overall,(acc+spd)*.5f,drib,(aware+tack+slide)/3.0f,
+                dive,hand,kick,reflexes,goalkeeperSpeed,goalkeeperPosition);
         }
     }
-    private static float attribute(JSONArray a,int index,float fallback) {
-        return a!=null&&index<a.length()?(float)a.optDouble(index,fallback):fallback;
+    private float attribute(JSONArray values,String key,float fallback) {
+        int index=nativeAttributeKeys.indexOf(key);
+        return values!=null&&index>=0&&index<values.length()?(float)values.optDouble(index,fallback):fallback;
     }
 }
