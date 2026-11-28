@@ -82,5 +82,45 @@
     "home_stadium_name": "Estadio del Fénix",
     "source": "owner_confirmed_pre_match_configuration_2026-11-28",
     "requires_verified_playable_rosters": true
+  },
+  "attribute_contract": {
+    "schema_version": "1.0.0",
+    "source": "attribute_keys in canonical 22-player roster JSON",
+    "custom_profile_source": "custom_players.json:players[].attributes",
+    "identity": "stable player id; active club association by club_id; historical affiliation by original_club_id",
+    "goalkeeper_keys": [
+      "dive",
+      "hand",
+      "kick",
+      "ref",
+      "gkspd",
+      "gkpos"
+    ],
+    "native_profile_order": [
+      "slot",
+      "height_cm",
+      "overall",
+      "pace",
+      "dribbling",
+      "defending",
+      "goalkeeperDiving",
+      "goalkeeperHandling",
+      "goalkeeperKicking",
+      "goalkeeperReflexes",
+      "goalkeeperSpeed",
+      "goalkeeperPositioning"
+    ],
+    "range": {
+      "minimum": 0,
+      "maximum": 99
+    },
+    "goalkeeper_behavior_mapping": {
+      "dive": "keeper dive reach and dive duration",
+      "hand": "keeper parry restitution and rebound control",
+      "kick": "keeper clearance power",
+      "ref": "keeper reaction window",
+      "gkspd": "keeper movement speed",
+      "gkpos": "keeper starting and tracking position"
+    }
   }
 }
