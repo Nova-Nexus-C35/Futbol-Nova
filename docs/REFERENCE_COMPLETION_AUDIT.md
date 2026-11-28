@@ -229,3 +229,28 @@ El amistoso predeterminado del runtime nativo queda actualizado a **Nova C35 (lo
 La pareja predeterminada Nova C35 vs FC Río de Argenti se conecta a los dos rosters canónicos de 22 jugadores. La ficha del equipo local proporciona automáticamente el estadio: Nova C35 selecciona Estadio del Fénix (`nova_c35`). Java pasa la paleta de gradas, cubierta y acentos al renderizador C++/OpenGL ES 3.0 por JNI; la pantalla previa y el marcador muestran el estadio local. El selector de local actualiza esta referencia al cambiar de equipo y evita iniciar con el mismo club en ambos lados.
 
 Se añade `tools/test_native_match_integration.py` al workflow para verificar estáticamente la conexión entre datos, selector, JNI, renderer, 22 actores, controles táctiles, IA básica y transiciones de gol/tiempo. Esta prueba no sustituye la prueba en dispositivo. El runtime ya tiene movimiento táctico heurístico, control del usuario, presión, pase, tiro, regate, lógica básica de portero, detección de gol, celebración, reinicio, descanso, segundo tiempo y final; siguen pendientes las reglas completas, IA táctica avanzada, animaciones y validación física en Android.
+
+## Reconciliación de perfiles y atributos — 2026-11-28
+
+Esta sección supersede cualquier frase anterior que indicara que Anier y Máximo no se aplicaban al runtime de exhibición o que Anier prefería Brasil.
+
+- Anier `NOVA-PLAYER-0035`: club activo Albor Madrid (`FN-ESP-REAL-MADRID`), nombre canónico Albor Madrid, club favorito Real Madrid, afiliación histórica/exhibición Nova C35 (`FN-NOVA-C35`), preferencia nacional CUB.
+- Máximo `NOVA-PLAYER-0036`: club activo Litoral Barcelona (`FN-ESP-BARCELONA`), afiliación histórica/exhibición Nova C35 (`FN-NOVA-C35`), preferencia nacional CUB.
+- Ambos IDs están presentes en el roster de exhibición Nova C35 y el repositorio Java aplica sus perfiles por ID estable al construir los slots nativos. Sus clubes activos se conservan en los metadatos; no se reasignan por nombre ni por nacionalidad.
+- `club_name` de Anier se alineó con el catálogo canónico: Albor Madrid. Real Madrid permanece como club favorito separado.
+- `tools/validate_native_data.py` verifica los seis campos de portero, los 35 atributos, IDs estables, club activo, nombre canónico, club original y preferencia CUB.
+
+## Contrato JSON → Java → JNI → C++
+
+Se añadió `attribute_contract` a `data/native_runtime_manifest.json`. Java lee los atributos por clave en `attribute_keys`, valida que los archivos compartan el mismo orden y transmite el perfil por `nativeSetPlayerProfile`. Los seis atributos de portero son `dive`, `hand`, `kick`, `ref`, `gkspd`, `gkpos`; C++ los usa para alcance/duración de salto, manejo del rebote, potencia de despeje, reflejos, velocidad y posicionamiento. `tools/test_native_match_integration.py` comprueba el cableado y `tools/validate_native_data.py` valida el contrato de datos.
+
+## Última validación CI y artefacto — 2026-11-28
+
+- Commit: `790e518183b617ca5be823a46522011c15676672`.
+- Run #46135038332: **success**; validación de datos, integración estática, JUnit, compilación Android y verificación ARM64.
+- Artefacto `futbol-nova-native-android-arm64`: 3,521,833 bytes; SHA-256 `1b2f724eb2b85ce3eb5b0260666690cb8f52e01bf6de3271ef7d2844dbbc7b95`; expira 2026-12-12.
+- El PR canónico #5 sigue Draft y no fusionado.
+- La prueba física en Android ARM64 y la implementación de reglas completas, IA táctica, animaciones, guardado y modos siguen pendientes.
+
+La copia antigua `Cumba35/Futbol-Nova` con Godot no es la fuente de verdad y su PR #11 está marcado como supersedido. El runtime oficial es Android nativo Java 17 + C++17 + OpenGL ES 3.0.
+
