@@ -16,7 +16,7 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 - [x] Integrar perfiles personalizados por ID estable y `club_id`, conservando las preferencias confirmadas. Anier (`NOVA-PLAYER-0035`) pertenece a Albor Madrid (`FN-ESP-REAL-MADRID`) y Máximo (`NOVA-PLAYER-0036`) a Litoral Barcelona (`FN-ESP-BARCELONA`); ambos tienen preferencia nacional CUB y afiliación histórica de exhibición Nova C35. `validate_native_data.py` verifica ID, club activo, nombre canónico, club original y preferencia; `CanonicalDataRepository` aplica perfiles por ID. No asignarlos por nombre/nacionalidad/preferencia solamente.
 - [x] Configurar el amistoso predeterminado como Nova C35 (`FN-NOVA-C35`) vs FC Río de Argenti (`FN-NOVA-RDA`): ambos rosters de exhibición contienen 22 jugadores y están habilitados en el runtime nativo. La pareja Albor Madrid vs Litoral Barcelona queda pendiente como trabajo separado hasta completar sus plantillas españolas de 22 jugadores; no sustituirla silenciosamente ni alterar los clubes activos de Anier y Máximo.
 - [x] Definir el contrato de atributos entre JSON, Java y C++ y comprobar las seis estadísticas de portero. `data/native_runtime_manifest.json` declara las claves y el orden JNI; Java resuelve por `attribute_keys` y C++ aplica los seis valores al comportamiento del portero.
-- [ ] Conectar el catálogo de habilidades/técnicas a acciones de juego reales o mantenerlas claramente desactivadas hasta su integración.
+- [x] Mantener los catálogos de habilidades/técnicas claramente identificados como no integrados en la UI; el botón `REGATE BÁSICO` ejecuta solo un empuje genérico de balón y no activa IDs del catálogo. La integración de habilidades individuales sigue pendiente.
 
 
 
@@ -131,4 +131,8 @@ La comprobación `tools/test_native_match_integration.py` es un contrato estáti
 - JNI transmite los seis valores a C++ junto con el perfil general.
 - El motor usa reflejos para la ventana de reacción, salto para alcance/duración, velocidad y posicionamiento para el desplazamiento, blocaje para suavizar el rebote y saque para la potencia de despeje.
 - Validación CI #46135038332: PASS en datos canónicos, contrato estático, JUnit, build Android y verificación ARM64. Pendiente la prueba instrumentada en dispositivo.
+
+### Catálogos de habilidades — estado explícito
+
+El catálogo se muestra como `habilidades catalogadas (no integradas)` y `técnicas catalogadas (no integradas)`. El control se etiqueta `REGATE BÁSICO` y solo realiza un empuje genérico; no se presenta como una habilidad del catálogo. La conexión de habilidades individuales a acciones reales sigue pendiente.
 
