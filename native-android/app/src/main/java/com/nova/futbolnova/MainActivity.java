@@ -48,7 +48,7 @@ public final class MainActivity extends Activity {
     private static native void nativeStartSecondHalf();
     private static native int nativeGetMatchPhase();
     private static native void nativeSetStadiumTheme(int seatingColor,int accentColor,int roofColor,int secondaryAccentColor);
-    static native void nativeSetPlayerProfile(int slot,float heightCm,int overall,float pace,float dribbling,float defending);
+    static native void nativeSetPlayerProfile(int slot,float heightCm,int overall,float pace,float dribbling,float defending,float goalkeeperDiving,float goalkeeperHandling,float goalkeeperKicking,float goalkeeperReflexes,float goalkeeperSpeed,float goalkeeperPositioning);
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
