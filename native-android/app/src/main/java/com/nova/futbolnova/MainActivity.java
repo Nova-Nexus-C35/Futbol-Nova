@@ -158,11 +158,10 @@ public final class MainActivity extends Activity {
         }).setNegativeButton("Cancelar",null).show();
     }
     private void chooseTeam(boolean home){
-        List<CanonicalDataRepository.Team> candidates=new ArrayList<>();
         String otherId=home?(awayTeam==null?"":awayTeam.id):(homeTeam==null?"":homeTeam.id);
-        for(CanonicalDataRepository.Team team:data.playableTeams){
-            if(!team.id.equals(otherId))candidates.add(team);
-        }
+        List<CanonicalDataRepository.Team> candidates=TeamSelectionPolicy.excludingId(
+            data.playableTeams,team->team.id,otherId
+        );
         if(candidates.isEmpty()){toast("No hay otro equipo con una plantilla verificada de 22 jugadores.");return;}
         String[] names=new String[candidates.size()];
         for(int i=0;i<names.length;i++){
