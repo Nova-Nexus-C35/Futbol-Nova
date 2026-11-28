@@ -221,3 +221,8 @@ La documentación describe el alcance deseado, no demuestra que esas funciones e
 - [Workspace — proyecto histórico](https://github.com/Cumba35/Nova-Workspace/tree/main/proyectos/juegos/futbol-nova)
 - [Nota de repositorio Workspace](https://github.com/Cumba35/Nova-Workspace/blob/main/documentacion/notas-repositorios/futbol-nova.md)
 - Dropbox Paper: ficha de recuperación 2026-11-26; documento maestro de diseño; arquitectura/configuración/licencias 2026-11-23; manifiesto de activos 2026-11-20.
+
+
+## Addendum — decisión de amistoso predeterminado (2026-11-28)
+
+La decisión anterior que conservaba Albor Madrid vs Litoral Barcelona queda sustituida para el amistoso predeterminado del runtime nativo. La configuración vigente es **Nova C35** (`FN-NOVA-C35`) como local y **FC Río de Argenti** (`FN-NOVA-RDA`) como visitante. Los dos equipos disponen de 22 perfiles de exhibición verificados en la fuente canónica. Las plantillas españolas y la asignación de club activo de Anier/Máximo no cambian; este ajuste afecta únicamente a la selección inicial del amistoso.
