@@ -1,6 +1,7 @@
 package com.nova.futbolnova;
 
 import android.content.Context;
+import android.graphics.Color;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
@@ -17,9 +18,22 @@ import java.util.Map;
 final class CanonicalDataRepository {
     static final class Team {
         final String id, name, competitionId, division;
+        final String stadiumId, stadiumName;
+        final int stadiumSeatingColor, stadiumAccentColor, stadiumRoofColor, stadiumSecondaryAccentColor;
         final JSONArray players;
-        Team(String id, String name, String competitionId, String division, JSONArray players) {
+        Team(String id, String name, String competitionId, String division, JSONArray players, JSONObject originalClub) {
             this.id=id; this.name=name; this.competitionId=competitionId; this.division=division; this.players=players;
+            JSONObject stadium=originalClub==null?null:originalClub.optJSONObject("stadium");
+            stadiumId=stadium==null?"":stadium.optString("id","");
+            stadiumName=stadium==null?"Estadio pendiente":stadium.optString("name","Estadio pendiente");
+            stadiumSeatingColor=parseColor(stadium==null?"":stadium.optString("seating",""),0xFF183B38);
+            stadiumAccentColor=parseColor(stadium==null?"":stadium.optString("accent",""),0xFFB8E85A);
+            stadiumRoofColor=parseColor(stadium==null?"":stadium.optString("roof",""),0xFF10242B);
+            stadiumSecondaryAccentColor=parseColor(stadium==null?"":stadium.optString("secondary_accent",""),0xFFE4ECEE);
+        }
+        private static int parseColor(String value,int fallback) {
+            try { return value!=null&&value.startsWith("#")?Color.parseColor(value):fallback; }
+            catch (IllegalArgumentException ignored) { return fallback; }
         }
         boolean isPlayable() {
             if (players == null || players.length() != 22) return false;
@@ -48,6 +62,7 @@ final class CanonicalDataRepository {
     final List<JSONObject> customPlayers = new ArrayList<>();
     final List<JSONObject> originalClubs = new ArrayList<>();
     final Map<String,JSONObject> customPlayersById = new HashMap<>();
+    final Map<String,JSONObject> originalClubsById = new HashMap<>();
     final Set<String> loadedClubIds = new HashSet<>();
     final Set<String> loadedPlayerIds = new HashSet<>();
     final List<String> warnings = new ArrayList<>();
@@ -75,6 +90,7 @@ final class CanonicalDataRepository {
                 String id=club.optString("runtime_club_id","").trim();
                 if(id.isEmpty()||!originalIds.add(id))throw new IllegalStateException("Club original con ID vacío o duplicado: "+id);
                 this.originalClubs.add(club);
+                this.originalClubsById.put(id,club);
             }
 
             JSONObject base=read(context,sources.optString("base_clubs","base_league_clubs_2026.json"));
@@ -151,7 +167,7 @@ final class CanonicalDataRepository {
                 }
             }
             Team t=new Team(clubId,r.optString("club_name","Club"),
-                r.optString("competition_id",""),division,players);
+                r.optString("competition_id",""),division,players,originalClubsById.get(clubId));
             if(t.isPlayable()) playableTeams.add(t);
             else throw new IllegalStateException(file+" / "+clubId+" no supera la validación de plantilla");
         }
