@@ -18,7 +18,7 @@
 | Fecha de nacimiento | 14/04/2001 (`2001-04-14`) |
 | Edad de referencia | 25 años al 14/11/2026; calcular dinámicamente |
 | País de nacimiento / nacionalidad registrada | Cuba (`CUB`) |
-| Selección preferida | Brasil (`BRA`), sujeta a elegibilidad |
+| Selección preferida | Cuba (`CUB`), sujeta a elegibilidad |
 | Altura | 171 cm |
 | Peso | 65 kg |
 | Posición principal / secundaria | MCO / MC |
@@ -28,7 +28,7 @@
 | Media general (GRL) | **92** |
 | Potencial (POT) | **97** |
 
-La selección preferida no cambia la nacionalidad ni concede elegibilidad automática. El club favorito no confirma contrato ni historial contractual.
+La selección preferida no cambia la nacionalidad ni concede elegibilidad automática. La preferencia vigente es Cuba (`CUB`) según la reconciliación de configuración del 27-11-2026. El club activo de temporada es Albor Madrid (`FN-ESP-REAL-MADRID`); Nova C35 (`FN-NOVA-C35`) es su afiliación de exhibición/histórica. Real Madrid se conserva como club favorito, no como nombre del club activo. El club favorito no confirma contrato ni historial contractual.
 
 ## Media general y potencial
 
