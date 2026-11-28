@@ -21,7 +21,8 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 
 
 - [ ] Validación estricta de todos los catálogos canónicos.
-- [ ] Pruebas de selección de dos equipos distintos.
+- [x] Selector Android filtra el equipo ya elegido en el lado contrario y aplica el ID estable del candidato seleccionado; verificación estática en `tools/test_native_match_integration.py`.
+- [ ] Prueba instrumentada Android de selección de dos equipos distintos.
 - [ ] Pruebas de atributos y perfiles personalizados por ID estable.
 - [ ] Pruebas de reloj, pausa, descanso y segundo tiempo.
 - [ ] Pruebas de gol, reinicio y cambio de lado.
