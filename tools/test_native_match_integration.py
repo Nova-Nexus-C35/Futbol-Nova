@@ -85,7 +85,7 @@ require("data.applyTeam(0,homeTeam)" in activity and "data.applyTeam(11,awayTeam
         "both verified 11-player sides must be applied to native player slots")
 require('customPlayersById.get(p.optString("id",""))' in repository,
         "custom profiles must override roster data by stable player ID")
-require('attribute(values,String key' in repository and 'nativeAttributeKeys.indexOf(key)' in repository,
+require('attribute(JSONArray values,String key' in repository and 'nativeAttributeKeys.indexOf(key)' in repository,
         "Java must resolve player attributes by canonical JSON keys, not positional magic numbers")
 goalkeeper_keys = ("dive", "hand", "kick", "ref", "gkspd", "gkpos")
 for key in goalkeeper_keys:
