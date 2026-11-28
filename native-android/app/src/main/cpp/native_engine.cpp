@@ -450,7 +450,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeFr
  draw(standMesh,vp,model(0,0,0,1,1,1),.055f,.085f,.12f);
  draw(fieldMesh,vp,identity(),.035f,.34f,.13f);
  draw(lineMesh,vp,identity(),.88f,.94f,.85f);
- draw(goalMesh,vp,identity(),.92f,.95f,.96f);
+ draw(goalMesh,vp,identity(),stadiumSecondaryColor.x,stadiumSecondaryColor.y,stadiumSecondaryColor.z);
  for(int i=0;i<22;i++){float yaw=i==controlledPlayer?playerYaw:(i<11?3.1415926f:0.0f);drawPlayer(vp,players[i],i<11,yaw,i);}
  draw(sphereMesh,vp,model(ballX,ballY,ballZ,.22f,.22f,.22f),.96f,.96f,.92f);
 }
