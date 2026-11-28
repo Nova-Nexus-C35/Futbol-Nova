@@ -28,6 +28,8 @@ public final class MainActivity extends Activity {
     private CanonicalDataRepository.Team homeTeam, awayTeam;
     private String currentScreen="INICIO";
     private boolean matchRunning=false;
+    private boolean userPausedMatch=false;
+    private boolean lifecyclePausedMatch=false;
     private int matchMinutes=3;
     private final Handler matchUiHandler=new Handler();
     private TextView scoreboard;
@@ -208,7 +210,8 @@ public final class MainActivity extends Activity {
     private void startMatch(){
         if(homeTeam==null||awayTeam==null||homeTeam.id.equals(awayTeam.id)){toast("Selecciona dos equipos diferentes con 22 jugadores únicos.");return;}
         if(game!=null)game.onPause();
-        matchRunning=true;nativeSetMatchDurationMinutes(matchMinutes);nativePause(false);
+        matchRunning=true;userPausedMatch=false;lifecyclePausedMatch=false;
+        nativeSetMatchDurationMinutes(matchMinutes);nativePause(false);
         root.removeAllViews();
         FrameLayout gameRoot=new FrameLayout(this);game=new GameSurface();
         gameRoot.addView(game);
@@ -231,7 +234,17 @@ public final class MainActivity extends Activity {
         }};
         matchUiHandler.post(scoreRefresh);
         gameRoot.addView(new TouchHud());
-        Button pause=button("PAUSA",()->{nativePause(true);new AlertDialog.Builder(this).setTitle("Partido pausado").setItems(new String[]{"Reanudar","Salir del partido"},(d,w)->{if(w==0)nativePause(false);else returnToMenu();}).setOnCancelListener(d->nativePause(false)).show();});
+        Button pause=button("PAUSA",()->{
+            userPausedMatch=true;
+            nativePause(true);
+            new AlertDialog.Builder(this).setTitle("Partido pausado")
+                .setItems(new String[]{"Reanudar","Salir del partido"},(d,w)->{
+                    if(w==0){userPausedMatch=false;nativePause(false);}
+                    else returnToMenu();
+                })
+                .setOnCancelListener(d->{userPausedMatch=false;nativePause(false);})
+                .show();
+        });
         FrameLayout.LayoutParams pp=new FrameLayout.LayoutParams(dp(112),dp(48),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);gameRoot.addView(pause,pp);
         root.addView(gameRoot);
     }
@@ -255,7 +268,7 @@ public final class MainActivity extends Activity {
             .setNegativeButton("VOLVER AL MENÚ",(d,w)->returnToMenu()).show();
     }
     private void returnToMenu(){
-        matchRunning=false;
+        matchRunning=false;userPausedMatch=false;lifecyclePausedMatch=false;
         if(scoreRefresh!=null)matchUiHandler.removeCallbacks(scoreRefresh);
         scoreboard=null;skipGoalButton=null;nativePause(true);
         if(game!=null){game.onPause();game=null;}
@@ -276,8 +289,19 @@ public final class MainActivity extends Activity {
                 @Override public void onDrawFrame(javax.microedition.khronos.opengles.GL10 gl){nativeFrame();}
             });setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);}
     }
-    @Override protected void onPause(){if(game!=null)game.onPause();super.onPause();}
-    @Override protected void onResume(){super.onResume();if(game!=null)game.onResume();}
+    @Override protected void onPause(){
+        if(matchRunning){lifecyclePausedMatch=true;nativePause(true);}
+        if(game!=null)game.onPause();
+        super.onPause();
+    }
+    @Override protected void onResume(){
+        super.onResume();
+        if(game!=null)game.onResume();
+        if(lifecyclePausedMatch){
+            lifecyclePausedMatch=false;
+            if(matchRunning&&!userPausedMatch)nativePause(false);
+        }
+    }
     private static native void nativeInit();
     private static native void nativeResize(int width,int height);
     private static native void nativeFrame();
