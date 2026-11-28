@@ -31,6 +31,12 @@ std::array<float,22> playerHeight{};
 std::array<float,22> playerPace{};
 std::array<float,22> playerDribbling{};
 std::array<float,22> playerDefending{};
+std::array<float,22> playerGoalkeeperDiving{};
+std::array<float,22> playerGoalkeeperHandling{};
+std::array<float,22> playerGoalkeeperKicking{};
+std::array<float,22> playerGoalkeeperReflexes{};
+std::array<float,22> playerGoalkeeperSpeed{};
+std::array<float,22> playerGoalkeeperPositioning{};
 std::array<int,22> playerOverall{};
 struct KeeperState { float diveTimer=0.0f; float diveX=0.0f; };
 std::array<KeeperState,2> keepers{};
@@ -191,12 +197,17 @@ void drawPlayer(const std::array<float,16>&vp,V3 p,bool home,float yaw,int slot)
 }
 void updateKeeper(int team,float dt){
  int slot=team==0?0:11;
+ size_t profile=(size_t)slot;
+ float diving=std::clamp(playerGoalkeeperDiving[profile],0.0f,99.0f)/99.0f;
+ float reflexes=std::clamp(playerGoalkeeperReflexes[profile],0.0f,99.0f)/99.0f;
+ float keeperSpeed=std::clamp(playerGoalkeeperSpeed[profile],0.0f,99.0f)/99.0f;
+ float positioning=std::clamp(playerGoalkeeperPositioning[profile],0.0f,99.0f)/99.0f;
  float direction=team==0?(homeDefendsNegative?-1.0f:1.0f):(homeDefendsNegative?1.0f:-1.0f);
  float goalZ=direction*52.5f;
  float homeLine=direction*49.5f;
  KeeperState &state=keepers[(size_t)team];
  state.diveTimer=std::max(0.0f,state.diveTimer-dt);
- float targetX=std::clamp(ballX*.20f,-2.7f,2.7f);
+ float targetX=std::clamp(ballX*(.16f+.04f*positioning),-2.7f,2.7f);
  bool ballComing=(ballVZ*direction)>0.8f && (ballZ*direction)>34.0f;
  float interceptTime=-1.0f;
  if(ballComing){
@@ -205,15 +216,15 @@ void updateKeeper(int team,float dt){
    targetX=std::clamp(ballX+ballVX*interceptTime,-3.0f,3.0f);
   else interceptTime=-1.0f;
  }
- float speed=state.diveTimer>0?7.2f:5.0f;
- float dx=targetX-players[(size_t)slot].x;
- players[(size_t)slot].x+=std::clamp(dx,-speed*dt,speed*dt);
+ float speed=state.diveTimer>0?(6.4f+.8f*diving):(4.2f+1.3f*keeperSpeed);
+ float dx=targetX-players[profile].x;
+ players[profile].x+=std::clamp(dx,-speed*dt,speed*dt);
  float targetZ=homeLine;
  if((ballZ*direction)>38.0f && (ballZ*direction)<51.0f)
-  targetZ=homeLine-direction*.65f;
- float dz=targetZ-players[(size_t)slot].z;
- players[(size_t)slot].z+=std::clamp(dz,-3.2f*dt,3.2f*dt);
- players[(size_t)slot].x=std::clamp(players[(size_t)slot].x,-3.15f,3.15f);
+  targetZ=homeLine-direction*(.35f+.30f*positioning);
+ float dz=targetZ-players[profile].z;
+ players[profile].z+=std::clamp(dz,-3.2f*dt,speed*.62f*dt);
+ players[profile].x=std::clamp(players[profile].x,-3.15f,3.15f);
  // The keeper's end changes at halftime; clamp against the current defended goal.
  float minZ,maxZ;
  if(team==0){
@@ -223,12 +234,14 @@ void updateKeeper(int team,float dt){
   minZ=homeDefendsNegative?48.8f:-51.0f;
   maxZ=homeDefendsNegative?51.0f:-48.8f;
  }
- players[(size_t)slot].z=std::clamp(players[(size_t)slot].z,minZ,maxZ);
+ players[profile].z=std::clamp(players[profile].z,minZ,maxZ);
+ float reactionWindow=.32f+.30f*reflexes;
+ float diveReach=.80f+.85f*diving;
  if(state.diveTimer<=0.0f && ballComing && interceptTime>=0.0f &&
-    interceptTime<.62f && ballY<2.15f &&
-    std::abs((ballX+ballVX*interceptTime)-players[(size_t)slot].x)<1.65f){
-  state.diveTimer=.48f;
-  state.diveX=(ballX+ballVX*interceptTime)>=players[(size_t)slot].x?1.0f:-1.0f;
+    interceptTime<reactionWindow && ballY<2.15f &&
+    std::abs((ballX+ballVX*interceptTime)-players[profile].x)<diveReach){
+  state.diveTimer=.30f+.18f*diving;
+  state.diveX=(ballX+ballVX*interceptTime)>=players[profile].x?1.0f:-1.0f;
  }
 }
 void collideGoalFrame(){
@@ -414,8 +427,10 @@ void update(float dt){
    float cx=oldX+segX*t,cz=oldZ+segZ*t;
    float ox=cx-px,oz=cz-pz;
    bool keeper=(i==0||i==11);
-   float radius=keeper?(.94f+(keepers[(size_t)(i/11)].diveTimer>0?.22f:0.0f)):.57f;
-   float verticalLimit=keeper?2.05f:1.72f;
+   float diving=keeper?std::clamp(playerGoalkeeperDiving[(size_t)i],0.0f,99.0f)/99.0f:0.0f;
+   float handling=keeper?std::clamp(playerGoalkeeperHandling[(size_t)i],0.0f,99.0f)/99.0f:0.0f;
+   float radius=keeper?(.90f+.04f*diving+(keepers[(size_t)(i/11)].diveTimer>0?.10f+.12f*diving:0.0f)):.57f;
+   float verticalLimit=keeper?1.90f+.20f*diving:1.72f;
    float d2=ox*ox+oz*oz;
    if(d2<radius*radius && ballY<verticalLimit && ballY>.12f){
     float d=std::sqrt(std::max(d2,.0001f));
@@ -424,13 +439,17 @@ void update(float dt){
     else{nx=ox/d;nz=oz/d;}
     ballX=cx+nx*(radius+.02f);ballZ=cz+nz*(radius+.02f);
     float vn=ballVX*nx+ballVZ*nz;
-    if(vn<0){float restitution=keeper?.78f:.48f;ballVX-=(1.0f+restitution)*vn*nx;ballVZ-=(1.0f+restitution)*vn*nz;}
+    if(vn<0){
+     float restitution=keeper?(.78f-.28f*handling):.48f;
+     ballVX-=(1.0f+restitution)*vn*nx;ballVZ-=(1.0f+restitution)*vn*nz;
+    }
     if(keeper){
-     // A keeper parry must send the ball away from the defended goal, not merely reflect it.
+     // Goalkeeper handling softens the parry; kicking controls the clearance power.
+     float kicking=std::clamp(playerGoalkeeperKicking[(size_t)i],0.0f,99.0f)/99.0f;
      float clearanceDirection=i==0?(homeDefendsNegative?1.0f:-1.0f):(homeDefendsNegative?-1.0f:1.0f);
-     ballVZ=clearanceDirection*std::max(5.5f,std::abs(ballVZ)*.72f);
-     ballVX+=std::clamp((ballX-px)*2.0f,-4.5f,4.5f);
-     ballVY=std::max(ballVY,1.8f);
+     ballVZ=clearanceDirection*std::max(4.0f+1.5f*kicking,std::abs(ballVZ)*(.55f+.17f*kicking));
+     ballVX+=std::clamp((ballX-px)*(2.0f-.8f*handling),-4.5f,4.5f);
+     ballVY=std::max(ballVY,1.0f+.8f*(1.0f-handling));
      keepers[(size_t)(i/11)].diveTimer=std::max(keepers[(size_t)(i/11)].diveTimer,.20f);
     }
     break;
@@ -511,14 +530,23 @@ extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeTo
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeSetPlayerProfile(
-    JNIEnv*,jclass,jint slot,jfloat heightCm,jint overall,jfloat pace,jfloat dribbling,jfloat defending){
+    JNIEnv*,jclass,jint slot,jfloat heightCm,jint overall,jfloat pace,jfloat dribbling,jfloat defending,
+    jfloat goalkeeperDiving,jfloat goalkeeperHandling,jfloat goalkeeperKicking,jfloat goalkeeperReflexes,
+    jfloat goalkeeperSpeed,jfloat goalkeeperPositioning){
  std::lock_guard<std::mutex> lock(stateMutex);
  if(slot<0||slot>=22)return;
- playerHeight[(size_t)slot]=std::clamp((float)heightCm,150.0f,205.0f);
- playerOverall[(size_t)slot]=std::clamp((int)overall,1,99);
- playerPace[(size_t)slot]=std::clamp((float)pace,1.0f,99.0f);
- playerDribbling[(size_t)slot]=std::clamp((float)dribbling,1.0f,99.0f);
- playerDefending[(size_t)slot]=std::clamp((float)defending,1.0f,99.0f);
+ size_t index=(size_t)slot;
+ playerHeight[index]=std::clamp((float)heightCm,150.0f,205.0f);
+ playerOverall[index]=std::clamp((int)overall,1,99);
+ playerPace[index]=std::clamp((float)pace,1.0f,99.0f);
+ playerDribbling[index]=std::clamp((float)dribbling,1.0f,99.0f);
+ playerDefending[index]=std::clamp((float)defending,1.0f,99.0f);
+ playerGoalkeeperDiving[index]=std::clamp((float)goalkeeperDiving,0.0f,99.0f);
+ playerGoalkeeperHandling[index]=std::clamp((float)goalkeeperHandling,0.0f,99.0f);
+ playerGoalkeeperKicking[index]=std::clamp((float)goalkeeperKicking,0.0f,99.0f);
+ playerGoalkeeperReflexes[index]=std::clamp((float)goalkeeperReflexes,0.0f,99.0f);
+ playerGoalkeeperSpeed[index]=std::clamp((float)goalkeeperSpeed,0.0f,99.0f);
+ playerGoalkeeperPositioning[index]=std::clamp((float)goalkeeperPositioning,0.0f,99.0f);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeSwitchPlayer(JNIEnv*,jclass){
