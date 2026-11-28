@@ -105,3 +105,17 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 - Contrato del runtime: `data/native_runtime_manifest.json`.
 - Estado y tareas: este documento y `docs/REFERENCE_COMPLETION_AUDIT.md`.
 - Compilación: `.github/workflows/futbol-nova-native-android.yml`.
+
+
+## Integración nativa — 2026-11-28
+
+- [x] Amistoso rápido Nova C35 vs FC Río de Argenti, con dos rosters de 22 jugadores únicos cargados en los slots nativos 0–10 y 11–21.
+- [x] Al cambiar el equipo local, el estadio se obtiene de la ficha canónica del club; Nova C35 selecciona Estadio del Fénix (`nova_c35`).
+- [x] La paleta de gradas, cubierta y acentos del estadio local se envía por JNI y se aplica al render OpenGL ES 3.0.
+- [x] Añadir verificación estática de integración para los dos rosters, estadio, conexión de controles táctiles, IA básica y transiciones de gol/tiempo.
+- [ ] Ejecutar una prueba completa en teléfono Android ARM64; CI y verificación estática no sustituyen esta prueba.
+- [ ] Completar reglas: saques, banda, córner, saque de meta, faltas, ventaja, tarjetas, penaltis, fuera de juego y árbitro.
+- [ ] Ampliar IA táctica y porteros más allá de las heurísticas actuales.
+- [ ] Completar modelos, equipaciones originales, animaciones, estadios con activos finales y cámaras.
+
+La comprobación `tools/test_native_match_integration.py` es un contrato estático de conexiones del código; no simula un partido ni acredita que todas las reglas estén implementadas.
