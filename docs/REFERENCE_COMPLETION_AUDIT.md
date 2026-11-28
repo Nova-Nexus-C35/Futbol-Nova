@@ -217,3 +217,8 @@ La autorización posterior del propietario permitió integrar los cuatro clubes 
 - El validador comprueba las cuatro fichas de club, las dos plantillas originales, 22 jugadores por equipo, 35 atributos y vínculos actuales e históricos.
 - La investigación completa queda en `docs/CUSTOM_PLAYERS_LEAGUES_NATIONAL_TEAMS_AUDIT_2026-11-27.md`. El catálogo de 100 ligas y las 211 asociaciones no se presentan como ligas ni selecciones jugables.
 - Queda pendiente CI/compilación y la integración visual 3D de escudos, equipaciones y estadios. No se fusiona PR #5 sin autorización.
+
+
+## Decisión del propietario — 2026-11-28
+
+El amistoso predeterminado del runtime nativo queda actualizado a **Nova C35 (local) vs FC Río de Argenti (visitante)**, usando los IDs estables `FN-NOVA-C35` y `FN-NOVA-RDA`. Ambos clubes tienen plantillas de exhibición completas de 22 jugadores en `data/players/nova_original_club_rosters_2026.json`. Esta decisión sustituye el valor anterior Albor Madrid vs Litoral Barcelona para el inicio rápido del runtime. Las plantillas españolas siguen siendo un trabajo separado y no se habilitan por este cambio. No se modifica la afiliación ni el club activo de Anier o Máximo.
