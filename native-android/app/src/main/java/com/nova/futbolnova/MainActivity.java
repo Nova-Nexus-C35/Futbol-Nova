@@ -156,11 +156,24 @@ public final class MainActivity extends Activity {
         }).setNegativeButton("Cancelar",null).show();
     }
     private void chooseTeam(boolean home){
-        if(data.playableTeams.isEmpty()){toast("No hay plantillas verificadas disponibles.");return;}
-        String[] names=new String[data.playableTeams.size()];for(int i=0;i<names.length;i++){CanonicalDataRepository.Team t=data.playableTeams.get(i);names[i]=t.name+" · "+t.division;}
+        List<CanonicalDataRepository.Team> candidates=new ArrayList<>();
+        String otherId=home?(awayTeam==null?"":awayTeam.id):(homeTeam==null?"":homeTeam.id);
+        for(CanonicalDataRepository.Team team:data.playableTeams){
+            if(!team.id.equals(otherId))candidates.add(team);
+        }
+        if(candidates.isEmpty()){toast("No hay otro equipo con una plantilla verificada de 22 jugadores.");return;}
+        String[] names=new String[candidates.size()];
+        for(int i=0;i<names.length;i++){
+            CanonicalDataRepository.Team team=candidates.get(i);
+            names[i]=team.name+" · "+team.division;
+        }
         new AlertDialog.Builder(this).setTitle(home?"Equipo local":"Equipo visitante").setItems(names,(d,which)->{
-            if(home)homeTeam=data.playableTeams.get(which);else awayTeam=data.playableTeams.get(which);
-            if(homeTeam==awayTeam&&data.playableTeams.size()>1){toast("Elige dos equipos diferentes.");if(home)homeTeam=data.playableTeams.get(0);else awayTeam=data.playableTeams.get(1);}
+            CanonicalDataRepository.Team selected=candidates.get(which);
+            if(home)homeTeam=selected;else awayTeam=selected;
+            if(homeTeam!=null&&awayTeam!=null&&homeTeam.id.equals(awayTeam.id)){
+                toast("Los equipos local y visitante deben ser diferentes.");
+                return;
+            }
             showScreen("INICIO");
         }).setNegativeButton("Cancelar",null).show();
     }
