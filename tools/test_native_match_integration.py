@@ -63,7 +63,7 @@ require("void updateKeeper" in engine and "takeShot" in engine,
         "basic goalkeeper and opponent decision logic must remain connected")
 for control in ("joystickZone", "shootZone", "passZone", "skillZone", "pressZone"):
     require(control in engine, f"native touch mapping missing {control}")
-for rule in ("crossedPositive", "crossedNegative", "matchPhase==1", "matchPhase==2"):
+for rule in ("crossedPositive", "crossedNegative", "matchPhase==0", "matchPhase=1", "matchPhase==2"):
     require(rule in engine, f"basic match phase/goal transition missing {rule}")
 require("nativeStartSecondHalf" in activity and "showFullTimeDialog" in activity,
         "halftime and full-time UI transitions must remain connected")
