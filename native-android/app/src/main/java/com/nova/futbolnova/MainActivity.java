@@ -125,7 +125,7 @@ public final class MainActivity extends Activity {
         match.addView(text(data.playableTeams.size()+" plantillas completas verificadas para el motor nativo · 22 jugadores por equipo.",12,0xFFB6C7CB,false));
         LinearLayout info=card();info.addView(text("BASE DE DATOS OFFLINE",17,0xFFB8E85A,true));
         info.addView(text(data.baseClubCount+" clubes catalogados · "+data.generatedClubCount+" clubes de temporada en el lote generado · "+data.customPlayerCount+" futbolistas personalizados · "+data.baseLeagueCount+" ligas base configuradas.",13,0xFFE4ECEE,false));
-        info.addView(text(data.firstDivisionTeams+" plantillas de primera + "+data.secondDivisionTeams+" de segunda + "+data.thirdDivisionTeams+" de tercera cargadas · "+data.skillCount+" habilidades registradas · "+data.techniqueCount+" técnicas · "+data.officialBallCount+" balones.",12,0xFFB6C7CB,false));
+        info.addView(text(data.firstDivisionTeams+" plantillas de primera + "+data.secondDivisionTeams+" de segunda + "+data.thirdDivisionTeams+" de tercera cargadas · "+data.skillCount+" habilidades catalogadas (no integradas) · "+data.techniqueCount+" técnicas catalogadas (no integradas) · "+data.officialBallCount+" balones.",12,0xFFB6C7CB,false));
         info.addView(text("Solo se habilitan para jugar las plantillas verificadas con 22 futbolistas e identificadores únicos.",12,0xFFFFD18A,false));
         for(String warning:data.warnings)info.addView(text("Aviso: "+warning,11,0xFFFFB0A0,false));
         info.addView(text("Versión de datos: "+data.dataVersion,11,0xFF9EB3B9,false));
@@ -314,7 +314,7 @@ public final class MainActivity extends Activity {
             c.drawCircle(w*.17f,h*.79f,s*.105f,p);p.setStyle(Paint.Style.FILL);p.setColor(0xB8C9F45A);c.drawCircle(w*.17f,h*.79f,s*.035f,p);
             drawButton(c,w*.17f,h*.17f,s*.045f,"CAMBIAR");
             drawButton(c,w*.90f,h*.77f,s*.07f,"TIRO");drawButton(c,w*.69f,h*.60f,s*.055f,"PASE");
-            drawButton(c,w*.90f,h*.58f,s*.055f,"REGATE");drawButton(c,w*.90f,h*.92f,s*.055f,"PRESIÓN");
+            drawButton(c,w*.90f,h*.58f,s*.055f,"REGATE BÁSICO");drawButton(c,w*.90f,h*.92f,s*.055f,"PRESIÓN");
         }
         private void drawButton(Canvas c,float x,float y,float r,String label){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(3);p.setColor(0xD8C9F45A);c.drawCircle(x,y,r,p);p.setStyle(Paint.Style.FILL);p.setColor(Color.WHITE);p.setTextAlign(Paint.Align.CENTER);p.setTextSize(Math.max(12,r*.34f));c.drawText(label,x,y+p.getTextSize()*.35f,p);}
         @Override public boolean onTouchEvent(MotionEvent e){
