@@ -210,7 +210,7 @@ public final class MainActivity extends Activity {
             if(phase==3){matchUiHandler.removeCallbacks(this);showFullTimeDialog();return;}
             int seconds=(int)nativeGetMatchSeconds();
             if(phase==2)seconds+=matchMinutes*60;
-            scoreboard.setText(homeTeam.name+"   "+nativeGetHomeScore()+" - "+nativeGetAwayScore()+"   "+awayTeam.name+"     "+String.format(Locale.getDefault(),"%02d:%02d",seconds/60,seconds%60));
+            scoreboard.setText(homeTeam.name+"   "+nativeGetHomeScore()+" - "+nativeGetAwayScore()+"   "+awayTeam.name+" · "+homeTeam.stadiumName+"     "+String.format(Locale.getDefault(),"%02d:%02d",seconds/60,seconds%60));
             matchUiHandler.postDelayed(this,500);
         }};
         matchUiHandler.post(scoreRefresh);
