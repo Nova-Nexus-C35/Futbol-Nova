@@ -446,8 +446,10 @@ void update(float dt){
     if(keeper){
      // Goalkeeper handling softens the parry; kicking controls the clearance power.
      float kicking=std::clamp(playerGoalkeeperKicking[(size_t)i],0.0f,99.0f)/99.0f;
+     float clearanceMinimum=4.0f+1.5f*kicking;
+     float clearanceScale=.55f+.17f*kicking;
      float clearanceDirection=i==0?(homeDefendsNegative?1.0f:-1.0f):(homeDefendsNegative?-1.0f:1.0f);
-     ballVZ=clearanceDirection*std::max(4.0f+1.5f*kicking,std::abs(ballVZ)*(.55f+.17f*kicking));
+     ballVZ=clearanceDirection*std::max(clearanceMinimum,std::abs(ballVZ)*clearanceScale);
      ballVX+=std::clamp((ballX-px)*(2.0f-.8f*handling),-4.5f,4.5f);
      ballVY=std::max(ballVY,1.0f+.8f*(1.0f-handling));
      keepers[(size_t)(i/11)].diveTimer=std::max(keepers[(size_t)(i/11)].diveTimer,.20f);
