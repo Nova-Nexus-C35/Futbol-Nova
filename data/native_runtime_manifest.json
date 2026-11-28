@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "product": "Fútbol Nova",
+  "runtime_id": "futbol-nova-native-android-arm64",
+  "engine": {
+    "implementation": "original_native",
+    "language": [
+      "Java 17",
+      "C++17"
+    ],
+    "graphics_api": "OpenGL ES 3.0",
+    "external_game_engines": []
+  },
+  "distribution": {
+    "base_package": "offline_first",
+    "playable_base_mode": "local_friendly_11v11",
+    "optional_modes_from_manifests": true,
+    "never_activate_uninstalled_modules": true
+  },
+  "navigation": [
+    "INICIO",
+    "ONLINE",
+    "MODOS",
+    "CONFIGURACIÓN"
+  ],
+  "canonical_sources": {
+    "custom_players": "custom_players.json",
+    "modules": "optional_modules_catalog.json",
+    "game_modules": "game_modules_manifest.json",
+    "league_content": "league_content_manifest.json",
+    "national_teams": "national_teams_manifest.json",
+    "base_clubs": "base_league_clubs_2026.json",
+    "season_clubs": "global_clubs.generated.json",
+    "spain_clubs": "spain_clubs_2026_27.json",
+    "cuba_first_division": "players/cuba_first_division.json",
+    "cuba_second_division": "players/cuba_second_division.json",
+    "cuba_third_division": "cuba_players.json",
+    "skills": "skills/skill_catalog.json",
+    "techniques": "skills/common_gesture_techniques.json",
+    "balls": "league_official_balls.json",
+    "realism": "modules/realism/realism_profile.json",
+    "player_statistics_schema": "player_statistics_schema.json",
+    "runtime_database_schema": "runtime_database_schema_v1.json",
+    "original_clubs": "original_clubs_2026.json",
+    "original_club_rosters": "players/nova_original_club_rosters_2026.json"
+  },
+  "eligibility": {
+    "team_requires_exactly": 22,
+    "unique_player_ids_required": true,
+    "preserve_club_and_player_ids": true,
+    "draft_or_unverified_club_rosters_not_playable": true,
+    "fictional_player_profiles_must_remain_marked_fictional": true,
+    "apply_custom_profile_only_when_roster_player_id_matches": true,
+    "original_exhibition_teams_require_exactly_22": true,
+    "incomplete_original_club_rosters_not_playable": true
+  },
+  "visual_policy": {
+    "reference_mix": [
+      "FIFA 23 menu hierarchy and match preparation",
+      "EA SPORTS FC 26 modern presentation and gameplay concepts"
+    ],
+    "original_nova_assets_only": true,
+    "exclude_ultimate_team": true,
+    "mens_football_only": true
+  },
+  "known_runtime_rosters": {
+    "first_division_file": "players/cuba_first_division.json",
+    "second_division_file": "players/cuba_second_division.json",
+    "third_division_file": "cuba_players.json",
+    "other_league_rosters": "catalogued_but_not_enabled_until_roster_and_engine_validation",
+    "original_club_catalog": "original_clubs_2026.json",
+    "original_club_rosters_file": "players/nova_original_club_rosters_2026.json",
+    "original_club_roster_status": "Nova C35 and FC Río de Argenti are complete 22-player exhibition teams; Nova Génesis and Sangre Galáctica remain catalog-only until verified player records exist."
+  },
+  "status": "native_shell_and_3d_match_prototype_with_two_original_exhibition_rosters_under_development",
+  "default_friendly_match": {
+    "home_team_id": "FN-NOVA-C35",
+    "home_team_name": "Nova C35",
+    "away_team_id": "FN-NOVA-RDA",
+    "away_team_name": "FC Río de Argenti",
+    "home_stadium_id": "nova_c35",
+    "home_stadium_name": "Estadio del Fénix",
+    "source": "owner_confirmed_pre_match_configuration_2026-11-28",
+    "requires_verified_playable_rosters": true
+  },
+  "attribute_contract": {
+    "schema_version": "1.0.0",
+    "source": "attribute_keys in canonical 22-player roster JSON",
+    "custom_profile_source": "custom_players.json:players[].attributes",
+    "identity": "stable player id; active club association by club_id; historical affiliation by original_club_id",
+    "goalkeeper_keys": [
+      "dive",
+      "hand",
+      "kick",
+      "ref",
+      "gkspd",
+      "gkpos"
+    ],
+    "native_profile_order": [
+      "slot",
+      "height_cm",
+      "overall",
+      "pace",
+      "dribbling",
+      "defending",
+      "goalkeeperDiving",
+      "goalkeeperHandling",
+      "goalkeeperKicking",
+      "goalkeeperReflexes",
+      "goalkeeperSpeed",
+      "goalkeeperPositioning"
+    ],
+    "range": {
+      "minimum": 0,
+      "maximum": 99
+    },
+    "goalkeeper_behavior_mapping": {
+      "dive": "keeper dive reach and dive duration",
+      "hand": "keeper parry restitution and rebound control",
+      "kick": "keeper clearance power",
+      "ref": "keeper reaction window",
+      "gkspd": "keeper movement speed",
+      "gkpos": "keeper starting and tracking position"
+    }
+  }
+}

@@ -1,49 +1,76 @@
-name: Fútbol Nova Native Android ARM64
+name: Fútbol Nova — Android nativo ARM64
 on:
   push:
-    branches: [ "work/native-3d-engine" ]
+    branches: [main, "work/native-engine-mainline", "work/native-3d-engine", "work/futbol-nova-completion-audit-2026-11-27"]
     paths:
       - "native-android/**"
+      - "data/**"
+      - "tools/validate_native_data.py"
+      - "tools/test_native_match_integration.py"
+      - "docs/**"
       - ".github/workflows/futbol-nova-native-android.yml"
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
     paths:
       - "native-android/**"
+      - "data/**"
+      - "tools/validate_native_data.py"
       - ".github/workflows/futbol-nova-native-android.yml"
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: futbol-nova-native-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build-native-arm64:
     runs-on: ubuntu-22.04
-    timeout-minutes: 45
+    timeout-minutes: 60
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
       - name: Install Android SDK, NDK and CMake
+        shell: bash
         run: |
-          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}"
-          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
-          export ANDROID_SDK_ROOT="$ANDROID_HOME"
-          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;26.3.11579264" "cmake;3.22.1"
-      - uses: gradle/actions/setup-gradle@v4
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -maxdepth 3 -type f -name sdkmanager | head -n 1)"
+          test -x "$SDKMANAGER"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses
+          yes | "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;26.3.11579264" "cmake;3.22.1"
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
-      - name: Compile native Android APK
+      - name: Validate canonical offline football data
+        run: python3 tools/validate_native_data.py
+      - name: Verify native friendly match, stadium, controls and basic rules wiring
+        run: python3 tools/test_native_match_integration.py
+      - name: Run native Java unit tests
         working-directory: native-android
-        run: gradle --no-daemon :app:assembleDebug
+        run: gradle --no-daemon --stacktrace :app:testDebugUnitTest
+      - name: Build native Android debug APK
+        working-directory: native-android
+        run: gradle --no-daemon --stacktrace :app:assembleDebug
       - name: Verify APK and ARM64 native library
+        shell: bash
         run: |
           APK="native-android/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
-          unzip -l "$APK" | grep -q "lib/arm64-v8a/libfutbolnova.so"
           unzip -t "$APK"
-      - uses: actions/upload-artifact@v4
+          unzip -l "$APK" | grep -q "lib/arm64-v8a/libfutbolnova.so"
+          unzip -l "$APK" | grep -q "assets/native_runtime_manifest.json"
+          echo "Native Android APK and ARM64 library verified."
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
         with:
           name: futbol-nova-native-android-arm64
           path: native-android/app/build/outputs/apk/debug/app-debug.apk

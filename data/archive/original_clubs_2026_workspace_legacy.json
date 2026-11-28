@@ -1,0 +1,513 @@
+{
+  "schema_version": "1.0.0",
+  "updated": "2026-11-20",
+  "scope": "Four owner-created original clubs for Fútbol Nova; design proposals are editable and do not imply in-engine visual assets are already generated.",
+  "clubs": [
+    {
+      "id": "nova-c35",
+      "runtime_club_id": "FN-NOVA-C35",
+      "name": "Nova C35",
+      "abbreviation": "C35",
+      "sport": "football",
+      "fictional": true,
+      "identity_status": "provisional_owner_review",
+      "identity": {
+        "concept": "club insignia built around the C35 monogram and a phoenix motif",
+        "primary_colors": [
+          "deep_navy",
+          "#00CFE8"
+        ],
+        "secondary_colors": [
+          "silver",
+          "white"
+        ],
+        "color_status": "provisional"
+      },
+      "crest": {
+        "concept": "angular shield; central interlocked C35 monogram; phoenix wings rising behind the lettering; restrained silver outline",
+        "status": "design_proposal_pending_visual_asset"
+      },
+      "kits": {
+        "home": {
+          "base": "deep_navy",
+          "details": [
+            "cyan diagonal energy band",
+            "silver micro-lines",
+            "C35 crest on left chest"
+          ],
+          "status": "design_proposal"
+        },
+        "away": {
+          "base": "white",
+          "details": [
+            "navy shoulders",
+            "cyan side panels",
+            "silver numbering"
+          ],
+          "status": "design_proposal"
+        },
+        "alternate": {
+          "base": "cyan",
+          "details": [
+            "navy geometric blocks",
+            "white numbering"
+          ],
+          "status": "design_proposal"
+        },
+        "goalkeeper": {
+          "base": "signal_yellow",
+          "details": [
+            "navy contrast panels",
+            "cyan trim"
+          ],
+          "status": "design_proposal"
+        }
+      },
+      "stadium": {
+        "name": "Estadio del Fénix",
+        "capacity": 105000,
+        "capacity_status": "owner_specified_105000",
+        "ownership": "club_home_venue_status_unconfirmed",
+        "design": "four-sided bowl with four continuous seating tiers; procedural crowd representation",
+        "status": "design_specification",
+        "id": "nova_c35",
+        "club_id": "FN-NOVA-C35",
+        "seating": "#101B35",
+        "accent": "#00CFE8",
+        "roof": "#0A1022",
+        "secondary_accent": "#BFC9D8",
+        "kit_palette_status": "matched_to_home_kit_proposal",
+        "description": "Gradas azul marino, sectores cian, cubierta azul noche y detalles plateados."
+      },
+      "supporters": {
+        "nickname": "La Marea C35",
+        "colors": [
+          "deep_navy",
+          "#00CFE8"
+        ],
+        "chants_and_flags": "provisional concepts; not recorded as owner-approved"
+      },
+      "roster": {
+        "target_size": 22,
+        "status": "complete_22_verified_game_profiles",
+        "known_player_ids": [
+          "NOVA-PLAYER-0035",
+          "NOVA-PLAYER-0036",
+          "FN-P-C35-2026-001",
+          "FN-P-C35-2026-002",
+          "FN-P-C35-2026-003",
+          "FN-P-C35-2026-004",
+          "FN-P-C35-2026-005",
+          "FN-P-C35-2026-006",
+          "FN-P-C35-2026-007",
+          "FN-P-C35-2026-008",
+          "FN-P-C35-2026-009",
+          "FN-P-C35-2026-010",
+          "FN-P-C35-2026-011",
+          "FN-P-C35-2026-012",
+          "FN-P-C35-2026-013",
+          "FN-P-C35-2026-014",
+          "FN-P-C35-2026-015",
+          "FN-P-C35-2026-016",
+          "FN-P-C35-2026-017",
+          "FN-P-C35-2026-018",
+          "FN-P-C35-2026-019",
+          "FN-P-C35-2026-020"
+        ],
+        "remaining_slots": 0,
+        "fictional_profiles_generated": 20,
+        "career_statistics_initialized_to_zero": true
+      },
+      "updated": "2026-11-20"
+    },
+    {
+      "id": "fc-rio-de-argenti",
+      "runtime_club_id": "FN-NOVA-RDA",
+      "name": "FC Río de Argenti",
+      "abbreviation": "RDA",
+      "sport": "football",
+      "fictional": true,
+      "identity_status": "provisional_completion_using_existing_reference",
+      "identity": {
+        "concept": "river and silver identity; preserve the existing owner-provided home-kit reference as the visual source of truth",
+        "primary_colors": [
+          "silver",
+          "river_blue",
+          "deep_navy"
+        ],
+        "secondary_colors": [
+          "white"
+        ],
+        "color_status": "proposal_pending_reference_image_visual_check"
+      },
+      "crest": {
+        "concept": "classic shield with a flowing river across the centre, silver river line and RDA monogram; compact football detail",
+        "status": "design_proposal_pending_visual_asset"
+      },
+      "kits": {
+        "home": {
+          "reference": "Dropbox:/Apps/Futbol Nova/Assets/Clubs/RDA/Kits/rda_home_kit_reference.jpg",
+          "status": "existing_owner_reference_preserved"
+        },
+        "away": {
+          "base": "white",
+          "details": [
+            "silver river motif",
+            "river-blue shoulder and side accents",
+            "navy numbering"
+          ],
+          "status": "design_proposal"
+        },
+        "alternate": {
+          "base": "deep_navy",
+          "details": [
+            "silver diagonal river line",
+            "river-blue trim"
+          ],
+          "status": "design_proposal"
+        },
+        "goalkeeper": {
+          "base": "amber",
+          "details": [
+            "navy contrast panels",
+            "silver trim"
+          ],
+          "status": "design_proposal"
+        }
+      },
+      "stadium": {
+        "name": "Estadio Río de Argenti",
+        "capacity": 105000,
+        "capacity_status": "owner_specified_105000",
+        "ownership": "unconfirmed",
+        "design": "compact modern riverfront bowl with a continuous silver-blue roof ribbon",
+        "status": "design_specification",
+        "id": "rio_de_argenti",
+        "club_id": "FN-NOVA-RDA",
+        "seating": "#176A91",
+        "accent": "#C7D3DE",
+        "roof": "#142A3B",
+        "secondary_accent": "#FFFFFF",
+        "kit_palette_status": "provisional_pending_visual_check_of_dropbox_home_reference",
+        "description": "Gradas azul río, acentos plateados y blancos, cubierta azul marino; paleta provisional basada en la ficha y pendiente de cotejo visual con la referencia local."
+      },
+      "supporters": {
+        "nickname": "La Corriente",
+        "colors": [
+          "river_blue",
+          "silver"
+        ],
+        "chants_and_flags": "provisional concepts; not recorded as owner-approved"
+      },
+      "roster": {
+        "target_size": 22,
+        "status": "complete_22_verified_game_profiles",
+        "known_player_ids": [
+          "NOVA-PLAYER-0037",
+          "FN-P-RDA-2026-001",
+          "FN-P-RDA-2026-002",
+          "FN-P-RDA-2026-003",
+          "FN-P-RDA-2026-004",
+          "FN-P-RDA-2026-005",
+          "FN-P-RDA-2026-006",
+          "FN-P-RDA-2026-007",
+          "FN-P-RDA-2026-008",
+          "FN-P-RDA-2026-009",
+          "FN-P-RDA-2026-010",
+          "FN-P-RDA-2026-011",
+          "FN-P-RDA-2026-012",
+          "FN-P-RDA-2026-013",
+          "FN-P-RDA-2026-014",
+          "FN-P-RDA-2026-015",
+          "FN-P-RDA-2026-016",
+          "FN-P-RDA-2026-017",
+          "FN-P-RDA-2026-018",
+          "FN-P-RDA-2026-019",
+          "FN-P-RDA-2026-020",
+          "FN-P-RDA-2026-021"
+        ],
+        "remaining_slots": 0,
+        "fictional_profiles_generated": 21,
+        "career_statistics_initialized_to_zero": true
+      },
+      "assets": {
+        "home_kit_reference": "Dropbox:/Apps/Futbol Nova/Assets/Clubs/RDA/Kits/rda_home_kit_reference.jpg"
+      },
+      "updated": "2026-11-20"
+    },
+    {
+      "id": "nova-genesis",
+      "runtime_club_id": "FN-NOVA-GEN",
+      "name": "Nova Génesis",
+      "abbreviation": "GEN",
+      "sport": "football",
+      "fictional": true,
+      "identity_status": "home_visual_identity_approved_other_assets_provisional",
+      "identity": {
+        "primary_colors": [
+          "white",
+          "navy"
+        ],
+        "secondary_colors": [
+          "red",
+          "green"
+        ],
+        "style": "dense angular geometry and textured panels"
+      },
+      "crest": {
+        "letters": "GEN",
+        "letter_style": "interlocked, irregular and deliberately disordered",
+        "status": "approved_in_visual_proposal_v2"
+      },
+      "kits": {
+        "home": {
+          "base": "white",
+          "details": [
+            "navy geometric and textured panels",
+            "red and green accents",
+            "dense angular linework"
+          ],
+          "shorts": [
+            "white",
+            "navy"
+          ],
+          "status": "approved_visual_direction_v2"
+        },
+        "away": {
+          "base": "navy",
+          "details": [
+            "white angular shoulder panels",
+            "red and green fine accents"
+          ],
+          "status": "design_proposal"
+        },
+        "alternate": {
+          "base": "red",
+          "details": [
+            "navy geometric blocks",
+            "white and green trim"
+          ],
+          "status": "design_proposal"
+        },
+        "goalkeeper": {
+          "base": "electric_green",
+          "details": [
+            "navy angular panels",
+            "white numbering"
+          ],
+          "status": "design_proposal"
+        }
+      },
+      "stadium": {
+        "name": "Arena Nova Génesis",
+        "capacity": 105000,
+        "capacity_status": "owner_specified_105000",
+        "ownership": "unconfirmed",
+        "design": "modern angular stadium with layered faceted roof and navy-white lighting",
+        "status": "design_specification",
+        "id": "nova_genesis",
+        "club_id": "FN-NOVA-GEN",
+        "seating": "#14213D",
+        "accent": "#F5F7FA",
+        "roof": "#101A30",
+        "secondary_accent": "#D72638",
+        "tertiary_accent": "#218C52",
+        "kit_palette_status": "matched_to_owner_approved_home_kit_v2",
+        "description": "Gradas azul marino y blancas, cubierta azul marino, acentos rojos y verdes discretos conforme a la primera equipación aprobada."
+      },
+      "supporters": {
+        "nickname": "La Nueva Era",
+        "colors": [
+          "navy",
+          "white",
+          "red",
+          "green"
+        ],
+        "chants_and_flags": "provisional concepts; not recorded as owner-approved"
+      },
+      "roster": {
+        "target_size": 22,
+        "status": "incomplete_pending_verified_player_records",
+        "known_player_ids": [],
+        "remaining_slots": 22
+      },
+      "assets": {
+        "reference_photo": "Dropbox:/Apps/Futbol Nova/Assets/Clubs/Nova Génesis/References/nova_genesis_reference_photo_2026-11-20.jpg",
+        "approved_home_proposal": "Dropbox Paper attachment: nova_genesis_home_kit_proposal_03_GEN.jpg"
+      },
+      "updated": "2026-11-20"
+    },
+    {
+      "id": "sangre-galactica",
+      "runtime_club_id": "FN-NOVA-SAG",
+      "name": "Sangre Galáctica",
+      "abbreviation": "SAG",
+      "sport": "football",
+      "fictional": true,
+      "identity_status": "provisional_completion_based_on_confirmed_colors",
+      "identity": {
+        "primary_colors": [
+          "red",
+          "purple"
+        ],
+        "secondary_colors": [
+          "yellow",
+          "white"
+        ],
+        "color_priority": "red and purple dominate; yellow and white are accents"
+      },
+      "crest": {
+        "concept": "dark-purple shield with a red stellar core, orbiting red-violet streaks, a small gold star and white SAG lettering",
+        "status": "design_proposal_pending_visual_asset"
+      },
+      "kits": {
+        "home": {
+          "base": "deep_purple",
+          "details": [
+            "red diagonal central slash",
+            "thin gold star accents",
+            "white numbers"
+          ],
+          "status": "design_proposal"
+        },
+        "away": {
+          "base": "white",
+          "details": [
+            "purple shoulders",
+            "red side gradient",
+            "gold crest details"
+          ],
+          "status": "design_proposal"
+        },
+        "alternate": {
+          "base": "red",
+          "details": [
+            "purple starfield texture",
+            "white numbering",
+            "gold trim"
+          ],
+          "status": "design_proposal"
+        },
+        "goalkeeper": {
+          "base": "gold",
+          "details": [
+            "deep-purple panels",
+            "red sleeve details"
+          ],
+          "status": "design_proposal"
+        }
+      },
+      "stadium": {
+        "name": "Estadio Sangre de Estrellas",
+        "capacity": 105000,
+        "capacity_status": "owner_specified_105000",
+        "ownership": "unconfirmed",
+        "design": "night-match arena with a dark roof, red-violet lighting and a star-shaped central roof opening",
+        "status": "design_specification",
+        "id": "sangre_galactica",
+        "club_id": "FN-NOVA-SAG",
+        "seating": "#4A155D",
+        "accent": "#D7193F",
+        "roof": "#260B36",
+        "secondary_accent": "#F4C542",
+        "tertiary_accent": "#FFFFFF",
+        "kit_palette_status": "matched_to_confirmed_home_kit_proposal",
+        "description": "Gradas moradas, acentos rojos, cubierta púrpura oscura y detalles amarillos y blancos."
+      },
+      "supporters": {
+        "nickname": "La Órbita Roja",
+        "colors": [
+          "red",
+          "purple",
+          "yellow",
+          "white"
+        ],
+        "chants_and_flags": "provisional concepts; not recorded as owner-approved"
+      },
+      "roster": {
+        "target_size": 22,
+        "status": "incomplete_pending_verified_player_records",
+        "known_player_ids": [],
+        "remaining_slots": 22
+      },
+      "updated": "2026-11-20"
+    }
+  ],
+  "roster_policy": {
+    "target_players_per_club": 22,
+    "do_not_create_fake_career_statistics": true,
+    "do_not_change_existing_player_attributes_or_statistics_on_transfer": true,
+    "transfer_assignments": {
+      "nova_c35": [
+        "NOVA-PLAYER-0035",
+        "NOVA-PLAYER-0036"
+      ],
+      "fc_rio_de_argenti": [
+        "NOVA-PLAYER-0037"
+      ],
+      "raymond_status": "unresolved_profile_not_found_in_custom_players.json",
+      "note": "Resolve Raymond against a unique existing player ID before changing any record. Do not create a duplicate profile or guess his ID."
+    },
+    "raymond_status": "resolved_owner_confirmed_new_internal_id",
+    "raymond_player_id": "NOVA-PLAYER-0037",
+    "note": "Los perfiles ficticios se identifican explícitamente y empiezan con estadísticas de carrera en cero; no se atribuye historial real."
+  },
+  "stadium_policy": {
+    "capacity_for_all_four_original_clubs": 105000,
+    "capacity_unit": "spectators",
+    "color_rule": "stadium seating, roof, accents and lighting use the club home/first-kit palette",
+    "rda_palette_note": "provisional until Dropbox home-kit reference is visually compared",
+    "stadiums": [
+      {
+        "id": "nova_c35",
+        "name": "Estadio del Fénix",
+        "club_id": "FN-NOVA-C35",
+        "capacity": 105000,
+        "seating": "#101B35",
+        "accent": "#00CFE8",
+        "roof": "#0A1022",
+        "secondary_accent": "#BFC9D8",
+        "kit_palette_status": "matched_to_home_kit_proposal",
+        "description": "Gradas azul marino, sectores cian, cubierta azul noche y detalles plateados."
+      },
+      {
+        "id": "rio_de_argenti",
+        "name": "Estadio Río de Argenti",
+        "club_id": "FN-NOVA-RDA",
+        "capacity": 105000,
+        "seating": "#176A91",
+        "accent": "#C7D3DE",
+        "roof": "#142A3B",
+        "secondary_accent": "#FFFFFF",
+        "kit_palette_status": "provisional_pending_visual_check_of_dropbox_home_reference",
+        "description": "Gradas azul río, acentos plateados y blancos, cubierta azul marino; paleta provisional basada en la ficha y pendiente de cotejo visual con la referencia local."
+      },
+      {
+        "id": "nova_genesis",
+        "name": "Arena Nova Génesis",
+        "club_id": "FN-NOVA-GEN",
+        "capacity": 105000,
+        "seating": "#14213D",
+        "accent": "#F5F7FA",
+        "roof": "#101A30",
+        "secondary_accent": "#D72638",
+        "tertiary_accent": "#218C52",
+        "kit_palette_status": "matched_to_owner_approved_home_kit_v2",
+        "description": "Gradas azul marino y blancas, cubierta azul marino, acentos rojos y verdes discretos conforme a la primera equipación aprobada."
+      },
+      {
+        "id": "sangre_galactica",
+        "name": "Estadio Sangre de Estrellas",
+        "club_id": "FN-NOVA-SAG",
+        "capacity": 105000,
+        "seating": "#4A155D",
+        "accent": "#D7193F",
+        "roof": "#260B36",
+        "secondary_accent": "#F4C542",
+        "tertiary_accent": "#FFFFFF",
+        "kit_palette_status": "matched_to_confirmed_home_kit_proposal",
+        "description": "Gradas moradas, acentos rojos, cubierta púrpura oscura y detalles amarillos y blancos."
+      }
+    ]
+  }
+}

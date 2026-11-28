@@ -1,0 +1,138 @@
+# Hoja de ruta técnica — Fútbol Nova nativo
+
+Este documento convierte la auditoría de 2026-11-27 en tareas verificables. El runtime oficial es Java 17 + C++17 + OpenGL ES 3.0. Unity y Godot no se utilizarán como motores de ejecución.
+
+## Convenciones de estado
+
+- `implemented`: existe código conectado y una prueba lo verifica.
+- `prototype`: existe una primera implementación, aún incompleta.
+- `planned`: no existe implementación funcional.
+- `blocked`: depende de una decisión, recurso o sistema anterior.
+
+No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descripción.
+
+## P0 — Base estable
+
+- [x] Integrar perfiles personalizados por ID estable y `club_id`, conservando las preferencias confirmadas. Anier (`NOVA-PLAYER-0035`) pertenece a Albor Madrid (`FN-ESP-REAL-MADRID`) y Máximo (`NOVA-PLAYER-0036`) a Litoral Barcelona (`FN-ESP-BARCELONA`); ambos tienen preferencia nacional CUB y afiliación histórica de exhibición Nova C35. `validate_native_data.py` verifica ID, club activo, nombre canónico, club original y preferencia; `CanonicalDataRepository` aplica perfiles por ID. No asignarlos por nombre/nacionalidad/preferencia solamente.
+- [x] Configurar el amistoso predeterminado como Nova C35 (`FN-NOVA-C35`) vs FC Río de Argenti (`FN-NOVA-RDA`): ambos rosters de exhibición contienen 22 jugadores y están habilitados en el runtime nativo. La pareja Albor Madrid vs Litoral Barcelona queda pendiente como trabajo separado hasta completar sus plantillas españolas de 22 jugadores; no sustituirla silenciosamente ni alterar los clubes activos de Anier y Máximo.
+- [x] Definir el contrato de atributos entre JSON, Java y C++ y comprobar las seis estadísticas de portero. `data/native_runtime_manifest.json` declara las claves y el orden JNI; Java resuelve por `attribute_keys` y C++ aplica los seis valores al comportamiento del portero.
+- [x] Mantener los catálogos de habilidades/técnicas claramente identificados como no integrados en la UI; el botón `REGATE BÁSICO` ejecuta solo un empuje genérico de balón y no activa IDs del catálogo. La integración de habilidades individuales sigue pendiente.
+
+
+
+- [ ] Validación estricta de todos los catálogos canónicos.
+- [x] Selector Android filtra el equipo ya elegido en el lado contrario y aplica el ID estable del candidato seleccionado; verificación estática en `tools/test_native_match_integration.py`.
+- [x] Pruebas JVM JUnit de selección de dos equipos distintos en TeamSelectionPolicyTest.
+- [x] Verificación estática de atributos y perfiles personalizados por ID estable mediante `tools/validate_native_data.py` y `tools/test_native_match_integration.py`.
+- [ ] Prueba instrumentada que compruebe los valores de perfil en el runtime nativo durante un partido.
+- [ ] Pruebas de reloj, pausa, descanso y segundo tiempo.
+- [ ] Pruebas de gol, reinicio y cambio de lado.
+- [ ] Pruebas de colisión con jugadores, porteros, postes y larguero.
+- [x] Pausa del simulador al salir de primer plano y reanudación condicionada al estado de pausa del usuario; contrato estático en tools/test_native_match_integration.py.
+- [ ] Prueba instrumentada Android de pausa/resume y recuperación de contexto OpenGL.
+- [x] Compilación CI ARM64 y registro del artefacto; run #46135038332 pasó y publicó `futbol-nova-native-android-arm64` (3,521,833 bytes).
+
+## P1 — Reglas del fútbol
+
+- [ ] Máquina de estados de reinicio: saque inicial, banda, córner, saque de meta, tiro libre y penalti.
+- [ ] Fuera de juego con posición, participación e interferencia.
+- [ ] Faltas y ventaja.
+- [ ] Tarjetas amarilla/roja y expulsiones.
+- [ ] Árbitro con posicionamiento y señales.
+- [ ] Sustituciones y banquillo.
+- [ ] Estadísticas de partido y por futbolista.
+
+## P1 — Simulación e IA
+
+- [ ] Formaciones configurables.
+- [ ] Roles y responsabilidades por posición.
+- [ ] Fases: posesión, transición ofensiva, transición defensiva y defensa organizada.
+- [ ] Presión, cobertura, marcaje, desmarque y apoyo.
+- [ ] Decisión contextual de pase, conducción, tiro y despeje.
+- [ ] Dificultad sin bonificaciones injustas.
+- [ ] Fatiga, resistencia y sustitución por rendimiento.
+- [ ] Portero con anticipación, blocaje, rechace y despeje contextual.
+
+## P2 — Animación y presentación
+
+- [ ] Esqueleto y modelos humanos originales.
+- [ ] Equipaciones y variación visual por equipo.
+- [ ] Animaciones locomotoras y deportivas.
+- [ ] Transiciones de animación y prevención de deslizamiento.
+- [ ] Estadios y elementos de ambiente.
+- [ ] Cámaras seleccionables.
+- [ ] Audio ambiental y efectos.
+- [ ] Presets gráficos y medición de FPS/memoria.
+
+## P3 — Guardado y modos
+
+- [ ] Guardado local versionado.
+- [ ] Carga y validación de partidas.
+- [ ] Calendario y clasificación.
+- [ ] Ligas y copas.
+- [ ] Manager: plantilla, fichajes, economía, contratos, entrenamiento y temporadas.
+- [ ] Leyenda: carrera individual y progreso.
+- [ ] Migraciones de datos guardados entre versiones.
+
+## P4 — Online
+
+- [ ] Definir protocolo y autoridad de simulación.
+- [ ] Salas y emparejamiento.
+- [ ] Sincronización y tolerancia a latencia.
+- [ ] Reconexión y abandono.
+- [ ] Seguridad y validación de acciones.
+- [ ] Pruebas multijugador antes de publicar el módulo.
+
+## Reglas de integración en GitHub
+
+1. Todo cambio se realiza en una rama de trabajo descriptiva.
+2. Antes de editar un archivo existente, leer su versión actual y conservar su SHA.
+3. Guardar cada dato en su ubicación canónica:
+   - Datos deportivos y manifiestos: `data/`.
+   - Código Android Java: `native-android/app/src/main/java/`.
+   - Código C++/OpenGL/JNI: `native-android/app/src/main/cpp/`.
+   - Pruebas y validadores: `tools/` o la carpeta de pruebas correspondiente.
+   - Documentación técnica y decisiones: `docs/`.
+   - Compilación y automatización: `.github/workflows/`.
+4. No duplicar datos canónicos en assets o catálogos alternativos; el empaquetado debe consumir `data/`.
+5. No sobrescribir ni borrar la referencia histórica; cualquier depuración requiere verificar dependencias y conservar trazabilidad.
+6. Cada cambio debe tener un commit con mensaje que describa la función o corrección.
+7. Ejecutar validación de datos y compilación CI después de cambios de código/datos.
+8. No declarar una función terminada hasta tener pruebas y evidencia.
+9. No afirmar que una APK fue probada en teléfono si solo se compiló en GitHub Actions.
+10. Mantener README, manifiesto y esta hoja de ruta sincronizados con el estado real.
+
+## Fuente de verdad
+
+- Código y datos: este repositorio GitHub.
+- Contrato del runtime: `data/native_runtime_manifest.json`.
+- Estado y tareas: este documento y `docs/REFERENCE_COMPLETION_AUDIT.md`.
+- Compilación: `.github/workflows/futbol-nova-native-android.yml`.
+
+
+## Integración nativa — 2026-11-28
+
+- [x] Amistoso rápido Nova C35 vs FC Río de Argenti, con dos rosters de 22 jugadores únicos cargados en los slots nativos 0–10 y 11–21.
+- [x] Al cambiar el equipo local, el estadio se obtiene de la ficha canónica del club; Nova C35 selecciona Estadio del Fénix (`nova_c35`).
+- [x] La paleta de gradas, cubierta y acentos del estadio local se envía por JNI y se aplica al render OpenGL ES 3.0.
+- [x] Añadir verificación estática de integración para los dos rosters, estadio, conexión de controles táctiles, IA básica y transiciones de gol/tiempo.
+- [ ] Ejecutar una prueba completa en teléfono Android ARM64; CI y verificación estática no sustituyen esta prueba.
+- [ ] Completar reglas: saques, banda, córner, saque de meta, faltas, ventaja, tarjetas, penaltis, fuera de juego y árbitro.
+- [ ] Ampliar IA táctica y porteros más allá de las heurísticas actuales.
+- [ ] Completar modelos, equipaciones originales, animaciones, estadios con activos finales y cámaras.
+
+La comprobación `tools/test_native_match_integration.py` es un contrato estático de conexiones del código; no simula un partido ni acredita que todas las reglas estén implementadas.
+
+## Contrato de perfiles y porteros — 2026-11-28
+
+- La fuente de atributos es `attribute_keys` de los rosters canónicos; Java resuelve cada valor por nombre de clave y valida que todos los archivos compartan el mismo orden.
+- Los perfiles personalizados se buscan por ID estable. La afiliación activa usa `club_id`; la afiliación histórica usa `original_club_id`; la preferencia nacional permanece como metadato.
+- El manifiesto define las seis claves de portero: `dive`, `hand`, `kick`, `ref`, `gkspd`, `gkpos`.
+- JNI transmite los seis valores a C++ junto con el perfil general.
+- El motor usa reflejos para la ventana de reacción, salto para alcance/duración, velocidad y posicionamiento para el desplazamiento, blocaje para suavizar el rebote y saque para la potencia de despeje.
+- Validación CI #46135038332: PASS en datos canónicos, contrato estático, JUnit, build Android y verificación ARM64. Pendiente la prueba instrumentada en dispositivo.
+
+### Catálogos de habilidades — estado explícito
+
+El catálogo se muestra como `habilidades catalogadas (no integradas)` y `técnicas catalogadas (no integradas)`. El control se etiqueta `REGATE BÁSICO` y solo realiza un empuje genérico; no se presenta como una habilidad del catálogo. La conexión de habilidades individuales a acciones reales sigue pendiente.
+

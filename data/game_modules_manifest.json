@@ -12,7 +12,7 @@
     "module_manager_required": true
   },
   "delivery": {
-    "preferred_format": "JSON/ZIP data packages for current optional modules; resource-only Godot PCK packages are a future option after signature, compatibility and Android security tests.",
+    "preferred_format": "JSON/ZIP data packages for the native Android runtime; executable code modules are not downloaded or activated by the data package manager.",
     "fallback_format": "ZIP de datos validado cuando PCK no sea apropiado",
     "install_root": "user://futbol_nova/packages/",
     "staging_root": "user://futbol_nova/packages/<module_id>/<version>.staging",
@@ -27,7 +27,7 @@
       "zip"
     ],
     "future_formats": [
-      "pck"
+      "zip"
     ]
   },
   "module_contract": {
@@ -268,14 +268,14 @@
       "contract_state": "package_metadata_present_validation_pending",
       "publication_blockers": [
         "package_integrity_recheck_pending",
-        "godot_parser_and_runtime_validation_pending",
+        "native_android_runtime_validation_pending",
         "android_bluetooth_usb_controller_device_matrix_pending"
       ],
       "description": "Perfiles y ajustes específicos de mandos opcionales; los controles táctiles básicos permanecen en el juego base.",
       "content_type": "input_extension",
       "content_filename": "controller_profiles.json",
       "runtime_adapter": "scripts/input/controller_support_module.gd",
-      "validation_status": "awaiting_godot_and_android_physical_controller_tests"
+      "validation_status": "awaiting_native_android_runtime_and_physical_controller_tests"
     },
     {
       "id": "futbol-nova-graphics-enhancements",
@@ -303,8 +303,8 @@
     "rule": "Mostrar Fútbol Nova como ficha de producto en el catálogo de desarrollo; mostrar solo módulos publicados como instalables. No presentar módulos planificados como descargas disponibles."
   },
   "limitations": [
-    "El gestor actual de paquetes está orientado principalmente a contenido de ligas; no demuestra todavía la carga dinámica de PCK de funciones.",
-    "La descarga e instalación genérica de módulos de código requiere pruebas específicas de Godot, Android, firma, permisos y compatibilidad antes de habilitarla.",
+    "El gestor actual de paquetes está orientado principalmente a contenido de ligas; la carga dinámica de módulos de código no está implementada.",
+    "La descarga e instalación genérica de módulos de código no está habilitada. Los paquetes de datos requieren pruebas del runtime nativo Android, firma, permisos y compatibilidad.",
     "No se conoce todavía el tamaño real del APK base ni de los módulos; medirlos en builds reales.",
     "No se debe mover una función esencial a un módulo opcional si impide iniciar o jugar.",
     "El módulo Mejoras gráficas aplica un perfil de iluminación/entorno cuando su paquete de datos está instalado; los efectos avanzados, texturas HD y pruebas de rendimiento por dispositivo quedan para iteraciones posteriores."

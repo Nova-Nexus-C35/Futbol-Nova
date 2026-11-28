@@ -108,7 +108,7 @@
         "checksum_sha256": "9dde718582ddab0a6fc462c02538c00993fc9e47a85aff285f9591a70530856d",
         "required_game_version": "0.1.0",
         "runtime_adapter": "scripts/input/controller_support_module.gd",
-        "validation_status": "awaiting_godot_and_android_physical_controller_tests",
+        "validation_status": "awaiting_native_android_runtime_and_android_physical_controller_tests",
         "platforms": [
           "Android",
           "Windows",
@@ -144,7 +144,7 @@
         "content_filename": "graphics_profiles.json",
         "required_game_version": "0.1.0",
         "runtime_adapter": "scripts/graphics/graphics_enhancements_module.gd",
-        "validation_status": "source_integrated_waiting_package_build_godot_and_android_visual_performance_tests",
+        "validation_status": "source_integrated_waiting_package_build_native_android_and_visual_performance_tests",
         "platforms": [
           "Android",
           "Windows",
