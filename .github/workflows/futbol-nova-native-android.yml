@@ -54,6 +54,9 @@ jobs:
         run: python3 tools/validate_native_data.py
       - name: Verify native friendly match, stadium, controls and basic rules wiring
         run: python3 tools/test_native_match_integration.py
+      - name: Run native Java unit tests
+        working-directory: native-android
+        run: gradle --no-daemon --stacktrace :app:testDebugUnitTest
       - name: Build native Android debug APK
         working-directory: native-android
         run: gradle --no-daemon --stacktrace :app:assembleDebug
