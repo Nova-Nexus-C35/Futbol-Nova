@@ -8,6 +8,7 @@ DATA_ROOT = (ROOT / "data").resolve()
 MANIFEST_PATH = DATA_ROOT / "native_runtime_manifest.json"
 CUBA_ROSTER_KEYS = ("cuba_first_division", "cuba_second_division", "cuba_third_division")
 ROSTER_KEYS = CUBA_ROSTER_KEYS + ("original_club_rosters",)
+GOALKEEPER_ATTRIBUTE_KEYS = ("dive", "hand", "kick", "ref", "gkspd", "gkpos")
 
 
 def fail(message: str) -> None:
@@ -71,6 +72,13 @@ def main():
         loaded[key] = load_json(data_path(relative, key))
         checked += 1
 
+    attribute_contract = manifest.get("attribute_contract")
+    if not isinstance(attribute_contract, dict):
+        fail("native_runtime_manifest.json: attribute_contract is required")
+    if attribute_contract.get("goalkeeper_keys") != list(GOALKEEPER_ATTRIBUTE_KEYS):
+        fail("native_runtime_manifest.json: goalkeeper_keys do not match the canonical six-stat contract")
+    if attribute_contract.get("range") != {"minimum": 0, "maximum": 99}:
+        fail("native_runtime_manifest.json: player attribute range must remain 0..99")
     engine = manifest.get("engine", {})
     if engine.get("implementation") != "original_native" or engine.get("external_game_engines") != []:
         fail("runtime must remain original_native with no external game engines")
@@ -88,6 +96,9 @@ def main():
         keys = payload.get("attribute_keys")
         if not isinstance(keys, list) or not keys or len(keys) != len(set(keys)):
             fail(f"{source}: attribute_keys must be a non-empty unique list")
+        missing_goalkeeper_keys = sorted(set(GOALKEEPER_ATTRIBUTE_KEYS) - set(keys))
+        if missing_goalkeeper_keys:
+            fail(f"{source}: goalkeeper attribute contract missing {missing_goalkeeper_keys}")
         rosters = payload.get("rosters")
         if not isinstance(rosters, list) or not rosters:
             fail(f"{source}: empty or invalid rosters")
@@ -221,6 +232,8 @@ def main():
             club = clubs_by_id.get(club_id)
             if not club:
                 fail(f"{custom_source}: {player_id} references unknown active club_id {club_id}")
+            if player.get("club_name") != club.get("display_name"):
+                fail(f"{custom_source}: {player_id} club_name must match active club_id {club_id}")
             members = club.get("player_ids")
             if not isinstance(members, list) or player_id not in members:
                 fail(f"{custom_source}: active club {club_id} does not reference player {player_id}")
@@ -240,6 +253,28 @@ def main():
             ):
                 fail(f"{custom_source}: {player_id} has invalid preferred_national_team")
 
+        expected_custom_assignments = {
+            "NOVA-PLAYER-0035": {
+                "club_id": "FN-ESP-REAL-MADRID",
+                "club_name": "Albor Madrid",
+                "original_club_id": "FN-NOVA-C35",
+                "preferred_national_team": "CUB",
+            },
+            "NOVA-PLAYER-0036": {
+                "club_id": "FN-ESP-BARCELONA",
+                "club_name": "Litoral Barcelona",
+                "original_club_id": "FN-NOVA-C35",
+                "preferred_national_team": "CUB",
+            },
+        }
+        custom_by_id = {str(player.get("id", "")): player for player in custom}
+        for player_id, expected in expected_custom_assignments.items():
+            actual = custom_by_id.get(player_id)
+            if actual is None:
+                fail(f"{custom_source}: required custom profile {player_id} is missing")
+            for field, expected_value in expected.items():
+                if actual.get(field) != expected_value:
+                    fail(f"{custom_source}: {player_id} {field} must be {expected_value!r}, got {actual.get(field)!r}")
         unmatched = len(custom_ids) - matched
         defaults = manifest.get("default_friendly_match")
         if not isinstance(defaults, dict):
