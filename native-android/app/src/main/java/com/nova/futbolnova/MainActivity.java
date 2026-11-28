@@ -134,8 +134,8 @@ public final class MainActivity extends Activity {
             int count=ids==null?0:ids.length();
             boolean complete=roster!=null&&"complete_22_verified_game_profiles".equals(roster.optString("status"))&&count==22;
             org.json.JSONObject stadium=club.optJSONObject("stadium");
-            String venue=stadium==null?"Estadio pendiente":stadium.optString("name","Estadio pendiente");
-            originals.addView(text(club.optString("name","Club")+" · "+venue,14,Color.WHITE,true));
+            String clubVenue=stadium==null?"Estadio pendiente":stadium.optString("name","Estadio pendiente");
+            originals.addView(text(club.optString("name","Club")+" · "+clubVenue,14,Color.WHITE,true));
             originals.addView(text(complete?"22/22 · Plantilla disponible para amistosos":"Catálogo · "+count+"/22 jugadores registrados; no seleccionable todavía",12,complete?0xFFB8E85A:0xFFFFD18A,false));
         }
         LinearLayout custom=card();custom.addView(text("JUGADORES PERSONALIZADOS",17,0xFFB8E85A,true));
