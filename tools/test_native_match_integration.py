@@ -57,7 +57,7 @@ require((ROOT / "native-android/app/src/test/java/com/nova/futbolnova/TeamSelect
         "JVM unit tests for distinct team selection must be present")
 require("List<CanonicalDataRepository.Team> candidates" in activity,
         "team picker must build a verified candidate list")
-require("if(!team.id.equals(otherId))candidates.add(team)" in activity,
+require("TeamSelectionPolicy.excludingId(" in activity,
         "team picker must exclude the team already selected on the opposite side")
 require("CanonicalDataRepository.Team selected=candidates.get(which)" in activity,
         "team picker must apply the selected filtered candidate, not an unfiltered index")
