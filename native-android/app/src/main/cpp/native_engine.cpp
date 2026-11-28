@@ -21,7 +21,11 @@ float stickX=0,stickY=0; bool shoot=false,pass=false,skill=false,pressure=false;
 float ballX=0,ballZ=.72f,ballY=.22f,ballVX=0,ballVY=0,ballVZ=0,ballReleaseTimer=0.0f;
 float playerX=0,playerZ=0.0f,playerYaw=3.1415926f,matchTime=0,matchSeconds=0; int homeScore=0,awayScore=0; int controlledPlayer=9; float halfDurationSeconds=180.0f; int matchPhase=0; bool homeDefendsNegative=true;
 int goalSequencePhase=0; bool goalScoringHome=true; float goalSequenceTimer=0.0f;
-Mesh fieldMesh{},lineMesh{},sphereMesh{},standMesh{},goalMesh{};
+Mesh fieldMesh{},lineMesh{},sphereMesh{},standMesh{},roofMesh{},stadiumAccentMesh{},goalMesh{};
+V3 stadiumSeatColor{.055f,.085f,.12f};
+V3 stadiumAccentColor{.0f,.81f,.91f};
+V3 stadiumRoofColor{.025f,.04f,.08f};
+V3 stadiumSecondaryColor{.75f,.79f,.84f};
 std::array<V3,22> players{};
 std::array<float,22> playerHeight{};
 std::array<float,22> playerPace{};
@@ -72,6 +76,20 @@ void initField(){
  {-42,0,-58},{42,0,-58},{42,7,-58},{-42,7,-58},{-42,0,58},{42,0,58},{42,7,58},{-42,7,58}};
  const int boxIdx[]={0,1,2,0,2,3,4,5,6,4,6,7,8,9,10,8,10,11,12,13,14,12,14,15,16,17,18,16,18,19,20,21,22,20,22,23};
  std::vector<Vertex> sv;for(int idx:boxIdx)sv.push_back(stands[(size_t)idx]);standMesh=mesh(sv);
+ std::vector<Vertex> roof;
+ auto roofQuad=[&](float x1,float z1,float x2,float z2,float y){
+  roof.push_back({x1,y,z1});roof.push_back({x2,y,z1});roof.push_back({x2,y,z2});
+  roof.push_back({x1,y,z1});roof.push_back({x2,y,z2});roof.push_back({x1,y,z2});
+ };
+ roofQuad(-43,-59,-35,59,7.2f);roofQuad(35,-59,43,59,7.2f);
+ roofQuad(-43,-59,43,-51,7.2f);roofQuad(-43,51,43,59,7.2f);
+ roofMesh=mesh(roof);
+ std::vector<Vertex> accents;
+ auto stadiumLine=[&](float x1,float z1,float x2,float z2){accents.push_back({x1,6.85f,z1});accents.push_back({x2,6.85f,z2});};
+ stadiumLine(-43,-59,-35,-59);stadiumLine(-43,59,-35,59);
+ stadiumLine(35,-59,43,-59);stadiumLine(35,59,43,59);
+ stadiumLine(-43,-59,43,-59);stadiumLine(-43,59,43,59);
+ stadiumAccentMesh=mesh(accents,GL_LINES);
  std::vector<Vertex> g;
  auto seg=[&](float x1,float y1,float z1,float x2,float y2,float z2){g.push_back({x1,y1,z1});g.push_back({x2,y2,z2});};
  for(float z:{-53.0f,53.0f}){float sign=z<0?-1.0f:1.0f;seg(-3.66f,.1f,z, -3.66f,2.44f,z);seg(3.66f,.1f,z,3.66f,2.44f,z);seg(-3.66f,2.44f,z,3.66f,2.44f,z);seg(-3.66f,.1f,z,-3.66f,.1f,z+sign*2.0f);seg(3.66f,.1f,z,3.66f,.1f,z+sign*2.0f);seg(-3.66f,2.44f,z,-3.66f,2.44f,z+sign*2.0f);seg(3.66f,2.44f,z,3.66f,2.44f,z+sign*2.0f);}
@@ -435,6 +453,17 @@ void update(float dt){
 }
 extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeInit(JNIEnv*,jobject){
  std::lock_guard<std::mutex> lock(stateMutex);homeScore=awayScore=0;matchSeconds=0;matchTime=0;matchPhase=0;goalSequencePhase=0;goalSequenceTimer=0;homeDefendsNegative=true;controlledPlayer=9;ballReleaseTimer=0;stickX=stickY=0;shoot=pass=skill=pressure=false;joystickPointer=pressurePointer=-1;paused=false;makeProgram();initField();setupTeams();glEnable(GL_DEPTH_TEST);glClearColor(.015f,.045f,.075f,1);}
+extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeSetStadiumTheme(
+    JNIEnv*,jclass,jint seating,jint accent,jint roof,jint secondary){
+ std::lock_guard<std::mutex> lock(stateMutex);
+ auto unpack=[](jint color)->V3{
+  return {((color>>16)&0xff)/255.0f,((color>>8)&0xff)/255.0f,(color&0xff)/255.0f};
+ };
+ stadiumSeatColor=unpack(seating);
+ stadiumAccentColor=unpack(accent);
+ stadiumRoofColor=unpack(roof);
+ stadiumSecondaryColor=unpack(secondary);
+}
 extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeResize(JNIEnv*,jobject,jint w,jint h){screenW=std::max(1,(int)w);screenH=std::max(1,(int)h);glViewport(0,0,screenW,screenH);}
 extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeFrame(JNIEnv*,jobject){
  std::lock_guard<std::mutex> lock(stateMutex);
@@ -447,7 +476,9 @@ extern "C" JNIEXPORT void JNICALL Java_com_nova_futbolnova_MainActivity_nativeFr
  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);glUseProgram(program);
  float aspect=(float)screenW/(float)screenH;auto proj=perspective(.92f,aspect,.1f,180.0f);
  V3 eye{playerX-std::sin(playerYaw)*18.0f,10.5f,playerZ+std::cos(playerYaw)*18.0f},center{ballX*.40f+playerX*.60f,1.0f,ballZ*.40f+playerZ*.60f};auto vp=mul(proj,lookAt(eye,center,{0,1,0}));
- draw(standMesh,vp,model(0,0,0,1,1,1),.055f,.085f,.12f);
+ draw(standMesh,vp,model(0,0,0,1,1,1),stadiumSeatColor.x,stadiumSeatColor.y,stadiumSeatColor.z);
+ draw(roofMesh,vp,identity(),stadiumRoofColor.x,stadiumRoofColor.y,stadiumRoofColor.z);
+ draw(stadiumAccentMesh,vp,identity(),stadiumAccentColor.x,stadiumAccentColor.y,stadiumAccentColor.z);
  draw(fieldMesh,vp,identity(),.035f,.34f,.13f);
  draw(lineMesh,vp,identity(),.88f,.94f,.85f);
  draw(goalMesh,vp,identity(),stadiumSecondaryColor.x,stadiumSecondaryColor.y,stadiumSecondaryColor.z);
