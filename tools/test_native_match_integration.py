@@ -106,6 +106,10 @@ require("clearanceMinimum" in engine and "handling" in engine,
 require("std::array<V3,22> players" in engine, "native match must retain 22 player actors")
 require("void updateKeeper" in engine and "takeShot" in engine,
         "basic goalkeeper and opponent decision logic must remain connected")
+require("habilidades catalogadas (no integradas)" in activity and "técnicas catalogadas (no integradas)" in activity,
+        "skill/technique catalogs must be clearly labeled inactive until wired to gameplay")
+require('"REGATE BÁSICO"' in activity,
+        "generic dribble touch action must not be presented as an activated catalog skill")
 for control in ("joystickZone", "shootZone", "passZone", "skillZone", "pressZone"):
     require(control in engine, f"native touch mapping missing {control}")
 for rule in ("crossedPositive", "crossedNegative", "matchPhase==0", "matchPhase=1", "matchPhase==2"):
