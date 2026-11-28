@@ -45,6 +45,7 @@ public final class MainActivity extends Activity {
     private static native void nativeSetMatchDurationMinutes(int minutes);
     private static native void nativeStartSecondHalf();
     private static native int nativeGetMatchPhase();
+    private static native void nativeSetStadiumTheme(int seatingColor,int accentColor,int roofColor,int secondaryAccentColor);
     static native void nativeSetPlayerProfile(int slot,float heightCm,int overall,float pace,float dribbling,float defending);
 
     @Override public void onCreate(Bundle state) {
@@ -111,6 +112,8 @@ public final class MainActivity extends Activity {
         String homeLabel=homeTeam==null?(defaults==null?"Equipo local pendiente":defaults.optString("home_team_name","Equipo local pendiente")):homeTeam.name;
         String awayLabel=awayTeam==null?(defaults==null?"Equipo visitante pendiente":defaults.optString("away_team_name","Equipo visitante pendiente")):awayTeam.name;
         TextView teams=text(homeLabel+"   VS   "+awayLabel,18,Color.WHITE,true);teams.setPadding(0,dp(14),0,dp(10));match.addView(teams);
+        String venue=homeTeam==null?"Estadio pendiente":homeTeam.stadiumName;
+        match.addView(text("ESTADIO LOCAL: "+venue,14,0xFFB8E85A,true));
         if(homeTeam==null||awayTeam==null)match.addView(text("La pareja predeterminada está guardada, pero sus plantillas completas todavía no están habilitadas. Puedes elegir equipos entre las plantillas verificadas disponibles.",12,0xFFFFD18A,false));
         match.addView(button("ELEGIR EQUIPO LOCAL",()->chooseTeam(true)));
         match.addView(button("ELEGIR EQUIPO VISITANTE",()->chooseTeam(false)));
@@ -252,7 +255,9 @@ public final class MainActivity extends Activity {
         GameSurface(){super(MainActivity.this);setEGLContextClientVersion(3);setPreserveEGLContextOnPause(true);
             setRenderer(new Renderer(){
                 @Override public void onSurfaceCreated(javax.microedition.khronos.opengles.GL10 gl,javax.microedition.khronos.egl.EGLConfig cfg){
-                    nativeInit();data.applyTeam(0,homeTeam);data.applyTeam(11,awayTeam);
+                    nativeInit();
+                    if(homeTeam!=null)nativeSetStadiumTheme(homeTeam.stadiumSeatingColor,homeTeam.stadiumAccentColor,homeTeam.stadiumRoofColor,homeTeam.stadiumSecondaryAccentColor);
+                    data.applyTeam(0,homeTeam);data.applyTeam(11,awayTeam);
                 }
                 @Override public void onSurfaceChanged(javax.microedition.khronos.opengles.GL10 gl,int w,int h){nativeResize(w,h);}
                 @Override public void onDrawFrame(javax.microedition.khronos.opengles.GL10 gl){nativeFrame();}
