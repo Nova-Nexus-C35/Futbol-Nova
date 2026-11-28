@@ -27,7 +27,8 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 - [ ] Pruebas de reloj, pausa, descanso y segundo tiempo.
 - [ ] Pruebas de gol, reinicio y cambio de lado.
 - [ ] Pruebas de colisión con jugadores, porteros, postes y larguero.
-- [ ] Recuperación ante pausa/resume y pérdida de contexto OpenGL.
+- [x] Pausa del simulador al salir de primer plano y reanudación condicionada al estado de pausa del usuario; contrato estático en tools/test_native_match_integration.py.
+- [ ] Prueba instrumentada Android de pausa/resume y recuperación de contexto OpenGL.
 - [ ] Compilación CI ARM64 y registro del artefacto.
 
 ## P1 — Reglas del fútbol
