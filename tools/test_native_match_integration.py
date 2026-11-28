@@ -52,7 +52,7 @@ require("stadiumSeatingColor" in repository and "stadiumRoofColor" in repository
 require("homeTeam.stadiumName" in activity, "pre-match UI must display the selected home stadium")
 require("nativeSetStadiumTheme(homeTeam.stadiumSeatingColor" in activity,
         "selected home stadium palette must be passed to the native renderer")
-require("void nativeSetStadiumTheme" in engine, "native stadium theme JNI entry point is required")
+require("Java_com_nova_futbolnova_MainActivity_nativeSetStadiumTheme" in engine, "native stadium theme JNI entry point is required")
 for render in ("draw(standMesh", "draw(roofMesh", "draw(stadiumAccentMesh", "stadiumSecondaryColor"):
     require(render in engine, f"OpenGL renderer must use stadium component: {render}")
 
