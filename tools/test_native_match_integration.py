@@ -51,6 +51,10 @@ require("stadiumSeatingColor" in repository and "stadiumRoofColor" in repository
         "team records must carry their stadium palette")
 require("homeTeam.stadiumName" in activity, "pre-match UI must display the selected home stadium")
 
+require("TeamSelectionPolicy.excludingId(" in activity,
+        "pre-match UI must use the unit-tested team selection policy")
+require((ROOT / "native-android/app/src/test/java/com/nova/futbolnova/TeamSelectionPolicyTest.java").is_file(),
+        "JVM unit tests for distinct team selection must be present")
 require("List<CanonicalDataRepository.Team> candidates" in activity,
         "team picker must build a verified candidate list")
 require("if(!team.id.equals(otherId))candidates.add(team)" in activity,
