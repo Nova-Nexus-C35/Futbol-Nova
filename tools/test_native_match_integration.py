@@ -58,6 +58,13 @@ require("if(!team.id.equals(otherId))candidates.add(team)" in activity,
 require("CanonicalDataRepository.Team selected=candidates.get(which)" in activity,
         "team picker must apply the selected filtered candidate, not an unfiltered index")
 
+require("private boolean userPausedMatch=false;" in activity and "private boolean lifecyclePausedMatch=false;" in activity,
+        "Android activity must distinguish user pause from lifecycle pause")
+require("if(matchRunning){lifecyclePausedMatch=true;nativePause(true);}" in activity,
+        "leaving the foreground must pause the native simulation")
+require("if(matchRunning&&!userPausedMatch)nativePause(false);" in activity,
+        "returning to foreground must not override a user-requested pause")
+
 require("nativeSetStadiumTheme(homeTeam.stadiumSeatingColor" in activity,
         "selected home stadium palette must be passed to the native renderer")
 require("Java_com_nova_futbolnova_MainActivity_nativeSetStadiumTheme" in engine, "native stadium theme JNI entry point is required")
