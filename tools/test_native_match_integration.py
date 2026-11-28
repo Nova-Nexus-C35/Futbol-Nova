@@ -25,6 +25,12 @@ rosters_data = json.loads((DATA / "players/nova_original_club_rosters_2026.json"
 clubs = {c["runtime_club_id"]: c for c in clubs_data["clubs"]}
 rosters = {r["club_id"]: r for r in rosters_data["rosters"]}
 defaults = manifest["default_friendly_match"]
+attribute_contract = manifest.get("attribute_contract", {})
+goalkeeper_keys = ("dive", "hand", "kick", "ref", "gkspd", "gkpos")
+require(tuple(attribute_contract.get("goalkeeper_keys", [])) == goalkeeper_keys,
+        "runtime manifest must define the six goalkeeper attribute keys in canonical order")
+require(attribute_contract.get("range") == {"minimum": 0, "maximum": 99},
+        "runtime manifest must define the canonical 0..99 player attribute range")
 
 require(defaults["home_team_id"] == "FN-NOVA-C35", "Nova C35 must be the default home club")
 require(defaults["away_team_id"] == "FN-NOVA-RDA", "FC Río de Argenti must be the default away club")
