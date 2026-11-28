@@ -78,6 +78,8 @@
     "home_team_name": "Nova C35",
     "away_team_id": "FN-NOVA-RDA",
     "away_team_name": "FC Río de Argenti",
+    "home_stadium_id": "nova_c35",
+    "home_stadium_name": "Estadio del Fénix",
     "source": "owner_confirmed_pre_match_configuration_2026-11-28",
     "requires_verified_playable_rosters": true
   }
