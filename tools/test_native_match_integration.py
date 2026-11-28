@@ -77,6 +77,26 @@ for render in ("draw(standMesh", "draw(roofMesh", "draw(stadiumAccentMesh", "sta
 
 require("data.applyTeam(0,homeTeam)" in activity and "data.applyTeam(11,awayTeam)" in activity,
         "both verified 11-player sides must be applied to native player slots")
+require('customPlayersById.get(p.optString("id",""))' in repository,
+        "custom profiles must override roster data by stable player ID")
+require('attribute(values,String key' in repository and 'nativeAttributeKeys.indexOf(key)' in repository,
+        "Java must resolve player attributes by canonical JSON keys, not positional magic numbers")
+goalkeeper_keys = ("dive", "hand", "kick", "ref", "gkspd", "gkpos")
+for key in goalkeeper_keys:
+    require(f'attribute(values,"{key}",25)' in repository,
+            f"Java profile mapping must load goalkeeper attribute {key}")
+for parameter in ("goalkeeperDiving", "goalkeeperHandling", "goalkeeperKicking",
+                  "goalkeeperReflexes", "goalkeeperSpeed", "goalkeeperPositioning"):
+    require(parameter in activity and parameter in engine,
+            f"JNI/C++ player profile contract missing {parameter}")
+for native_stat in ("playerGoalkeeperDiving", "playerGoalkeeperHandling",
+                    "playerGoalkeeperKicking", "playerGoalkeeperReflexes",
+                    "playerGoalkeeperSpeed", "playerGoalkeeperPositioning"):
+    require(native_stat in engine, f"native goalkeeper simulation does not use {native_stat}")
+require("reactionWindow" in engine and "diveReach" in engine,
+        "goalkeeper reflexes and diving must affect keeper reactions")
+require("clearanceMinimum" in engine and "handling" in engine,
+        "goalkeeper kicking and handling must affect keeper parry/clearance")
 require("std::array<V3,22> players" in engine, "native match must retain 22 player actors")
 require("void updateKeeper" in engine and "takeShot" in engine,
         "basic goalkeeper and opponent decision logic must remain connected")
@@ -89,5 +109,6 @@ require("nativeStartSecondHalf" in activity and "showFullTimeDialog" in activity
 
 print("PASS: Nova C35 vs FC Río de Argenti uses two verified 22-player rosters.")
 print("PASS: Estadio del Fénix and its canonical palette are connected to the native OpenGL renderer.")
+print("PASS: six goalkeeper attributes flow from canonical JSON through Java/JNI into native keeper behavior.")
 print("PASS: 22-player simulation, goalkeeper/opponent AI, touch controls, goals and match phases are wired.")
 print("INFO: static integration checks only; full laws of football and on-device gameplay remain pending.")
