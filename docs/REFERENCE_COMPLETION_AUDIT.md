@@ -222,3 +222,10 @@ La autorización posterior del propietario permitió integrar los cuatro clubes 
 ## Decisión del propietario — 2026-11-28
 
 El amistoso predeterminado del runtime nativo queda actualizado a **Nova C35 (local) vs FC Río de Argenti (visitante)**, usando los IDs estables `FN-NOVA-C35` y `FN-NOVA-RDA`. Ambos clubes tienen plantillas de exhibición completas de 22 jugadores en `data/players/nova_original_club_rosters_2026.json`. Esta decisión sustituye el valor anterior Albor Madrid vs Litoral Barcelona para el inicio rápido del runtime. Las plantillas españolas siguen siendo un trabajo separado y no se habilitan por este cambio. No se modifica la afiliación ni el club activo de Anier o Máximo.
+
+
+## Actualización de integración nativa — 2026-11-28
+
+La pareja predeterminada Nova C35 vs FC Río de Argenti se conecta a los dos rosters canónicos de 22 jugadores. La ficha del equipo local proporciona automáticamente el estadio: Nova C35 selecciona Estadio del Fénix (`nova_c35`). Java pasa la paleta de gradas, cubierta y acentos al renderizador C++/OpenGL ES 3.0 por JNI; la pantalla previa y el marcador muestran el estadio local. El selector de local actualiza esta referencia al cambiar de equipo y evita iniciar con el mismo club en ambos lados.
+
+Se añade `tools/test_native_match_integration.py` al workflow para verificar estáticamente la conexión entre datos, selector, JNI, renderer, 22 actores, controles táctiles, IA básica y transiciones de gol/tiempo. Esta prueba no sustituye la prueba en dispositivo. El runtime ya tiene movimiento táctico heurístico, control del usuario, presión, pase, tiro, regate, lógica básica de portero, detección de gol, celebración, reinicio, descanso, segundo tiempo y final; siguen pendientes las reglas completas, IA táctica avanzada, animaciones y validación física en Android.
