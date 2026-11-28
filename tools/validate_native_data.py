@@ -164,6 +164,11 @@ def main():
         actual = [str(p.get("id", "")) for p in team["players"]]
         if set(actual) != set(expected) or len(actual) != 22:
             fail(f"original exhibition roster {club_id} does not match the canonical club player IDs")
+        stadium = club.get("stadium", {})
+        if club_id in ("FN-NOVA-C35", "FN-NOVA-RDA"):
+            for field in ("id", "name", "seating", "accent", "roof", "secondary_accent"):
+                if not str(stadium.get(field, "")).strip():
+                    fail(f"{sources[original_key]}: {club_id} stadium is missing {field}")
 
     clubs_by_id = {}
     spain_key = "spain_clubs"
@@ -242,12 +247,27 @@ def main():
         home_id, away_id = str(defaults.get("home_team_id", "")).strip(), str(defaults.get("away_team_id", "")).strip()
         if not home_id or not away_id or home_id == away_id:
             fail("native_runtime_manifest.json: default friendly teams must be distinct stable IDs")
+        playable_roster_by_id = {
+            team["club_id"]: team
+            for key in ROSTER_KEYS
+            for team in loaded[key].get("rosters", [])
+        }
         for team_id, name_key in ((home_id, "home_team_name"), (away_id, "away_team_name")):
             club = clubs_by_id.get(team_id)
             if club is None:
                 fail(f"native_runtime_manifest.json: default friendly club {team_id} is unknown")
             if defaults.get(name_key) != club.get("display_name"):
                 fail(f"native_runtime_manifest.json: saved display name for {team_id} does not match the canonical club catalog")
+            roster = playable_roster_by_id.get(team_id)
+            if roster is None or len(roster.get("players", [])) != 22:
+                fail(f"native_runtime_manifest.json: default friendly club {team_id} has no verified 22-player runtime roster")
+        home_club = original_by_id.get(home_id)
+        if home_club is not None:
+            stadium = home_club.get("stadium", {})
+            if defaults.get("home_stadium_id") != stadium.get("id"):
+                fail("native_runtime_manifest.json: home_stadium_id does not match the selected home club stadium")
+            if defaults.get("home_stadium_name") != stadium.get("name"):
+                fail("native_runtime_manifest.json: home_stadium_name does not match the selected home club stadium")
     else:
         custom_ids, unmatched, custom_club_links = set(), 0, 0
 
