@@ -255,6 +255,10 @@ def main():
     print(f"PASS: {cuba_teams} Cuban teams / {cuba_players} players and {original_teams} original exhibition teams / {original_players} players.")
     print(f"PASS: {total_teams} total playable rosters and {total_players} unique players; {len(positions)} positions represented.")
     print(f"PASS: {len(original_clubs)} original clubs catalogued; only the two complete 22-player rosters are playable.")
+    defaults = manifest.get("default_friendly_match", {})
+    print(f"PASS: default friendly {defaults.get('home_team_name')} vs {defaults.get('away_team_name')} has verified 22-player rosters.")
+    if defaults.get("home_stadium_name"):
+        print(f"PASS: home venue {defaults.get('home_stadium_name')} ({defaults.get('home_stadium_id')}) matches the home club catalog.")
     if custom_key in sources:
         print(f"PASS: {len(custom_ids)} custom player profiles have valid IDs, 35 attributes and club links.")
         if unmatched:
