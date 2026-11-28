@@ -13,9 +13,9 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 
 ## P0 — Base estable
 
-- [ ] Integrar perfiles personalizados por ID estable y `club_id`, conservando todas las preferencias confirmadas. Anier (`NOVA-PLAYER-0035`) pertenece a Albor Madrid (`FN-ESP-REAL-MADRID`) y Máximo (`NOVA-PLAYER-0036`) a Litoral Barcelona (`FN-ESP-BARCELONA`); ambos tienen preferencia nacional CUB registrada. No asignarlos a clubes/selecciones por nombre, nacionalidad o preferencia solamente.
+- [x] Integrar perfiles personalizados por ID estable y `club_id`, conservando las preferencias confirmadas. Anier (`NOVA-PLAYER-0035`) pertenece a Albor Madrid (`FN-ESP-REAL-MADRID`) y Máximo (`NOVA-PLAYER-0036`) a Litoral Barcelona (`FN-ESP-BARCELONA`); ambos tienen preferencia nacional CUB y afiliación histórica de exhibición Nova C35. `validate_native_data.py` verifica ID, club activo, nombre canónico, club original y preferencia; `CanonicalDataRepository` aplica perfiles por ID. No asignarlos por nombre/nacionalidad/preferencia solamente.
 - [x] Configurar el amistoso predeterminado como Nova C35 (`FN-NOVA-C35`) vs FC Río de Argenti (`FN-NOVA-RDA`): ambos rosters de exhibición contienen 22 jugadores y están habilitados en el runtime nativo. La pareja Albor Madrid vs Litoral Barcelona queda pendiente como trabajo separado hasta completar sus plantillas españolas de 22 jugadores; no sustituirla silenciosamente ni alterar los clubes activos de Anier y Máximo.
-- [ ] Definir el contrato de atributos entre JSON, Java y C++ y comprobar especialmente las seis estadísticas de portero.
+- [x] Definir el contrato de atributos entre JSON, Java y C++ y comprobar las seis estadísticas de portero. `data/native_runtime_manifest.json` declara las claves y el orden JNI; Java resuelve por `attribute_keys` y C++ aplica los seis valores al comportamiento del portero.
 - [ ] Conectar el catálogo de habilidades/técnicas a acciones de juego reales o mantenerlas claramente desactivadas hasta su integración.
 
 
@@ -23,13 +23,14 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 - [ ] Validación estricta de todos los catálogos canónicos.
 - [x] Selector Android filtra el equipo ya elegido en el lado contrario y aplica el ID estable del candidato seleccionado; verificación estática en `tools/test_native_match_integration.py`.
 - [x] Pruebas JVM JUnit de selección de dos equipos distintos en TeamSelectionPolicyTest.
-- [ ] Pruebas de atributos y perfiles personalizados por ID estable.
+- [x] Verificación estática de atributos y perfiles personalizados por ID estable mediante `tools/validate_native_data.py` y `tools/test_native_match_integration.py`.
+- [ ] Prueba instrumentada que compruebe los valores de perfil en el runtime nativo durante un partido.
 - [ ] Pruebas de reloj, pausa, descanso y segundo tiempo.
 - [ ] Pruebas de gol, reinicio y cambio de lado.
 - [ ] Pruebas de colisión con jugadores, porteros, postes y larguero.
 - [x] Pausa del simulador al salir de primer plano y reanudación condicionada al estado de pausa del usuario; contrato estático en tools/test_native_match_integration.py.
 - [ ] Prueba instrumentada Android de pausa/resume y recuperación de contexto OpenGL.
-- [ ] Compilación CI ARM64 y registro del artefacto.
+- [x] Compilación CI ARM64 y registro del artefacto; run #46135038332 pasó y publicó `futbol-nova-native-android-arm64` (3,521,833 bytes).
 
 ## P1 — Reglas del fútbol
 
@@ -121,3 +122,13 @@ No cambiar el estado a `implemented` por crear una pantalla, un JSON o una descr
 - [ ] Completar modelos, equipaciones originales, animaciones, estadios con activos finales y cámaras.
 
 La comprobación `tools/test_native_match_integration.py` es un contrato estático de conexiones del código; no simula un partido ni acredita que todas las reglas estén implementadas.
+
+## Contrato de perfiles y porteros — 2026-11-28
+
+- La fuente de atributos es `attribute_keys` de los rosters canónicos; Java resuelve cada valor por nombre de clave y valida que todos los archivos compartan el mismo orden.
+- Los perfiles personalizados se buscan por ID estable. La afiliación activa usa `club_id`; la afiliación histórica usa `original_club_id`; la preferencia nacional permanece como metadato.
+- El manifiesto define las seis claves de portero: `dive`, `hand`, `kick`, `ref`, `gkspd`, `gkpos`.
+- JNI transmite los seis valores a C++ junto con el perfil general.
+- El motor usa reflejos para la ventana de reacción, salto para alcance/duración, velocidad y posicionamiento para el desplazamiento, blocaje para suavizar el rebote y saque para la potencia de despeje.
+- Validación CI #46135038332: PASS en datos canónicos, contrato estático, JUnit, build Android y verificación ARM64. Pendiente la prueba instrumentada en dispositivo.
+
